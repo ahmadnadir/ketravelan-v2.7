@@ -16,6 +16,7 @@ import {
   Calendar,
   Route,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
@@ -44,6 +45,58 @@ const travelStyles: Record<string, { label: string; icon: string }> = {
   festival: { label: "Festival / Music", icon: "🎉" },
   crossborder: { label: "Cross-Border", icon: "🌍" },
   umrah: { label: "Umrah DIY", icon: "🕋" },
+};
+
+// Generate contextual value proposition based on trip data
+const generateValueProposition = (tripData: any): string => {
+  const tags = tripData.tags || [];
+  const groupSize = tripData.totalSlots || 8;
+  const price = tripData.price || 0;
+  
+  const vibeWords = [];
+  if (tags.some((t: string) => t.toLowerCase().includes('outdoor') || t.toLowerCase().includes('adventure'))) {
+    vibeWords.push('adventure-filled');
+  } else if (tags.some((t: string) => t.toLowerCase().includes('city') || t.toLowerCase().includes('urban'))) {
+    vibeWords.push('cultural');
+  } else if (tags.some((t: string) => t.toLowerCase().includes('beach'))) {
+    vibeWords.push('relaxing');
+  } else {
+    vibeWords.push('memorable');
+  }
+  
+  const budgetLevel = price < 500 ? 'budget-friendly' : price < 800 ? 'well-planned' : 'curated';
+  const groupDesc = groupSize <= 6 ? 'intimate' : groupSize <= 10 ? 'small group' : 'community';
+  
+  return `A ${vibeWords[0]}, ${budgetLevel} escape for travelers who enjoy ${groupDesc} adventures.`;
+};
+
+// Generate urgency text based on slots
+const getUrgencyText = (joined: number, total: number): string => {
+  const slotsLeft = total - joined;
+  if (slotsLeft <= 2) return "Almost full";
+  if (slotsLeft <= Math.floor(total / 2)) return "Filling up";
+  return "Spots available";
+};
+
+// Parse description into bullet points
+const parseDescriptionToBullets = (description: string): string[] => {
+  // Try to extract key phrases from the description
+  const sentences = description.split(/[.!]/).filter(s => s.trim().length > 10);
+  const bullets: string[] = [];
+  
+  sentences.forEach(sentence => {
+    const trimmed = sentence.trim();
+    if (trimmed.length > 0 && bullets.length < 4) {
+      // Clean up and shorten if needed
+      let bullet = trimmed;
+      if (bullet.length > 80) {
+        bullet = bullet.substring(0, 77) + '...';
+      }
+      bullets.push(bullet);
+    }
+  });
+  
+  return bullets.length > 0 ? bullets : [description];
 };
 
 export default function TripDetails() {
@@ -118,6 +171,13 @@ export default function TripDetails() {
       };
     }
   }, [publishedTrip, mockTrip]);
+
+  // Find organizer from members
+  const organizer = mockMembers.find(m => m.role === 'Organizer') || mockMembers[0];
+  const joined = tripData.totalSlots - tripData.slotsLeft;
+  const valueProposition = generateValueProposition(tripData);
+  const urgencyText = getUrgencyText(joined, tripData.totalSlots);
+  const descriptionBullets = parseDescriptionToBullets(tripData.description);
 
   const images = [
     tripData.imageUrl,
@@ -197,7 +257,13 @@ export default function TripDetails() {
           {/* Title & Location */}
           <div className="space-y-2 sm:space-y-3">
             <div className="flex items-start justify-between gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">{tripData.title}</h1>
+              <div className="space-y-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">{tripData.title}</h1>
+                {/* Value Proposition */}
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  {valueProposition}
+                </p>
+              </div>
               {isPublishedTrip && (
                 <span className={`px-2 py-1 text-xs font-medium rounded-full shrink-0 ${
                   tripData.visibility === 'public' 
@@ -214,9 +280,12 @@ export default function TripDetails() {
                 <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{tripData.destination}</span>
               </div>
+              {/* Enhanced Slots with Urgency */}
               <div className="flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">{tripData.totalSlots - tripData.slotsLeft}/{tripData.totalSlots} joined</span>
+                <span className="text-xs sm:text-sm">
+                  {joined}/{tripData.totalSlots} spots filled · <span className={tripData.slotsLeft <= 2 ? "text-primary font-medium" : ""}>{urgencyText}</span>
+                </span>
               </div>
               {isPublishedTrip && tripData.dateType === 'exact' && tripData.startDate && (
                 <div className="flex items-center gap-1.5">
@@ -256,18 +325,43 @@ export default function TripDetails() {
                 <PillChip key={tag} label={tag} />
               ))}
             </div>
+
+            {/* Organizer Trust Signal */}
+            <div className="flex items-center gap-2 pt-1">
+              <div className="h-6 w-6 rounded-full bg-muted overflow-hidden shrink-0">
+                {organizer.imageUrl ? (
+                  <img src={organizer.imageUrl} alt={organizer.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs font-medium">
+                    {organizer.name.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <span className="text-xs sm:text-sm text-muted-foreground">
+                Organized by <span className="text-foreground font-medium">{organizer.name}</span>
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Questions? Message the organizer before joining.
+            </p>
           </div>
 
           {/* CTAs */}
-          <div className="flex gap-2 sm:gap-3">
-            <Link to={`/trip/${id}/hub`} className="flex-1">
-              <Button size="lg" className="w-full rounded-xl text-sm sm:text-base">
-                Request to Join
+          <div className="space-y-2">
+            <div className="flex gap-2 sm:gap-3">
+              <Link to={`/trip/${id}/hub`} className="flex-1">
+                <Button size="lg" className="w-full rounded-xl text-sm sm:text-base">
+                  Request to Join
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="rounded-xl shrink-0">
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="rounded-xl shrink-0">
-              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
+            </div>
+            {/* CTA Helper Text */}
+            <p className="text-xs text-muted-foreground text-center">
+              No payment required at this stage. You'll be added to the group chat once approved.
+            </p>
           </div>
 
           {/* Tabs */}
@@ -284,18 +378,24 @@ export default function TripDetails() {
           {/* Tab Content */}
           {activeTab === "overview" && (
             <div className="space-y-3 sm:space-y-4">
-              {/* Description */}
+              {/* Description - Now as bullet points */}
               <Card className="p-3 sm:p-4 border-border/50">
                 <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">About This Trip</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {tripData.description}
-                </p>
+                <ul className="space-y-1.5 sm:space-y-2">
+                  {descriptionBullets.map((bullet, index) => (
+                    <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
+                      {bullet}
+                    </li>
+                  ))}
+                </ul>
               </Card>
 
-              {/* Requirements */}
+              {/* Requirements - Renamed */}
               {tripData.requirements.length > 0 && (
                 <Card className="p-3 sm:p-4 border-border/50">
-                  <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Requirements / What to Expect</h3>
+                  <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">Good to Know</h3>
+                  <p className="text-xs text-muted-foreground mb-2 sm:mb-3">Who this trip is for</p>
                   <ul className="space-y-1.5 sm:space-y-2">
                     {tripData.requirements.map((req, index) => (
                       <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
@@ -328,11 +428,17 @@ export default function TripDetails() {
                         </div>
                       );
                     })}
-                    <div className="pt-2 sm:pt-3 border-t border-border/50 flex items-center justify-between">
-                      <span className="font-semibold text-foreground text-sm sm:text-base">Total per person</span>
-                      <span className="text-base sm:text-lg font-bold text-primary">
-                        RM {tripData.price}
-                      </span>
+                    <div className="pt-2 sm:pt-3 border-t border-border/50">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-foreground text-sm sm:text-base">Total per person</span>
+                        <span className="text-base sm:text-lg font-bold text-primary">
+                          RM {tripData.price}
+                        </span>
+                      </div>
+                      {/* Budget Reassurance */}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Estimated budget · Tracked transparently using the group expense tracker.
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -397,16 +503,22 @@ export default function TripDetails() {
                 </div>
               )}
 
-              {/* Empty state */}
+              {/* Empty state - Improved messaging */}
               {(!isPublishedTrip || tripData.itineraryType === 'skip' || 
                 (tripData.itineraryType === 'notes' && !tripData.simpleNotes) ||
                 (tripData.itineraryType === 'dayByDay' && tripData.dayByDayPlan.length === 0)) && (
                 <Card className="p-4 border-border/50">
-                  <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm sm:text-base">
-                    {isPublishedTrip 
-                      ? "Itinerary will be finalized in the group chat"
-                      : "Itinerary will be shared after joining"}
-                  </p>
+                  <div className="text-center py-6 sm:py-8">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                      <Sparkles className="h-6 w-6 text-primary/60" />
+                    </div>
+                    <p className="text-sm sm:text-base font-medium text-foreground mb-1">
+                      Plans stay flexible
+                    </p>
+                    <p className="text-xs sm:text-sm text-muted-foreground max-w-xs mx-auto">
+                      The detailed itinerary will be co-created together in the group chat after joining.
+                    </p>
+                  </div>
                 </Card>
               )}
             </div>
@@ -429,6 +541,10 @@ export default function TripDetails() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground text-sm sm:text-base truncate">{member.name}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">{member.role}</p>
+                      {/* Member Descriptor */}
+                      {member.descriptor && (
+                        <p className="text-xs text-muted-foreground/70">{member.descriptor}</p>
+                      )}
                     </div>
                     <Button variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm">
                       Message
