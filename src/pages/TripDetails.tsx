@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ChevronLeft,
@@ -13,6 +13,9 @@ import {
   Bed,
   Utensils,
   Ticket,
+  Calendar,
+  Route,
+  FileText,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
@@ -21,12 +24,26 @@ import { AvatarRow } from "@/components/shared/AvatarRow";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { mockTrips, mockMembers } from "@/data/mockData";
+import { getPublishedTripById, PublishedTrip } from "@/lib/publishedTrips";
 
 const iconMap: Record<string, any> = {
   car: Car,
   bed: Bed,
   utensils: Utensils,
   ticket: Ticket,
+  transport: Car,
+  accommodation: Bed,
+  food: Utensils,
+  activities: Ticket,
+};
+
+const travelStyles: Record<string, { label: string; icon: string }> = {
+  outdoor: { label: "Outdoor & Adventure", icon: "🏔️" },
+  diving: { label: "Diving & Water", icon: "🤿" },
+  city: { label: "City & Urban", icon: "🏙️" },
+  festival: { label: "Festival / Music", icon: "🎉" },
+  crossborder: { label: "Cross-Border", icon: "🌍" },
+  umrah: { label: "Umrah DIY", icon: "🕋" },
 };
 
 export default function TripDetails() {
@@ -34,10 +51,76 @@ export default function TripDetails() {
   const [currentImage, setCurrentImage] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
 
-  const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
+  // Try to load from published trips first, then fall back to mock data
+  const publishedTrip = useMemo(() => id ? getPublishedTripById(id) : null, [id]);
+  const mockTrip = mockTrips.find((t) => t.id === id) || mockTrips[0];
+
+  // Determine if we're showing a published trip or mock trip
+  const isPublishedTrip = !!publishedTrip;
+
+  // Normalize data for display
+  const tripData = useMemo(() => {
+    if (publishedTrip) {
+      // Calculate total budget
+      let totalBudget = 0;
+      let budgetBreakdown: { category: string; amount: number; icon: string }[] = [];
+      
+      if (publishedTrip.budgetType === 'rough') {
+        totalBudget = publishedTrip.roughBudgetTotal;
+        budgetBreakdown = publishedTrip.roughBudgetCategories.map(cat => ({
+          category: cat.charAt(0).toUpperCase() + cat.slice(1),
+          amount: Math.round(publishedTrip.roughBudgetTotal / publishedTrip.roughBudgetCategories.length),
+          icon: cat.toLowerCase(),
+        }));
+      } else if (publishedTrip.budgetType === 'detailed') {
+        totalBudget = Object.values(publishedTrip.detailedBudget).reduce((a, b) => a + b, 0);
+        budgetBreakdown = Object.entries(publishedTrip.detailedBudget).map(([cat, amount]) => ({
+          category: cat.charAt(0).toUpperCase() + cat.slice(1),
+          amount,
+          icon: cat.toLowerCase(),
+        }));
+      }
+
+      return {
+        id: publishedTrip.id,
+        title: publishedTrip.title,
+        destination: publishedTrip.primaryDestination,
+        additionalStops: publishedTrip.additionalStops,
+        description: `A ${publishedTrip.visibility} trip to ${publishedTrip.primaryDestination}${publishedTrip.additionalStops.length > 0 ? ` and ${publishedTrip.additionalStops.length} more stop${publishedTrip.additionalStops.length > 1 ? 's' : ''}` : ''}.`,
+        tags: publishedTrip.travelStyles.map(s => travelStyles[s]?.label || s),
+        requirements: publishedTrip.expectations,
+        budgetBreakdown,
+        price: totalBudget,
+        totalSlots: publishedTrip.groupSizeType === 'set' ? publishedTrip.groupSize : 10,
+        slotsLeft: publishedTrip.groupSizeType === 'set' ? publishedTrip.groupSize - 1 : 9,
+        imageUrl: publishedTrip.coverImage || "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800",
+        dateType: publishedTrip.dateType,
+        startDate: publishedTrip.startDate,
+        endDate: publishedTrip.endDate,
+        itineraryType: publishedTrip.itineraryType,
+        simpleNotes: publishedTrip.simpleNotes,
+        dayByDayPlan: publishedTrip.dayByDayPlan,
+        visibility: publishedTrip.visibility,
+        travelStyleIds: publishedTrip.travelStyles,
+      };
+    } else {
+      return {
+        ...mockTrip,
+        additionalStops: [],
+        dateType: 'flexible' as const,
+        startDate: '',
+        endDate: '',
+        itineraryType: 'skip' as const,
+        simpleNotes: '',
+        dayByDayPlan: [],
+        visibility: 'public' as const,
+        travelStyleIds: [],
+      };
+    }
+  }, [publishedTrip, mockTrip]);
 
   const images = [
-    trip.imageUrl,
+    tripData.imageUrl,
     "https://images.unsplash.com/photo-1516571137133-1be29e37143a?w=800",
     "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800",
   ];
@@ -53,7 +136,7 @@ export default function TripDetails() {
           <div className="aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
             <img
               src={images[currentImage]}
-              alt={trip.title}
+              alt={tripData.title}
               className="h-full w-full object-cover"
             />
           </div>
@@ -113,24 +196,63 @@ export default function TripDetails() {
         <div className="pt-4 sm:pt-6 space-y-4 sm:space-y-6">
           {/* Title & Location */}
           <div className="space-y-2 sm:space-y-3">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">{trip.title}</h1>
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">{tripData.title}</h1>
+              {isPublishedTrip && (
+                <span className={`px-2 py-1 text-xs font-medium rounded-full shrink-0 ${
+                  tripData.visibility === 'public' 
+                    ? 'bg-primary/10 text-primary' 
+                    : 'bg-secondary text-muted-foreground'
+                }`}>
+                  {tripData.visibility === 'public' ? '🌐 Public' : '🔒 Private'}
+                </span>
+              )}
+            </div>
+            
             <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">{trip.destination}</span>
+                <span className="text-xs sm:text-sm">{tripData.destination}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">{trip.totalSlots - trip.slotsLeft}/{trip.totalSlots} joined</span>
+                <span className="text-xs sm:text-sm">{tripData.totalSlots - tripData.slotsLeft}/{tripData.totalSlots} joined</span>
               </div>
+              {isPublishedTrip && tripData.dateType === 'exact' && tripData.startDate && (
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">
+                    {new Date(tripData.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {tripData.endDate && ` - ${new Date(tripData.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Route display for published trips */}
+            {isPublishedTrip && tripData.additionalStops.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap text-xs">
+                <Route className="h-3.5 w-3.5 text-primary" />
+                <span className="px-2 py-1 bg-primary/10 text-primary rounded-full">
+                  {tripData.destination}
+                </span>
+                {tripData.additionalStops.map((stop, i) => (
+                  <span key={i} className="flex items-center gap-1">
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-2 py-1 bg-secondary text-foreground rounded-full">
+                      {stop}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* Members Preview */}
             <AvatarRow avatars={mockMembers} max={4} />
 
             {/* Tags */}
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {trip.tags.map((tag) => (
+              {tripData.tags.map((tag) => (
                 <PillChip key={tag} label={tag} />
               ))}
             </div>
@@ -166,60 +288,128 @@ export default function TripDetails() {
               <Card className="p-3 sm:p-4 border-border/50">
                 <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">About This Trip</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {trip.description}
+                  {tripData.description}
                 </p>
               </Card>
 
               {/* Requirements */}
-              <Card className="p-3 sm:p-4 border-border/50">
-                <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Requirements</h3>
-                <ul className="space-y-1.5 sm:space-y-2">
-                  {trip.requirements.map((req, index) => (
-                    <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
-                      {req}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
+              {tripData.requirements.length > 0 && (
+                <Card className="p-3 sm:p-4 border-border/50">
+                  <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Requirements / What to Expect</h3>
+                  <ul className="space-y-1.5 sm:space-y-2">
+                    {tripData.requirements.map((req, index) => (
+                      <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
+                        {req}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
 
               {/* Budget Breakdown */}
-              <Card className="p-3 sm:p-4 border-border/50">
-                <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Budget Breakdown</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  {trip.budgetBreakdown.map((item) => {
-                    const Icon = iconMap[item.icon] || Ticket;
-                    return (
-                      <div key={item.category} className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                            <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+              {tripData.budgetBreakdown.length > 0 && (
+                <Card className="p-3 sm:p-4 border-border/50">
+                  <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Budget Breakdown</h3>
+                  <div className="space-y-2 sm:space-y-3">
+                    {tripData.budgetBreakdown.map((item) => {
+                      const Icon = iconMap[item.icon] || Ticket;
+                      return (
+                        <div key={item.category} className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            </div>
+                            <span className="text-xs sm:text-sm text-foreground truncate">{item.category}</span>
                           </div>
-                          <span className="text-xs sm:text-sm text-foreground truncate">{item.category}</span>
+                          <span className="font-semibold text-foreground text-sm sm:text-base shrink-0">
+                            RM {item.amount}
+                          </span>
                         </div>
-                        <span className="font-semibold text-foreground text-sm sm:text-base shrink-0">
-                          RM {item.amount}
-                        </span>
-                      </div>
-                    );
-                  })}
-                  <div className="pt-2 sm:pt-3 border-t border-border/50 flex items-center justify-between">
-                    <span className="font-semibold text-foreground text-sm sm:text-base">Total per person</span>
-                    <span className="text-base sm:text-lg font-bold text-primary">
-                      RM {trip.price}
-                    </span>
+                      );
+                    })}
+                    <div className="pt-2 sm:pt-3 border-t border-border/50 flex items-center justify-between">
+                      <span className="font-semibold text-foreground text-sm sm:text-base">Total per person</span>
+                      <span className="text-base sm:text-lg font-bold text-primary">
+                        RM {tripData.price}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              )}
+
+              {/* No budget set message */}
+              {tripData.budgetBreakdown.length === 0 && isPublishedTrip && (
+                <Card className="p-3 sm:p-4 border-border/50">
+                  <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Budget</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Budget will be discussed in the group
+                  </p>
+                </Card>
+              )}
             </div>
           )}
 
           {activeTab === "itinerary" && (
-            <Card className="p-4 border-border/50">
-              <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm sm:text-base">
-                Itinerary will be shared after joining
-              </p>
-            </Card>
+            <div className="space-y-3 sm:space-y-4">
+              {/* Notes-based itinerary */}
+              {tripData.itineraryType === 'notes' && tripData.simpleNotes && (
+                <Card className="p-3 sm:p-4 border-border/50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Trip Notes</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {tripData.simpleNotes}
+                  </p>
+                </Card>
+              )}
+
+              {/* Day-by-day itinerary */}
+              {tripData.itineraryType === 'dayByDay' && tripData.dayByDayPlan.length > 0 && (
+                <div className="space-y-3">
+                  {tripData.dayByDayPlan.map((day, index) => (
+                    <Card key={index} className="p-3 sm:p-4 border-border/50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-bold text-primary">{day.day}</span>
+                        </div>
+                        <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                          Day {day.day}
+                        </h3>
+                      </div>
+                      {day.activities.length > 0 ? (
+                        <ul className="space-y-1.5 sm:space-y-2 pl-10">
+                          {day.activities.map((activity, actIndex) => (
+                            <li key={actIndex} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                              <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
+                              {activity}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs sm:text-sm text-muted-foreground pl-10">
+                          No activities planned yet
+                        </p>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {(!isPublishedTrip || tripData.itineraryType === 'skip' || 
+                (tripData.itineraryType === 'notes' && !tripData.simpleNotes) ||
+                (tripData.itineraryType === 'dayByDay' && tripData.dayByDayPlan.length === 0)) && (
+                <Card className="p-4 border-border/50">
+                  <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm sm:text-base">
+                    {isPublishedTrip 
+                      ? "Itinerary will be finalized in the group chat"
+                      : "Itinerary will be shared after joining"}
+                  </p>
+                </Card>
+              )}
+            </div>
           )}
 
           {activeTab === "members" && (
