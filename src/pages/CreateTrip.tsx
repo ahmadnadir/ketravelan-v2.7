@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -28,7 +28,7 @@ import { Card } from "@/components/ui/card";
 import { PillChip } from "@/components/shared/PillChip";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { useDraftTrip, getDefaultDraft } from "@/hooks/useDraftTrip";
+import { useDraftTrip, getDefaultDraft, TripDraft } from "@/hooks/useDraftTrip";
 import { DestinationSearch } from "@/components/create-trip/DestinationSearch";
 import { RouteBuilder } from "@/components/create-trip/RouteBuilder";
 import { BudgetSection } from "@/components/create-trip/BudgetSection";
@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { savePublishedTrip, PublishedTrip } from "@/lib/publishedTrips";
 
 const steps = [
   { id: 1, title: "Visibility" },
@@ -65,6 +66,8 @@ export default function CreateTrip() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [publishedTripId, setPublishedTripId] = useState<string | null>(null);
   const [showDraftBanner, setShowDraftBanner] = useState(false);
+  // Store draft snapshot for share modal (since we clear draft before showing modal)
+  const draftSnapshotRef = useRef<TripDraft | null>(null);
 
   // Check for existing draft on mount
   useEffect(() => {
@@ -98,6 +101,36 @@ export default function CreateTrip() {
     const tripId = `trip-${Date.now()}`;
     setPublishedTripId(tripId);
     
+    // Store draft snapshot before clearing (for share modal)
+    draftSnapshotRef.current = { ...draft };
+    
+    // Build and save published trip
+    const publishedTrip: PublishedTrip = {
+      id: tripId,
+      title: draft.title,
+      visibility: draft.visibility,
+      primaryDestination: draft.primaryDestination,
+      additionalStops: draft.additionalStops,
+      dateType: draft.dateType,
+      startDate: draft.startDate,
+      endDate: draft.endDate,
+      travelStyles: draft.travelStyles,
+      groupSizeType: draft.groupSizeType,
+      groupSize: draft.groupSize,
+      coverImage: draft.coverImage,
+      budgetType: draft.budgetType,
+      roughBudgetTotal: draft.roughBudgetTotal,
+      roughBudgetCategories: draft.roughBudgetCategories,
+      detailedBudget: draft.detailedBudget,
+      itineraryType: draft.itineraryType,
+      simpleNotes: draft.simpleNotes,
+      dayByDayPlan: draft.dayByDayPlan,
+      expectations: draft.expectations,
+      createdAt: Date.now(),
+    };
+    
+    savePublishedTrip(publishedTrip);
+    
     // Clear draft
     clearDraft();
     
@@ -130,8 +163,8 @@ export default function CreateTrip() {
   const { essentials, optionalCount } = getCompletionStats();
 
   return (
-    <AppLayout hideBottomNav>
-      <div className="py-4 sm:py-6 pb-28">
+    <AppLayout>
+      <div className="py-4 sm:py-6 pb-40">
         {/* Draft Banner */}
         {showDraftBanner && (
           <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between">
@@ -757,8 +790,8 @@ export default function CreateTrip() {
         )}
       </div>
 
-      {/* Sticky Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 pb-safe z-50">
+      {/* Sticky Bottom CTA - positioned above BottomNav */}
+      <div className="fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 z-40">
         <div className="max-w-lg mx-auto flex gap-3">
           {currentStep > 1 && (
             <Button
@@ -840,10 +873,10 @@ export default function CreateTrip() {
               <Button
                 className="flex-1 rounded-xl gap-2"
                 onClick={() => {
-                  // Share API or fallback
-                  if (navigator.share) {
+                  // Share API or fallback - use snapshot since draft is cleared
+                  if (navigator.share && draftSnapshotRef.current) {
                     navigator.share({
-                      title: draft.title,
+                      title: draftSnapshotRef.current.title,
                       url: `https://ketravelan.app/trip/${publishedTripId}`,
                     });
                   }
