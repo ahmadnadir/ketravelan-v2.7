@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -8,89 +8,181 @@ import {
   MapPin,
   Calendar,
   Users,
-  DollarSign,
   Image,
   Check,
+  Sparkles,
+  Share2,
+  Copy,
+  CheckCircle2,
+  Circle,
+  Pencil,
+  Wallet,
+  Route,
+  ClipboardList,
+  X,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { PillChip } from "@/components/shared/PillChip";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { useDraftTrip, getDefaultDraft } from "@/hooks/useDraftTrip";
+import { DestinationSearch } from "@/components/create-trip/DestinationSearch";
+import { RouteBuilder } from "@/components/create-trip/RouteBuilder";
+import { BudgetSection } from "@/components/create-trip/BudgetSection";
+import { ItinerarySection } from "@/components/create-trip/ItinerarySection";
+import { RequirementsSection } from "@/components/create-trip/RequirementsSection";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 
 const steps = [
   { id: 1, title: "Visibility" },
   { id: 2, title: "Basics" },
-  { id: 3, title: "Details" },
+  { id: 3, title: "Plan" },
   { id: 4, title: "Review" },
 ];
 
-const categories = [
-  "Nature & Outdoor",
-  "City & Urban",
-  "Cross Border",
-  "Beach",
-  "Culture",
-  "Food",
-  "Adventure",
+const travelStyles = [
+  { id: "outdoor", label: "Outdoor & Adventure", icon: "🏔️" },
+  { id: "diving", label: "Diving & Water", icon: "🤿" },
+  { id: "city", label: "City & Urban", icon: "🏙️" },
+  { id: "festival", label: "Festival / Music", icon: "🎉" },
+  { id: "crossborder", label: "Cross-Border", icon: "🌍" },
+  { id: "umrah", label: "Umrah DIY", icon: "🕋" },
 ];
 
 export default function CreateTrip() {
   const navigate = useNavigate();
+  const { draft, updateDraft, clearDraft, hasDraft, lastSaved, resetDraft } = useDraftTrip();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    visibility: "public" as "public" | "private",
-    title: "",
-    destination: "",
-    startDate: "",
-    endDate: "",
-    slots: 8,
-    budgetMin: 500,
-    budgetMax: 1500,
-    tags: [] as string[],
-    description: "",
-    requirements: "",
-    images: [] as string[],
-  });
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [publishedTripId, setPublishedTripId] = useState<string | null>(null);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
 
-  const updateField = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const toggleTag = (tag: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.includes(tag)
-        ? prev.tags.filter((t) => t !== tag)
-        : [...prev.tags, tag],
-    }));
-  };
+  // Check for existing draft on mount
+  useEffect(() => {
+    if (hasDraft && draft.title) {
+      setShowDraftBanner(true);
+    }
+  }, [hasDraft, draft.title]);
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
-  const handlePublish = () => {
-    console.log("Publishing trip:", formData);
-    navigate("/my-trips");
+  const canProceedStep2 = () => {
+    return (
+      draft.title.trim() !== "" &&
+      draft.primaryDestination !== "" &&
+      draft.travelStyles.length > 0
+    );
   };
+
+  const toggleTravelStyle = (styleId: string) => {
+    const current = draft.travelStyles;
+    if (current.includes(styleId)) {
+      updateDraft("travelStyles", current.filter((s) => s !== styleId));
+    } else {
+      updateDraft("travelStyles", [...current, styleId]);
+    }
+  };
+
+  const handlePublish = () => {
+    // Generate trip ID
+    const tripId = `trip-${Date.now()}`;
+    setPublishedTripId(tripId);
+    
+    // Clear draft
+    clearDraft();
+    
+    // Show success toast
+    toast({
+      title: "Trip published! 🎉",
+      description: "Your trip is now live and ready for people to join.",
+    });
+    
+    // Show share modal
+    setShowShareModal(true);
+  };
+
+  const handleStartFresh = () => {
+    resetDraft();
+    setShowDraftBanner(false);
+    setCurrentStep(1);
+  };
+
+  const getCompletionStats = () => {
+    const essentials = draft.title && draft.primaryDestination && draft.travelStyles.length > 0;
+    const optionalCount = [
+      draft.budgetType !== "skip",
+      draft.itineraryType !== "skip",
+      draft.expectations.length > 0,
+    ].filter(Boolean).length;
+    return { essentials, optionalCount };
+  };
+
+  const { essentials, optionalCount } = getCompletionStats();
 
   return (
     <AppLayout hideBottomNav>
-      <div className="py-4 sm:py-6 space-y-4 sm:space-y-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create a Trip</h1>
+      <div className="py-4 sm:py-6 pb-28">
+        {/* Draft Banner */}
+        {showDraftBanner && (
+          <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm text-foreground">
+                Resume your draft: <strong>{draft.title}</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleStartFresh}
+                className="text-xs h-7"
+              >
+                Start Fresh
+              </Button>
+              <button
+                onClick={() => setShowDraftBanner(false)}
+                className="p-1 hover:bg-secondary rounded"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Header with draft indicator */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create a Trip</h1>
+          {lastSaved && (
+            <span className="text-xs text-muted-foreground">
+              Draft saved
+            </span>
+          )}
+        </div>
 
         {/* Progress */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
-              <div
+              <button
+                onClick={() => step.id < currentStep && setCurrentStep(step.id)}
+                disabled={step.id > currentStep}
                 className={cn(
                   "h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-colors",
                   currentStep >= step.id
                     ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-muted-foreground"
+                    : "bg-secondary text-muted-foreground",
+                  step.id < currentStep && "cursor-pointer hover:bg-primary/80"
                 )}
               >
                 {currentStep > step.id ? (
@@ -98,7 +190,7 @@ export default function CreateTrip() {
                 ) : (
                   step.id
                 )}
-              </div>
+              </button>
               {index < steps.length - 1 && (
                 <div
                   className={cn(
@@ -113,52 +205,111 @@ export default function CreateTrip() {
 
         {/* Step 1: Visibility */}
         {currentStep === 1 && (
-          <div className="space-y-3 sm:space-y-4">
-            <h2 className="text-base sm:text-lg font-semibold text-foreground">
-              Who can see this trip?
-            </h2>
-            <div className="grid gap-2 sm:gap-3">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">
+                Who can see this trip?
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                You can change this later
+              </p>
+            </div>
+            
+            <div className="grid gap-3">
               <Card
                 className={cn(
-                  "p-3 sm:p-4 cursor-pointer transition-all border-2",
-                  formData.visibility === "public"
-                    ? "border-primary bg-accent/30"
-                    : "border-border/50 hover:border-primary/50"
+                  "p-4 cursor-pointer transition-all border-2",
+                  draft.visibility === "public"
+                    ? "border-primary bg-primary/5"
+                    : "border-border/50 hover:border-primary/30"
                 )}
-                onClick={() => updateField("visibility", "public")}
+                onClick={() => updateDraft("visibility", "public")}
               >
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-primary/10 shrink-0">
-                    <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    "p-3 rounded-xl shrink-0",
+                    draft.visibility === "public" ? "bg-primary/10" : "bg-secondary"
+                  )}>
+                    <Globe className={cn(
+                      "h-6 w-6",
+                      draft.visibility === "public" ? "text-primary" : "text-muted-foreground"
+                    )} />
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="font-medium text-foreground text-sm sm:text-base">Public</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                      Anyone can discover and request to join your trip
-                    </p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground">Public Trip</h3>
+                    <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">•</span>
+                        Open to everyone
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">•</span>
+                        Discoverable in feed
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">•</span>
+                        Anyone can request to join
+                      </li>
+                    </ul>
+                  </div>
+                  <div className={cn(
+                    "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0",
+                    draft.visibility === "public"
+                      ? "border-primary bg-primary"
+                      : "border-muted-foreground/30"
+                  )}>
+                    {draft.visibility === "public" && (
+                      <Check className="h-3 w-3 text-primary-foreground" />
+                    )}
                   </div>
                 </div>
               </Card>
+
               <Card
                 className={cn(
-                  "p-3 sm:p-4 cursor-pointer transition-all border-2",
-                  formData.visibility === "private"
-                    ? "border-primary bg-accent/30"
-                    : "border-border/50 hover:border-primary/50"
+                  "p-4 cursor-pointer transition-all border-2",
+                  draft.visibility === "private"
+                    ? "border-primary bg-primary/5"
+                    : "border-border/50 hover:border-primary/30"
                 )}
-                onClick={() => updateField("visibility", "private")}
+                onClick={() => updateDraft("visibility", "private")}
               >
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-secondary shrink-0">
-                    <Lock className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    "p-3 rounded-xl shrink-0",
+                    draft.visibility === "private" ? "bg-primary/10" : "bg-secondary"
+                  )}>
+                    <Lock className={cn(
+                      "h-6 w-6",
+                      draft.visibility === "private" ? "text-primary" : "text-muted-foreground"
+                    )} />
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="font-medium text-foreground text-sm sm:text-base">
-                      Closed Friends
-                    </h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                      Only people with the link can join
-                    </p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground">Friends / Private</h3>
+                    <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">•</span>
+                        Invite-only
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">•</span>
+                        Hidden from discovery
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">•</span>
+                        Shareable private link
+                      </li>
+                    </ul>
+                  </div>
+                  <div className={cn(
+                    "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0",
+                    draft.visibility === "private"
+                      ? "border-primary bg-primary"
+                      : "border-muted-foreground/30"
+                  )}>
+                    {draft.visibility === "private" && (
+                      <Check className="h-3 w-3 text-primary-foreground" />
+                    )}
                   </div>
                 </div>
               </Card>
@@ -166,248 +317,545 @@ export default function CreateTrip() {
           </div>
         )}
 
-        {/* Step 2: Basics */}
+        {/* Step 2: Trip Basics */}
         {currentStep === 2 && (
-          <div className="space-y-4 sm:space-y-5">
-            <h2 className="text-base sm:text-lg font-semibold text-foreground">
-              Trip Details
-            </h2>
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">
+                Trip Basics
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Just the essentials so others understand your trip
+              </p>
+            </div>
 
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="text-xs sm:text-sm font-medium text-foreground">
-                Trip Title
+            {/* Trip Title */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Trip Title <span className="text-destructive">*</span>
               </label>
               <Input
-                placeholder="e.g., Langkawi Island Adventure"
-                value={formData.title}
-                onChange={(e) => updateField("title", e.target.value)}
-                className="rounded-xl text-sm sm:text-base"
+                placeholder="Give your trip a name..."
+                value={draft.title}
+                onChange={(e) => updateDraft("title", e.target.value)}
+                className="rounded-xl text-sm"
               />
             </div>
 
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="text-xs sm:text-sm font-medium text-foreground">
-                Destination
+            {/* Primary Destination */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1">
+                <MapPin className="h-4 w-4 text-primary" />
+                Primary Destination <span className="text-destructive">*</span>
               </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Where are you going?"
-                  value={formData.destination}
-                  onChange={(e) => updateField("destination", e.target.value)}
-                  className="rounded-xl pl-10 text-sm sm:text-base"
+              <DestinationSearch
+                value={draft.primaryDestination}
+                onChange={(val) => updateDraft("primaryDestination", val)}
+                helperText="This is the main place your trip is centered around."
+              />
+            </div>
+
+            {/* Additional Stops */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1">
+                <Route className="h-4 w-4 text-muted-foreground" />
+                Route / Additional Stops
+              </label>
+              <RouteBuilder
+                stops={draft.additionalStops}
+                onChange={(stops) => updateDraft("additionalStops", stops)}
+                primaryDestination={draft.primaryDestination}
+              />
+            </div>
+
+            {/* Dates */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                Dates
+              </label>
+              <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
+                <span className="text-sm text-foreground">
+                  {draft.dateType === "flexible" ? "Flexible dates" : "Set exact dates"}
+                </span>
+                <Switch
+                  checked={draft.dateType === "exact"}
+                  onCheckedChange={(checked) =>
+                    updateDraft("dateType", checked ? "exact" : "flexible")
+                  }
                 />
               </div>
+              {draft.dateType === "exact" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-muted-foreground">Start</label>
+                    <Input
+                      type="date"
+                      value={draft.startDate}
+                      onChange={(e) => updateDraft("startDate", e.target.value)}
+                      className="rounded-xl text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-muted-foreground">End</label>
+                    <Input
+                      type="date"
+                      value={draft.endDate}
+                      onChange={(e) => updateDraft("endDate", e.target.value)}
+                      className="rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5 sm:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-foreground">
-                  Start Date
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) => updateField("startDate", e.target.value)}
-                    className="rounded-xl pl-10 text-sm sm:text-base"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-foreground">
-                  End Date
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => updateField("endDate", e.target.value)}
-                    className="rounded-xl pl-10 text-sm sm:text-base"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5 sm:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-foreground">
-                  Max Slots
-                </label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="number"
-                    value={formData.slots}
-                    onChange={(e) =>
-                      updateField("slots", parseInt(e.target.value))
-                    }
-                    className="rounded-xl pl-10 text-sm sm:text-base"
-                    min={2}
-                    max={20}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-foreground">
-                  Budget (RM)
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="e.g., 500-1500"
-                    className="rounded-xl pl-10 text-sm sm:text-base"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="text-xs sm:text-sm font-medium text-foreground">
-                Categories
+            {/* Travel Style */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground">
+                Travel Style <span className="text-destructive">*</span>
               </label>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {categories.map((tag) => (
-                  <PillChip
-                    key={tag}
-                    label={tag}
-                    selected={formData.tags.includes(tag)}
-                    onClick={() => toggleTag(tag)}
-                  />
+              <p className="text-xs text-muted-foreground -mt-1">
+                Helps others understand the vibe. Select at least one.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {travelStyles.map((style) => (
+                  <button
+                    key={style.id}
+                    type="button"
+                    onClick={() => toggleTravelStyle(style.id)}
+                    className={cn(
+                      "px-3 py-2 text-sm rounded-xl border transition-all flex items-center gap-2",
+                      draft.travelStyles.includes(style.id)
+                        ? "bg-primary/10 border-primary text-primary font-medium"
+                        : "bg-secondary/50 border-border/50 text-foreground hover:border-primary/30"
+                    )}
+                  >
+                    <span>{style.icon}</span>
+                    {style.label}
+                  </button>
                 ))}
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Step 3: Details */}
-        {currentStep === 3 && (
-          <div className="space-y-4 sm:space-y-5">
-            <h2 className="text-base sm:text-lg font-semibold text-foreground">
-              Additional Details
-            </h2>
-
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="text-xs sm:text-sm font-medium text-foreground">
-                Description
+            {/* Group Size */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                Group Size
               </label>
-              <Textarea
-                placeholder="Tell travelers what to expect..."
-                value={formData.description}
-                onChange={(e) => updateField("description", e.target.value)}
-                className="rounded-xl min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
-              />
+              <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
+                <span className="text-sm text-foreground">
+                  {draft.groupSizeType === "later" ? "Decide later" : `${draft.groupSize} people max`}
+                </span>
+                <Switch
+                  checked={draft.groupSizeType === "set"}
+                  onCheckedChange={(checked) =>
+                    updateDraft("groupSizeType", checked ? "set" : "later")
+                  }
+                />
+              </div>
+              {draft.groupSizeType === "set" && (
+                <div className="flex items-center gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateDraft("groupSize", Math.max(2, draft.groupSize - 1))}
+                    className="rounded-xl h-10 w-10 p-0"
+                  >
+                    -
+                  </Button>
+                  <span className="text-2xl font-bold text-foreground min-w-[3ch] text-center">
+                    {draft.groupSize}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateDraft("groupSize", Math.min(50, draft.groupSize + 1))}
+                    className="rounded-xl h-10 w-10 p-0"
+                  >
+                    +
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="text-xs sm:text-sm font-medium text-foreground">
-                Requirements
+            {/* Cover Image */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1">
+                <Image className="h-4 w-4 text-muted-foreground" />
+                Cover Image
               </label>
-              <Textarea
-                placeholder="Any specific requirements? (one per line)"
-                value={formData.requirements}
-                onChange={(e) => updateField("requirements", e.target.value)}
-                className="rounded-xl min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
-              />
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="text-xs sm:text-sm font-medium text-foreground">
-                Cover Images
-              </label>
-              <Card className="p-6 sm:p-8 border-dashed border-2 border-border/50 hover:border-primary/50 transition-colors cursor-pointer">
+              <Card className="p-6 border-dashed border-2 border-border/50 hover:border-primary/30 transition-colors cursor-pointer">
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="p-2 sm:p-3 rounded-xl bg-secondary">
-                    <Image className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+                  <div className="p-3 rounded-xl bg-secondary">
+                    <Image className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Click to upload images
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">
-                    PNG, JPG up to 10MB
+                  <p className="text-sm text-muted-foreground">
+                    Click to upload (optional)
                   </p>
                 </div>
               </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Plan (Optional) */}
+        {currentStep === 3 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">
+                Add Details
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                All optional — you can refine later in the group chat
+              </p>
+            </div>
+
+            {/* Budget */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Wallet className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">Budget</h3>
+              </div>
+              <BudgetSection
+                budgetType={draft.budgetType}
+                onBudgetTypeChange={(type) => updateDraft("budgetType", type)}
+                roughBudgetTotal={draft.roughBudgetTotal}
+                onRoughBudgetTotalChange={(val) => updateDraft("roughBudgetTotal", val)}
+                roughBudgetCategories={draft.roughBudgetCategories}
+                onRoughBudgetCategoriesChange={(cats) => updateDraft("roughBudgetCategories", cats)}
+                detailedBudget={draft.detailedBudget}
+                onDetailedBudgetChange={(budget) => updateDraft("detailedBudget", budget)}
+              />
+            </div>
+
+            {/* Itinerary */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">Itinerary</h3>
+              </div>
+              <ItinerarySection
+                itineraryType={draft.itineraryType}
+                onItineraryTypeChange={(type) => updateDraft("itineraryType", type)}
+                simpleNotes={draft.simpleNotes}
+                onSimpleNotesChange={(notes) => updateDraft("simpleNotes", notes)}
+                dayByDayPlan={draft.dayByDayPlan}
+                onDayByDayPlanChange={(plan) => updateDraft("dayByDayPlan", plan)}
+                startDate={draft.startDate}
+                endDate={draft.endDate}
+              />
+            </div>
+
+            {/* Requirements / What to Expect */}
+            <div className="pt-2">
+              <RequirementsSection
+                expectations={draft.expectations}
+                onChange={(exps) => updateDraft("expectations", exps)}
+              />
             </div>
           </div>
         )}
 
         {/* Step 4: Review */}
         {currentStep === 4 && (
-          <div className="space-y-4 sm:space-y-5">
-            <h2 className="text-base sm:text-lg font-semibold text-foreground">
-              Review Your Trip
-            </h2>
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">
+                Review Your Trip
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Make sure everything looks good before publishing
+              </p>
+            </div>
 
-            <Card className="p-3 sm:p-4 border-border/50 space-y-3 sm:space-y-4">
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Title</p>
-                <p className="font-medium text-foreground text-sm sm:text-base">
-                  {formData.title || "Untitled Trip"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Destination</p>
-                <p className="font-medium text-foreground text-sm sm:text-base">
-                  {formData.destination || "Not specified"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Dates</p>
-                <p className="font-medium text-foreground text-sm sm:text-base">
-                  {formData.startDate && formData.endDate
-                    ? `${formData.startDate} - ${formData.endDate}`
-                    : "Not specified"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Visibility</p>
-                <p className="font-medium text-foreground capitalize text-sm sm:text-base">
-                  {formData.visibility}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Categories</p>
-                <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-1">
-                  {formData.tags.length > 0 ? (
-                    formData.tags.map((tag) => (
-                      <PillChip key={tag} label={tag} size="sm" />
-                    ))
-                  ) : (
-                    <span className="text-muted-foreground text-sm">None selected</span>
-                  )}
+            {/* Trip Preview Card */}
+            <Card className="overflow-hidden border-border/50">
+              {/* Gradient header */}
+              <div className="h-24 bg-gradient-to-br from-primary/20 via-primary/10 to-accent relative">
+                <div className="absolute top-3 left-3">
+                  <span className={cn(
+                    "px-2 py-1 text-xs font-medium rounded-full",
+                    draft.visibility === "public"
+                      ? "bg-primary/20 text-primary"
+                      : "bg-secondary text-muted-foreground"
+                  )}>
+                    {draft.visibility === "public" ? "🌐 Public" : "🔒 Private"}
+                  </span>
                 </div>
+                <button
+                  onClick={() => setCurrentStep(2)}
+                  className="absolute top-3 right-3 p-1.5 bg-card/80 backdrop-blur-sm rounded-full hover:bg-card transition-colors"
+                >
+                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {/* Title & Destination */}
+                <div>
+                  <h3 className="font-bold text-lg text-foreground">
+                    {draft.title || "Untitled Trip"}
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    {draft.primaryDestination || "No destination set"}
+                    {draft.additionalStops.length > 0 && (
+                      <span className="text-xs">
+                        → +{draft.additionalStops.length} stop{draft.additionalStops.length > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Route summary */}
+                {draft.additionalStops.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap text-xs">
+                    <span className="px-2 py-1 bg-primary/10 text-primary rounded-full">
+                      {draft.primaryDestination}
+                    </span>
+                    {draft.additionalStops.map((stop, i) => (
+                      <span key={i} className="flex items-center gap-1">
+                        <span className="text-muted-foreground">→</span>
+                        <span className="px-2 py-1 bg-secondary text-foreground rounded-full">
+                          {stop}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Info grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-secondary/50 rounded-xl">
+                    <p className="text-xs text-muted-foreground">Dates</p>
+                    <p className="text-sm font-medium text-foreground mt-0.5">
+                      {draft.dateType === "flexible"
+                        ? "Flexible"
+                        : draft.startDate && draft.endDate
+                        ? `${new Date(draft.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${new Date(draft.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                        : "Not set"}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-secondary/50 rounded-xl">
+                    <p className="text-xs text-muted-foreground">Group Size</p>
+                    <p className="text-sm font-medium text-foreground mt-0.5">
+                      {draft.groupSizeType === "later"
+                        ? "Decide later"
+                        : `Up to ${draft.groupSize}`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Travel Styles */}
+                {draft.travelStyles.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {draft.travelStyles.map((styleId) => {
+                      const style = travelStyles.find((s) => s.id === styleId);
+                      return style ? (
+                        <span
+                          key={styleId}
+                          className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
+                        >
+                          {style.icon} {style.label}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+
+                {/* Budget summary */}
+                {draft.budgetType !== "skip" && (
+                  <div className="p-3 bg-secondary/50 rounded-xl">
+                    <p className="text-xs text-muted-foreground">Budget</p>
+                    <p className="text-sm font-medium text-foreground mt-0.5">
+                      {draft.budgetType === "rough"
+                        ? draft.roughBudgetTotal
+                          ? `~RM ${draft.roughBudgetTotal.toLocaleString()}`
+                          : "Rough estimate"
+                        : `RM ${Object.values(draft.detailedBudget).reduce((a, b) => a + b, 0).toLocaleString()}`}
+                    </p>
+                  </div>
+                )}
+
+                {/* Expectations */}
+                {draft.expectations.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">What to Expect</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {draft.expectations.map((exp, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-1 bg-secondary text-foreground text-xs rounded-full"
+                        >
+                          {exp}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
+
+            {/* Readiness Indicators */}
+            <Card className="p-4 border-border/50 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">Readiness</h4>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  {essentials ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Circle className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span className="text-sm text-foreground">Essentials complete</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    ⏳ {optionalCount}/3 optional details added
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
+                You can always add more details later in the Trip Hub
+              </p>
+            </Card>
+
+            {/* Edit shortcuts */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentStep(1)}
+                className="gap-1.5 rounded-xl"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Visibility
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentStep(2)}
+                className="gap-1.5 rounded-xl"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Basics
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentStep(3)}
+                className="gap-1.5 rounded-xl"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Plan
+              </Button>
+            </div>
           </div>
         )}
+      </div>
 
-        {/* Navigation */}
-        <div className="flex gap-2 sm:gap-3 pt-2 sm:pt-4">
+      {/* Sticky Bottom CTA */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 pb-safe z-50">
+        <div className="max-w-lg mx-auto flex gap-3">
           {currentStep > 1 && (
             <Button
               variant="outline"
               onClick={prevStep}
-              className="flex-1 rounded-xl text-sm sm:text-base"
+              className="rounded-xl"
             >
-              <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
+              <ChevronLeft className="h-4 w-4 mr-1" />
               Back
             </Button>
           )}
           {currentStep < 4 ? (
-            <Button onClick={nextStep} className="flex-1 rounded-xl text-sm sm:text-base">
+            <Button
+              onClick={nextStep}
+              disabled={currentStep === 2 && !canProceedStep2()}
+              className="flex-1 rounded-xl"
+            >
               Next
-              <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={handlePublish} className="flex-1 rounded-xl text-sm sm:text-base">
+            <Button
+              onClick={handlePublish}
+              disabled={!essentials}
+              className="flex-1 rounded-xl"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
               Publish Trip
             </Button>
           )}
         </div>
       </div>
+
+      {/* Share Modal */}
+      <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              <span className="text-2xl">🎉</span>
+              <br />
+              Your trip is live!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <p className="text-center text-sm text-muted-foreground">
+              Share it with friends or let others discover it
+            </p>
+            
+            <div className="flex items-center gap-2 p-3 bg-secondary rounded-xl">
+              <input
+                type="text"
+                readOnly
+                value={`https://ketravelan.app/trip/${publishedTripId}`}
+                className="flex-1 bg-transparent text-sm text-foreground outline-none"
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  navigator.clipboard.writeText(`https://ketravelan.app/trip/${publishedTripId}`);
+                  toast({ title: "Link copied!" });
+                }}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl"
+                onClick={() => {
+                  setShowShareModal(false);
+                  navigate(`/trip/${publishedTripId}`);
+                }}
+              >
+                View Trip
+              </Button>
+              <Button
+                className="flex-1 rounded-xl gap-2"
+                onClick={() => {
+                  // Share API or fallback
+                  if (navigator.share) {
+                    navigator.share({
+                      title: draft.title,
+                      url: `https://ketravelan.app/trip/${publishedTripId}`,
+                    });
+                  }
+                }}
+              >
+                <Share2 className="h-4 w-4" />
+                Share
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

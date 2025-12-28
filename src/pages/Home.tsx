@@ -95,7 +95,7 @@ export default function Home() {
               <TripCard
                 key={trip.id}
                 {...trip}
-                className="min-w-[260px] sm:min-w-[300px] shrink-0 snap-start"
+                className="w-[280px] sm:w-[320px] shrink-0 snap-start"
               />
             ))}
           </div>
