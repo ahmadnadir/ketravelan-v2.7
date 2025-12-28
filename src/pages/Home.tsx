@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { TripCard } from "@/components/shared/TripCard";
 import { Button } from "@/components/ui/button";
+import { InstallBanner } from "@/components/pwa/InstallBanner";
 import { mockTrips } from "@/data/mockData";
 
 const heroImages = [
@@ -20,6 +21,7 @@ export default function Home() {
 
   return (
     <AppLayout>
+      <InstallBanner />
       <div className="py-4 sm:py-6 space-y-6 sm:space-y-8">
         {/* Hero Carousel */}
         <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-2xl sm:rounded-3xl overflow-hidden">
