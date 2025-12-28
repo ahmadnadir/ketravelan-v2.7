@@ -16,9 +16,9 @@ export function TripChat() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-130px)]">
+    <div className="flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-130px)]">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
         {mockMessages.map((msg) => {
           const isOwn = msg.senderId === currentUserId;
           const isSystem = msg.type === "system";
@@ -26,7 +26,7 @@ export function TripChat() {
           if (isSystem) {
             return (
               <div key={msg.id} className="flex justify-center">
-                <span className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">
+                <span className="text-[10px] sm:text-xs text-muted-foreground bg-secondary px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                   {msg.content}
                 </span>
               </div>
@@ -36,26 +36,26 @@ export function TripChat() {
           return (
             <div
               key={msg.id}
-              className={cn("flex flex-col gap-1", isOwn && "items-end")}
+              className={cn("flex flex-col gap-0.5 sm:gap-1", isOwn && "items-end")}
             >
               {!isOwn && (
-                <span className="text-xs text-muted-foreground ml-3">
+                <span className="text-[10px] sm:text-xs text-muted-foreground ml-2 sm:ml-3">
                   {msg.senderName}
                 </span>
               )}
               <div
                 className={cn(
-                  "max-w-[80%] px-4 py-2.5 rounded-2xl",
+                  "max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl",
                   isOwn
                     ? "bg-primary text-primary-foreground rounded-br-sm"
                     : "bg-secondary text-secondary-foreground rounded-bl-sm"
                 )}
               >
-                <p className="text-sm">{msg.content}</p>
+                <p className="text-xs sm:text-sm">{msg.content}</p>
               </div>
               <span className={cn(
-                "text-xs text-muted-foreground",
-                isOwn ? "mr-1" : "ml-3"
+                "text-[10px] sm:text-xs text-muted-foreground",
+                isOwn ? "mr-1" : "ml-2 sm:ml-3"
               )}>
                 {msg.timestamp}
               </span>
@@ -65,24 +65,24 @@ export function TripChat() {
       </div>
 
       {/* Composer */}
-      <div className="sticky bottom-0 p-4 glass border-t border-border/50">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="shrink-0">
-            <Paperclip className="h-5 w-5 text-muted-foreground" />
+      <div className="sticky bottom-0 p-3 sm:p-4 glass border-t border-border/50 safe-bottom">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
+            <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           </Button>
-          <Button variant="ghost" size="icon" className="shrink-0">
-            <Image className="h-5 w-5 text-muted-foreground" />
+          <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
+            <Image className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           </Button>
           <Input
             placeholder="Type a message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            className="flex-1 rounded-full bg-secondary border-0"
+            className="flex-1 rounded-full bg-secondary border-0 h-9 sm:h-10 text-sm sm:text-base"
           />
           <Button
             size="icon"
-            className="shrink-0 rounded-full"
+            className="shrink-0 rounded-full h-9 w-9 sm:h-10 sm:w-10"
             onClick={handleSend}
             disabled={!message.trim()}
           >

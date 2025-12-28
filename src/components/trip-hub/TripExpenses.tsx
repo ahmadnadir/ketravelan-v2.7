@@ -25,21 +25,21 @@ export function TripExpenses() {
   const owedToYou = 85;
 
   return (
-    <div className="px-4 py-4 pb-8 space-y-6">
+    <div className="px-3 sm:px-4 py-3 sm:py-4 pb-8 space-y-4 sm:space-y-6">
       {/* Actions */}
-      <div className="flex gap-3">
-        <Button className="flex-1 rounded-xl">
-          <Plus className="h-4 w-4 mr-2" />
+      <div className="flex gap-2 sm:gap-3">
+        <Button className="flex-1 rounded-xl text-sm sm:text-base">
+          <Plus className="h-4 w-4 mr-1.5 sm:mr-2" />
           Add Expense
         </Button>
-        <Button variant="outline" className="rounded-xl">
-          <MessageCircle className="h-4 w-4 mr-2" />
-          Chat
+        <Button variant="outline" className="rounded-xl text-sm sm:text-base">
+          <MessageCircle className="h-4 w-4 mr-1.5 sm:mr-2" />
+          <span className="hidden sm:inline">Chat</span>
         </Button>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <StatCard
           title="Total Trip Cost"
           value={`RM ${totalCost.toLocaleString()}`}
@@ -79,26 +79,26 @@ export function TripExpenses() {
 
       {/* Breakdown Tab */}
       {subTab === "breakdown" && (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Per Person */}
-          <Card className="p-4 border-border/50">
-            <h3 className="font-semibold text-foreground mb-4">Upfront Payment per Person</h3>
-            <p className="text-2xl font-bold text-primary mb-4">
+          <Card className="p-3 sm:p-4 border-border/50">
+            <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Upfront Payment per Person</h3>
+            <p className="text-xl sm:text-2xl font-bold text-primary mb-3 sm:mb-4">
               RM {Math.round(totalCost / mockMembers.length).toLocaleString()}
             </p>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {mockMembers.slice(0, 4).map((member, index) => {
                 const contribution = [850, 680, 450, 730][index] || 500;
                 const percentage = Math.round((contribution / totalCost) * 100);
                 return (
-                  <div key={member.id} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-foreground">{member.name}</span>
-                      <span className="text-muted-foreground">
+                  <div key={member.id} className="space-y-1 sm:space-y-1.5">
+                    <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                      <span className="text-foreground truncate">{member.name}</span>
+                      <span className="text-muted-foreground shrink-0">
                         RM {contribution} ({percentage}%)
                       </span>
                     </div>
-                    <Progress value={percentage} className="h-2" />
+                    <Progress value={percentage} className="h-1.5 sm:h-2" />
                   </div>
                 );
               })}
@@ -106,18 +106,18 @@ export function TripExpenses() {
           </Card>
 
           {/* By Category */}
-          <Card className="p-4 border-border/50">
-            <h3 className="font-semibold text-foreground mb-4">Spending by Category</h3>
-            <div className="space-y-3">
+          <Card className="p-3 sm:p-4 border-border/50">
+            <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Spending by Category</h3>
+            <div className="space-y-2 sm:space-y-3">
               {categoryBreakdown.map((item) => (
-                <div key={item.category} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-foreground">{item.category}</span>
-                    <span className="text-muted-foreground">
+                <div key={item.category} className="space-y-1 sm:space-y-1.5">
+                  <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                    <span className="text-foreground truncate">{item.category}</span>
+                    <span className="text-muted-foreground shrink-0">
                       RM {item.amount} ({item.percentage}%)
                     </span>
                   </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-1.5 sm:h-2 bg-secondary rounded-full overflow-hidden">
                     <div
                       className={`h-full ${item.color} rounded-full`}
                       style={{ width: `${item.percentage}%` }}
@@ -132,7 +132,7 @@ export function TripExpenses() {
 
       {/* Expenses Tab */}
       {subTab === "expenses" && (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {mockExpenses.map((expense) => (
             <ExpenseCard
               key={expense.id}
@@ -147,7 +147,7 @@ export function TripExpenses() {
 
       {/* Settlement Tab */}
       {subTab === "settlement" && (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <SettlementCard
             fromUser={{ name: "Sarah", imageUrl: mockMembers[1].imageUrl }}
             toUser={{ name: "Ahmad", imageUrl: mockMembers[0].imageUrl }}

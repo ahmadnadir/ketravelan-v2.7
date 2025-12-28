@@ -27,17 +27,17 @@ export function StatCard({
   className,
 }: StatCardProps) {
   return (
-    <Card className={cn("p-4 border-border/50", className)}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-xl font-bold text-foreground">{value}</p>
+    <Card className={cn("p-3 sm:p-4 border-border/50", className)}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">{title}</p>
+          <p className="text-base sm:text-xl font-bold text-foreground truncate">{value}</p>
           {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{subtitle}</p>
           )}
         </div>
-        <div className={cn("p-2 rounded-xl", colorStyles[color])}>
-          <Icon className="h-5 w-5" />
+        <div className={cn("p-1.5 sm:p-2 rounded-lg sm:rounded-xl shrink-0", colorStyles[color])}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
       </div>
     </Card>

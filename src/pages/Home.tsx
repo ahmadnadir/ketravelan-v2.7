@@ -20,9 +20,9 @@ export default function Home() {
 
   return (
     <AppLayout>
-      <div className="py-6 space-y-8">
+      <div className="py-4 sm:py-6 space-y-6 sm:space-y-8">
         {/* Hero Carousel */}
-        <div className="relative aspect-[16/10] rounded-3xl overflow-hidden">
+        <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-2xl sm:rounded-3xl overflow-hidden">
           <img
             src={heroImages[currentSlide]}
             alt="Hero"
@@ -33,25 +33,25 @@ export default function Home() {
           {/* Navigation Arrows */}
           <button
             onClick={prevSlide}
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"
+            className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"
           >
-            <ChevronLeft className="h-5 w-5 text-foreground" />
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"
+            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"
           >
-            <ChevronRight className="h-5 w-5 text-foreground" />
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
           </button>
 
           {/* Pagination Dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2">
             {heroImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`h-2 rounded-full transition-all ${
-                  index === currentSlide ? "w-6 bg-white" : "w-2 bg-white/50"
+                className={`h-1.5 sm:h-2 rounded-full transition-all ${
+                  index === currentSlide ? "w-5 sm:w-6 bg-white" : "w-1.5 sm:w-2 bg-white/50"
                 }`}
               />
             ))}
@@ -59,22 +59,22 @@ export default function Home() {
         </div>
 
         {/* Tagline */}
-        <div className="text-center space-y-3">
-          <h1 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            Travel with People Who Get You.
+        <div className="text-center space-y-2 sm:space-y-3 px-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center justify-center gap-2">
+            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            <span>Travel with People Who Get You.</span>
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Chat-first travel. Connect first, travel second. Split costs, vibe together.
           </p>
-          <div className="flex gap-3 justify-center pt-2">
-            <Link to="/explore">
-              <Button size="lg" className="rounded-full">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center pt-2">
+            <Link to="/explore" className="w-full sm:w-auto">
+              <Button size="lg" className="rounded-full w-full sm:w-auto">
                 Explore Trips
               </Button>
             </Link>
-            <Link to="/create">
-              <Button size="lg" variant="outline" className="rounded-full">
+            <Link to="/create" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="rounded-full w-full sm:w-auto">
                 Create a Trip
               </Button>
             </Link>
@@ -82,35 +82,35 @@ export default function Home() {
         </div>
 
         {/* Featured Trips */}
-        <section className="space-y-4">
+        <section className="space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground">Featured Trips</h2>
-            <Link to="/explore" className="text-sm text-primary font-medium">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">Featured Trips</h2>
+            <Link to="/explore" className="text-xs sm:text-sm text-primary font-medium">
               See all
             </Link>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
+          <div className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 snap-x snap-mandatory">
             {mockTrips.slice(0, 3).map((trip) => (
               <TripCard
                 key={trip.id}
                 {...trip}
-                className="min-w-[300px] shrink-0"
+                className="min-w-[260px] sm:min-w-[300px] shrink-0 snap-start"
               />
             ))}
           </div>
         </section>
 
         {/* Upcoming Trips Preview */}
-        <section className="space-y-4">
+        <section className="space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground">Upcoming Trips</h2>
-            <Link to="/explore" className="text-sm text-primary font-medium">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">Upcoming Trips</h2>
+            <Link to="/explore" className="text-xs sm:text-sm text-primary font-medium">
               View all
             </Link>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {mockTrips.slice(0, 2).map((trip) => (
               <TripCard key={trip.id} {...trip} />
             ))}
