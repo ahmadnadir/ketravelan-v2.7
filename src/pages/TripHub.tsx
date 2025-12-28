@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ChevronLeft, MapPin, Users } from "lucide-react";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Button } from "@/components/ui/button";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { mockTrips, mockMembers } from "@/data/mockData";
 import { TripChat } from "@/components/trip-hub/TripChat";
 import { TripExpenses } from "@/components/trip-hub/TripExpenses";
@@ -55,12 +56,14 @@ export default function TripHub() {
       </header>
 
       {/* Content */}
-      <main className="flex-1 container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
+      <main className="flex-1 container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto pb-24">
         {activeTab === "chat" && <TripChat />}
         {activeTab === "expenses" && <TripExpenses />}
         {activeTab === "notes" && <TripNotes />}
         {activeTab === "members" && <TripMembers />}
       </main>
+
+      <BottomNav />
     </div>
   );
 }

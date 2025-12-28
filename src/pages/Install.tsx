@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Download, Share, MoreVertical, Plus, Smartphone, CheckCircle2 } from "lucide-react";
+import { Download, Share, MoreVertical, Plus, Smartphone, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -50,40 +51,30 @@ export default function Install() {
 
   if (isInstalled) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="max-w-sm w-full text-center">
-          <CardContent className="pt-8 pb-6">
-            <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-8 h-8 text-success" />
-            </div>
-            <h1 className="text-xl font-bold mb-2">App Installed!</h1>
-            <p className="text-muted-foreground mb-6">
-              Ketravelan is now on your home screen. Open it anytime to plan trips with friends.
-            </p>
-            <Link to="/">
-              <Button className="w-full">Open App</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center py-12">
+          <Card className="max-w-sm w-full text-center">
+            <CardContent className="pt-8 pb-6">
+              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-500" />
+              </div>
+              <h1 className="text-xl font-bold mb-2">App Installed!</h1>
+              <p className="text-muted-foreground mb-6">
+                Ketravelan is now on your home screen. Open it anytime to plan trips with friends.
+              </p>
+              <Link to="/">
+                <Button className="w-full">Open App</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <Link to="/">
-            <Button variant="ghost" size="icon" className="shrink-0">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <h1 className="font-semibold">Install App</h1>
-        </div>
-      </header>
-
-      <div className="p-6 max-w-lg mx-auto space-y-8">
+    <AppLayout>
+      <div className="py-6 space-y-8">
         {/* Hero */}
         <div className="text-center pt-4">
           <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -244,6 +235,6 @@ export default function Install() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
