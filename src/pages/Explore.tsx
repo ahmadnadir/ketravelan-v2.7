@@ -46,51 +46,51 @@ export default function Explore() {
 
   return (
     <AppLayout>
-      <div className="py-6 space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Discover Trips</h1>
+      <div className="py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Discover Trips</h1>
 
         {/* Search Panel */}
-        <Card className="p-4 space-y-4 border-border/50">
-          <div className="flex items-center gap-2 p-3 bg-secondary rounded-xl">
-            <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+        <Card className="p-3 sm:p-4 space-y-3 sm:space-y-4 border-border/50">
+          <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-secondary rounded-xl">
+            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
             <Input
               placeholder="Where do you want to go?"
-              className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+              className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0 text-sm sm:text-base"
             />
           </div>
 
-          <div className="flex gap-3">
-            <div className="flex-1 flex items-center gap-2 p-3 bg-secondary rounded-xl">
-              <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
-              <span className="text-sm text-muted-foreground">Add dates</span>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-secondary rounded-xl">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
+              <span className="text-xs sm:text-sm text-muted-foreground truncate">Add dates</span>
             </div>
-            <div className="flex-1 flex items-center gap-2 p-3 bg-secondary rounded-xl">
-              <span className="text-sm text-muted-foreground">Any budget</span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground ml-auto" />
+            <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-secondary rounded-xl">
+              <span className="text-xs sm:text-sm text-muted-foreground truncate flex-1">Any budget</span>
+              <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <Button className="flex-1 rounded-xl">
-              <SearchIcon className="h-4 w-4 mr-2" />
+          <div className="flex gap-2 sm:gap-3">
+            <Button className="flex-1 rounded-xl text-sm sm:text-base">
+              <SearchIcon className="h-4 w-4 mr-1.5 sm:mr-2" />
               Search
             </Button>
             <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" className="rounded-xl">
-                  <SlidersHorizontal className="h-4 w-4 mr-2" />
-                  Filters
+                <Button variant="outline" className="rounded-xl text-sm sm:text-base">
+                  <SlidersHorizontal className="h-4 w-4 mr-1.5 sm:mr-2" />
+                  <span className="hidden sm:inline">Filters</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl">
+              <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl px-4 sm:px-6 pb-8">
                 <SheetHeader>
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
-                <div className="mt-6 space-y-6">
+                <div className="mt-4 sm:mt-6 space-y-5 sm:space-y-6">
                   {/* Categories */}
-                  <div className="space-y-3">
-                    <h3 className="font-medium text-foreground">Categories</h3>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="space-y-2 sm:space-y-3">
+                    <h3 className="font-medium text-foreground text-sm sm:text-base">Categories</h3>
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
                       {categories.map((category) => (
                         <PillChip
                           key={category}
@@ -103,8 +103,8 @@ export default function Explore() {
                   </div>
 
                   {/* Budget Range */}
-                  <div className="space-y-3">
-                    <h3 className="font-medium text-foreground">Budget Range</h3>
+                  <div className="space-y-2 sm:space-y-3">
+                    <h3 className="font-medium text-foreground text-sm sm:text-base">Budget Range</h3>
                     <div className="px-2">
                       <Slider
                         value={budgetRange}
@@ -114,14 +114,14 @@ export default function Explore() {
                         step={100}
                       />
                     </div>
-                    <div className="flex justify-between text-sm text-muted-foreground">
+                    <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
                       <span>RM {budgetRange[0]}</span>
                       <span>RM {budgetRange[1]}+</span>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex gap-2 sm:gap-3 pt-4">
                     <Button
                       variant="outline"
                       className="flex-1"
@@ -156,17 +156,17 @@ export default function Explore() {
         />
 
         {/* Results Header */}
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-xs sm:text-sm">
           <span className="text-muted-foreground">
             Found {upcomingCount} upcoming trips
           </span>
-          <span className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground text-[10px] sm:text-xs">
             Showing prices in Malaysian Ringgit (RM)
           </span>
         </div>
 
         {/* Trip List */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {mockTrips.map((trip) => (
             <TripCard key={trip.id} {...trip} />
           ))}

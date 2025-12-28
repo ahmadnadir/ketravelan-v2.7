@@ -78,8 +78,8 @@ export default function CreateTrip() {
 
   return (
     <AppLayout hideBottomNav>
-      <div className="py-6 space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Create a Trip</h1>
+      <div className="py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create a Trip</h1>
 
         {/* Progress */}
         <div className="flex items-center justify-between">
@@ -87,14 +87,14 @@ export default function CreateTrip() {
             <div key={step.id} className="flex items-center">
               <div
                 className={cn(
-                  "h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
+                  "h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-colors",
                   currentStep >= step.id
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-muted-foreground"
                 )}
               >
                 {currentStep > step.id ? (
-                  <Check className="h-4 w-4" />
+                  <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 ) : (
                   step.id
                 )}
@@ -102,7 +102,7 @@ export default function CreateTrip() {
               {index < steps.length - 1 && (
                 <div
                   className={cn(
-                    "h-0.5 w-8 sm:w-12 mx-1",
+                    "h-0.5 w-6 sm:w-8 md:w-12 mx-0.5 sm:mx-1",
                     currentStep > step.id ? "bg-primary" : "bg-secondary"
                   )}
                 />
@@ -113,27 +113,27 @@ export default function CreateTrip() {
 
         {/* Step 1: Visibility */}
         {currentStep === 1 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-3 sm:space-y-4">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">
               Who can see this trip?
             </h2>
-            <div className="grid gap-3">
+            <div className="grid gap-2 sm:gap-3">
               <Card
                 className={cn(
-                  "p-4 cursor-pointer transition-all border-2",
+                  "p-3 sm:p-4 cursor-pointer transition-all border-2",
                   formData.visibility === "public"
                     ? "border-primary bg-accent/30"
                     : "border-border/50 hover:border-primary/50"
                 )}
                 onClick={() => updateField("visibility", "public")}
               >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-primary/10">
-                    <Globe className="h-6 w-6 text-primary" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-primary/10 shrink-0">
+                    <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">Public</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-foreground text-sm sm:text-base">Public</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                       Anyone can discover and request to join your trip
                     </p>
                   </div>
@@ -141,22 +141,22 @@ export default function CreateTrip() {
               </Card>
               <Card
                 className={cn(
-                  "p-4 cursor-pointer transition-all border-2",
+                  "p-3 sm:p-4 cursor-pointer transition-all border-2",
                   formData.visibility === "private"
                     ? "border-primary bg-accent/30"
                     : "border-border/50 hover:border-primary/50"
                 )}
                 onClick={() => updateField("visibility", "private")}
               >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-secondary">
-                    <Lock className="h-6 w-6 text-muted-foreground" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-secondary shrink-0">
+                    <Lock className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
                   </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-foreground text-sm sm:text-base">
                       Closed Friends
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                       Only people with the link can join
                     </p>
                   </div>
@@ -168,25 +168,25 @@ export default function CreateTrip() {
 
         {/* Step 2: Basics */}
         {currentStep === 2 && (
-          <div className="space-y-5">
-            <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-4 sm:space-y-5">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">
               Trip Details
             </h2>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground">
                 Trip Title
               </label>
               <Input
                 placeholder="e.g., Langkawi Island Adventure"
                 value={formData.title}
                 onChange={(e) => updateField("title", e.target.value)}
-                className="rounded-xl"
+                className="rounded-xl text-sm sm:text-base"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground">
                 Destination
               </label>
               <div className="relative">
@@ -195,14 +195,14 @@ export default function CreateTrip() {
                   placeholder="Where are you going?"
                   value={formData.destination}
                   onChange={(e) => updateField("destination", e.target.value)}
-                  className="rounded-xl pl-10"
+                  className="rounded-xl pl-10 text-sm sm:text-base"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-foreground">
                   Start Date
                 </label>
                 <div className="relative">
@@ -211,12 +211,12 @@ export default function CreateTrip() {
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => updateField("startDate", e.target.value)}
-                    className="rounded-xl pl-10"
+                    className="rounded-xl pl-10 text-sm sm:text-base"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-foreground">
                   End Date
                 </label>
                 <div className="relative">
@@ -225,15 +225,15 @@ export default function CreateTrip() {
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => updateField("endDate", e.target.value)}
-                    className="rounded-xl pl-10"
+                    className="rounded-xl pl-10 text-sm sm:text-base"
                   />
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-foreground">
                   Max Slots
                 </label>
                 <div className="relative">
@@ -244,31 +244,31 @@ export default function CreateTrip() {
                     onChange={(e) =>
                       updateField("slots", parseInt(e.target.value))
                     }
-                    className="rounded-xl pl-10"
+                    className="rounded-xl pl-10 text-sm sm:text-base"
                     min={2}
                     max={20}
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-foreground">
                   Budget (RM)
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="e.g., 500-1500"
-                    className="rounded-xl pl-10"
+                    className="rounded-xl pl-10 text-sm sm:text-base"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground">
                 Categories
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {categories.map((tag) => (
                   <PillChip
                     key={tag}
@@ -284,48 +284,48 @@ export default function CreateTrip() {
 
         {/* Step 3: Details */}
         {currentStep === 3 && (
-          <div className="space-y-5">
-            <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-4 sm:space-y-5">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">
               Additional Details
             </h2>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground">
                 Description
               </label>
               <Textarea
                 placeholder="Tell travelers what to expect..."
                 value={formData.description}
                 onChange={(e) => updateField("description", e.target.value)}
-                className="rounded-xl min-h-[120px]"
+                className="rounded-xl min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground">
                 Requirements
               </label>
               <Textarea
                 placeholder="Any specific requirements? (one per line)"
                 value={formData.requirements}
                 onChange={(e) => updateField("requirements", e.target.value)}
-                className="rounded-xl min-h-[100px]"
+                className="rounded-xl min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground">
                 Cover Images
               </label>
-              <Card className="p-8 border-dashed border-2 border-border/50 hover:border-primary/50 transition-colors cursor-pointer">
+              <Card className="p-6 sm:p-8 border-dashed border-2 border-border/50 hover:border-primary/50 transition-colors cursor-pointer">
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="p-3 rounded-xl bg-secondary">
-                    <Image className="h-6 w-6 text-muted-foreground" />
+                  <div className="p-2 sm:p-3 rounded-xl bg-secondary">
+                    <Image className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Click to upload images
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
                     PNG, JPG up to 10MB
                   </p>
                 </div>
@@ -336,47 +336,47 @@ export default function CreateTrip() {
 
         {/* Step 4: Review */}
         {currentStep === 4 && (
-          <div className="space-y-5">
-            <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-4 sm:space-y-5">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">
               Review Your Trip
             </h2>
 
-            <Card className="p-4 border-border/50 space-y-4">
+            <Card className="p-3 sm:p-4 border-border/50 space-y-3 sm:space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground">Title</p>
-                <p className="font-medium text-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">Title</p>
+                <p className="font-medium text-foreground text-sm sm:text-base">
                   {formData.title || "Untitled Trip"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Destination</p>
-                <p className="font-medium text-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">Destination</p>
+                <p className="font-medium text-foreground text-sm sm:text-base">
                   {formData.destination || "Not specified"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Dates</p>
-                <p className="font-medium text-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">Dates</p>
+                <p className="font-medium text-foreground text-sm sm:text-base">
                   {formData.startDate && formData.endDate
                     ? `${formData.startDate} - ${formData.endDate}`
                     : "Not specified"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Visibility</p>
-                <p className="font-medium text-foreground capitalize">
+                <p className="text-xs sm:text-sm text-muted-foreground">Visibility</p>
+                <p className="font-medium text-foreground capitalize text-sm sm:text-base">
                   {formData.visibility}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Categories</p>
-                <div className="flex flex-wrap gap-1.5 mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground">Categories</p>
+                <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-1">
                   {formData.tags.length > 0 ? (
                     formData.tags.map((tag) => (
                       <PillChip key={tag} label={tag} size="sm" />
                     ))
                   ) : (
-                    <span className="text-muted-foreground">None selected</span>
+                    <span className="text-muted-foreground text-sm">None selected</span>
                   )}
                 </div>
               </div>
@@ -385,24 +385,24 @@ export default function CreateTrip() {
         )}
 
         {/* Navigation */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-2 sm:gap-3 pt-2 sm:pt-4">
           {currentStep > 1 && (
             <Button
               variant="outline"
               onClick={prevStep}
-              className="flex-1 rounded-xl"
+              className="flex-1 rounded-xl text-sm sm:text-base"
             >
-              <ChevronLeft className="h-4 w-4 mr-2" />
+              <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
               Back
             </Button>
           )}
           {currentStep < 4 ? (
-            <Button onClick={nextStep} className="flex-1 rounded-xl">
+            <Button onClick={nextStep} className="flex-1 rounded-xl text-sm sm:text-base">
               Next
-              <ChevronRight className="h-4 w-4 ml-2" />
+              <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
             </Button>
           ) : (
-            <Button onClick={handlePublish} className="flex-1 rounded-xl">
+            <Button onClick={handlePublish} className="flex-1 rounded-xl text-sm sm:text-base">
               Publish Trip
             </Button>
           )}

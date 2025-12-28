@@ -67,52 +67,52 @@ interface NotificationsSheetProps {
 export function NotificationsSheet({ open, onOpenChange }: NotificationsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
+      <SheetContent side="right" className="w-full sm:max-w-md px-4 sm:px-6">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
+          <SheetTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
             Notifications
           </SheetTitle>
         </SheetHeader>
 
-        <div className="mt-6 space-y-2">
+        <div className="mt-4 sm:mt-6 space-y-1.5 sm:space-y-2">
           {mockNotifications.map((notification) => {
             const Icon = iconMap[notification.type];
             return (
               <div
                 key={notification.id}
                 className={cn(
-                  "flex items-start gap-3 p-3 rounded-xl transition-colors cursor-pointer",
+                  "flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl transition-colors cursor-pointer",
                   notification.read
                     ? "bg-transparent hover:bg-muted/50"
                     : "bg-accent/50 hover:bg-accent"
                 )}
               >
                 <div className={cn(
-                  "p-2 rounded-full shrink-0",
+                  "p-1.5 sm:p-2 rounded-full shrink-0",
                   notification.read ? "bg-muted" : "bg-primary/10"
                 )}>
                   <Icon className={cn(
-                    "h-4 w-4",
+                    "h-3.5 w-3.5 sm:h-4 sm:w-4",
                     notification.read ? "text-muted-foreground" : "text-primary"
                   )} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <p className={cn(
-                      "text-sm",
+                      "text-xs sm:text-sm",
                       !notification.read && "font-medium"
                     )}>
                       {notification.title}
                     </p>
                     {!notification.read && (
-                      <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />
+                      <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary shrink-0 mt-1 sm:mt-1.5" />
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
                     {notification.description}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
                     {notification.time}
                   </p>
                 </div>
@@ -121,8 +121,8 @@ export function NotificationsSheet({ open, onOpenChange }: NotificationsSheetPro
           })}
         </div>
 
-        <div className="mt-6">
-          <Button variant="outline" className="w-full">
+        <div className="mt-4 sm:mt-6 pb-4 sm:pb-0">
+          <Button variant="outline" className="w-full text-sm sm:text-base">
             Mark all as read
           </Button>
         </div>
