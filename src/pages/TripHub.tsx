@@ -59,7 +59,7 @@ export default function TripHub() {
       <main className="flex-1 container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto pb-24">
         {activeTab === "chat" && <TripChat />}
         {activeTab === "expenses" && <TripExpenses />}
-        {activeTab === "notes" && <TripNotes />}
+        {activeTab === "notes" && <TripNotes tripId={id || "1"} />}
         {activeTab === "members" && <TripMembers />}
       </main>
 
