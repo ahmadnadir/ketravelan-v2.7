@@ -1,0 +1,74 @@
+import { ReactNode } from 'react';
+import { Check } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+
+interface OptionCardProps {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  selected: boolean;
+  onClick: () => void;
+  recommended?: boolean;
+  children?: ReactNode;
+}
+
+export function OptionCard({
+  icon,
+  title,
+  description,
+  selected,
+  onClick,
+  recommended,
+  children,
+}: OptionCardProps) {
+  return (
+    <Card
+      className={cn(
+        "p-4 cursor-pointer transition-all border-2",
+        selected
+          ? "border-primary bg-primary/5"
+          : "border-border/50 hover:border-primary/30"
+      )}
+      onClick={onClick}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={cn(
+            "p-2 rounded-xl shrink-0",
+            selected ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"
+          )}
+        >
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className="font-medium text-foreground text-sm">{title}</h4>
+            {recommended && (
+              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">
+                Recommended
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+        </div>
+        <div
+          className={cn(
+            "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
+            selected
+              ? "border-primary bg-primary"
+              : "border-muted-foreground/30"
+          )}
+        >
+          {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+        </div>
+      </div>
+      
+      {selected && children && (
+        <div className="mt-4 pt-4 border-t border-border" onClick={(e) => e.stopPropagation()}>
+          {children}
+        </div>
+      )}
+    </Card>
+  );
+}
