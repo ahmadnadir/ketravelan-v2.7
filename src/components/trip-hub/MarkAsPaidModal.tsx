@@ -1,0 +1,165 @@
+import { useState, useRef } from "react";
+import { Camera, Upload, X, Check } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
+interface MarkAsPaidModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  recipientName: string;
+  amount: number;
+  currency?: string;
+  onConfirm: (note?: string, receiptFile?: File) => void;
+}
+
+export function MarkAsPaidModal({
+  open,
+  onOpenChange,
+  recipientName,
+  amount,
+  currency = "RM",
+  onConfirm,
+}: MarkAsPaidModalProps) {
+  const [note, setNote] = useState("");
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setReceiptFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveReceipt = () => {
+    setReceiptFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleConfirm = () => {
+    onConfirm(note || undefined, receiptFile || undefined);
+    // Reset state
+    setNote("");
+    handleRemoveReceipt();
+    onOpenChange(false);
+  };
+
+  const handleClose = () => {
+    setNote("");
+    handleRemoveReceipt();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md mx-4 rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-lg">
+            Confirm Payment to {recipientName}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          {/* Amount */}
+          <div className="text-center py-3 bg-secondary/50 rounded-xl">
+            <p className="text-sm text-muted-foreground">Amount</p>
+            <p className="text-2xl font-bold text-foreground">
+              {currency} {amount.toLocaleString()}
+            </p>
+          </div>
+
+          {/* Optional Note */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Add a note (optional)
+            </label>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="e.g., Paid via DuitNow"
+              className="resize-none h-20 rounded-xl"
+            />
+          </div>
+
+          {/* Receipt Upload */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Upload Payment Receipt
+            </label>
+
+            {previewUrl ? (
+              <div className="relative">
+                <img
+                  src={previewUrl}
+                  alt="Receipt preview"
+                  className="w-full h-40 object-cover rounded-xl border border-border"
+                />
+                <button
+                  onClick={handleRemoveReceipt}
+                  className="absolute top-2 right-2 p-1.5 bg-background/90 rounded-full hover:bg-background transition-colors"
+                >
+                  <X className="h-4 w-4 text-foreground" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  className="flex-1 h-12 rounded-xl"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Camera
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 h-12 rounded-xl"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Confirm Button */}
+          <Button
+            onClick={handleConfirm}
+            className="w-full h-12 rounded-xl"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Confirm Payment
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

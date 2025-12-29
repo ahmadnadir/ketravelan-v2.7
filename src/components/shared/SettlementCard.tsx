@@ -71,10 +71,10 @@ export function SettlementCard({
       </div>
 
       {/* Status & Actions */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-3 border-t border-border/50">
         <span
           className={cn(
-            "text-xs font-medium px-2 py-1 rounded-full",
+            "text-xs font-medium px-2 py-1 rounded-full w-fit",
             status === "paid"
               ? "bg-success/10 text-success"
               : "bg-warning/10 text-warning-foreground"
@@ -83,13 +83,22 @@ export function SettlementCard({
           {status === "paid" ? "PAID" : "PENDING"}
         </span>
         
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onViewPayment}>
-            <QrCode className="h-4 w-4 mr-1" />
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-9 w-full sm:w-auto text-xs sm:text-sm"
+            onClick={onViewPayment}
+          >
+            <QrCode className="h-4 w-4 mr-1.5" />
             View QR
           </Button>
           {status === "pending" && (
-            <Button size="sm" onClick={onMarkPaid}>
+            <Button 
+              size="sm" 
+              className="h-9 w-full sm:w-auto text-xs sm:text-sm"
+              onClick={onMarkPaid}
+            >
               Mark as Paid
             </Button>
           )}
