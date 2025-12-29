@@ -467,28 +467,17 @@ export function TripExpenses() {
             <div className="space-y-2 sm:space-y-3">
               {filteredSettlements.length > 0 ? (
                 filteredSettlements.map((settlement) => (
-                  <div key={settlement.id} className="space-y-2">
-                    <SettlementCard
-                      fromUser={settlement.fromUser}
-                      toUser={settlement.toUser}
-                      amount={settlement.amount}
-                      status={settlement.status}
-                      onViewPayment={() => handleViewQR(settlement)}
-                      onMarkPaid={() => handleMarkPaid(settlement)}
-                    />
-                    {/* Send Reminder Button - Only for pending payments where others owe current user */}
-                    {canShowReminder(settlement) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full h-8 text-xs rounded-lg"
-                        onClick={() => handleSendReminder(settlement)}
-                      >
-                        <Bell className="h-3.5 w-3.5 mr-1.5" />
-                        Send Reminder to {settlement.fromUser.name}
-                      </Button>
-                    )}
-                  </div>
+                  <SettlementCard
+                    key={settlement.id}
+                    fromUser={settlement.fromUser}
+                    toUser={settlement.toUser}
+                    amount={settlement.amount}
+                    status={settlement.status}
+                    showReminder={canShowReminder(settlement)}
+                    onViewPayment={() => handleViewQR(settlement)}
+                    onSendReminder={() => handleSendReminder(settlement)}
+                    onMarkPaid={() => handleMarkPaid(settlement)}
+                  />
                 ))
               ) : (
                 <Card className="p-6 text-center border-border/50">

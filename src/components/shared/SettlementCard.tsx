@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, QrCode } from "lucide-react";
+import { ArrowRight, QrCode, Bell } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,9 @@ interface SettlementCardProps {
   amount: number;
   currency?: string;
   status: "pending" | "paid";
+  showReminder?: boolean;
   onViewPayment?: () => void;
+  onSendReminder?: () => void;
   onMarkPaid?: () => void;
 }
 
@@ -20,7 +22,9 @@ export function SettlementCard({
   amount,
   currency = "RM",
   status,
+  showReminder,
   onViewPayment,
+  onSendReminder,
   onMarkPaid,
 }: SettlementCardProps) {
   return (
@@ -78,10 +82,11 @@ export function SettlementCard({
       </div>
 
       {/* Status & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-3 border-t border-border/50">
+      <div className="mt-4 pt-3 border-t border-border/50 space-y-3">
+        {/* Status Badge */}
         <span
           className={cn(
-            "text-xs font-medium px-2 py-1 rounded-full w-fit",
+            "text-xs font-medium px-2 py-1 rounded-full w-fit block",
             status === "paid"
               ? "bg-success/10 text-success"
               : "bg-warning/10 text-warning-foreground"
@@ -90,20 +95,37 @@ export function SettlementCard({
           {status === "paid" ? "PAID" : "PENDING"}
         </span>
         
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        {/* Stacked Buttons */}
+        <div className="flex flex-col gap-2">
+          {/* View QR - Secondary */}
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-9 w-full sm:w-auto text-xs sm:text-sm"
+            className="w-full h-10 text-sm"
             onClick={onViewPayment}
           >
-            <QrCode className="h-4 w-4 mr-1.5" />
+            <QrCode className="h-4 w-4 mr-2" />
             View QR
           </Button>
+          
+          {/* Send Reminder - Secondary (only when showReminder is true) */}
+          {showReminder && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full h-10 text-sm"
+              onClick={onSendReminder}
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Send Reminder
+            </Button>
+          )}
+          
+          {/* Mark as Paid - Primary (only when pending) */}
           {status === "pending" && (
             <Button 
               size="sm" 
-              className="h-9 w-full sm:w-auto text-xs sm:text-sm"
+              className="w-full h-10 text-sm bg-foreground text-background hover:bg-foreground/90"
               onClick={onMarkPaid}
             >
               Mark as Paid
