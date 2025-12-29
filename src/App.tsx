@@ -10,6 +10,7 @@ import TripHub from "./pages/TripHub";
 import CreateTrip from "./pages/CreateTrip";
 import MyTrips from "./pages/MyTrips";
 import Chat from "./pages/Chat";
+import DirectChat from "./pages/DirectChat";
 import Profile from "./pages/Profile";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/create" element={<CreateTrip />} />
           <Route path="/my-trips" element={<MyTrips />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/chat/:id" element={<DirectChat />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/install" element={<Install />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

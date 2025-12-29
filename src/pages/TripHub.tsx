@@ -22,7 +22,7 @@ export default function TripHub() {
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
           <div className="flex items-center gap-2 sm:gap-3 h-12 sm:h-14">
-            <Link to={`/trip/${id}`}>
+            <Link to="/chat">
               <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
                 <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>

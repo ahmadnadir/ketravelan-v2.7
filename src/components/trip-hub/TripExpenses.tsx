@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef } from "react";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User, Bell } from "lucide-react";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StatCard } from "@/components/shared/StatCard";
 import { ExpenseCard } from "@/components/shared/ExpenseCard";
 import { SettlementCard } from "@/components/shared/SettlementCard";
 import { ViewQRModal } from "@/components/trip-hub/ViewQRModal";
 import { MarkAsPaidModal } from "@/components/trip-hub/MarkAsPaidModal";
+import { SendReminderModal } from "@/components/trip-hub/SendReminderModal";
 import { YourQRSection } from "@/components/trip-hub/YourQRSection";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -57,13 +58,26 @@ const mockSettlements: Settlement[] = [
     amount: 45,
     status: "pending",
   },
+  {
+    id: "s4",
+    fromUser: { name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
+    toUser: { name: "Lisa", imageUrl: mockMembers[2]?.imageUrl },
+    amount: 60,
+    status: "pending",
+  },
 ];
 
+// Current user is Ahmad
+const CURRENT_USER = "Ahmad";
+
 export function TripExpenses() {
-  const [subTab, setSubTab] = useState("overview");
+  const [subTab, setSubTab] = useState("breakdown");
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [filterPayer, setFilterPayer] = useState<string>("all");
-  const [settlementFilter, setSettlementFilter] = useState<"all" | "owedToYou" | "youOwe">("all");
+  
+  // Settlement filters
+  const [directionFilter, setDirectionFilter] = useState<"all" | "owesMe" | "iOwe">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid">("all");
 
   // Ref for scrolling to category breakdown
   const categoryBreakdownRef = useRef<HTMLDivElement>(null);
@@ -71,6 +85,7 @@ export function TripExpenses() {
   // Modal states
   const [viewQROpen, setViewQROpen] = useState(false);
   const [markPaidOpen, setMarkPaidOpen] = useState(false);
+  const [reminderOpen, setReminderOpen] = useState(false);
   const [selectedSettlement, setSelectedSettlement] = useState<Settlement | null>(null);
 
   // User's own QR
@@ -109,41 +124,43 @@ export function TripExpenses() {
     return result;
   }, [sortOrder, filterPayer]);
 
-  // Filter settlements based on filter
+  // Filter settlements based on direction and status filters
   const filteredSettlements = useMemo(() => {
-    if (settlementFilter === "all") return settlements;
-    if (settlementFilter === "owedToYou") {
-      // Settlements where current user is the recipient (toUser)
-      return settlements.filter(s => s.toUser.name === "Ahmad");
-    }
-    if (settlementFilter === "youOwe") {
-      // Settlements where current user is the payer (fromUser)
-      return settlements.filter(s => s.fromUser.name === "Ahmad");
-    }
-    return settlements;
-  }, [settlements, settlementFilter]);
+    return settlements.filter(s => {
+      // Direction filter
+      if (directionFilter === "owesMe" && s.toUser.name !== CURRENT_USER) return false;
+      if (directionFilter === "iOwe" && s.fromUser.name !== CURRENT_USER) return false;
+      
+      // Status filter
+      if (statusFilter !== "all" && s.status !== statusFilter) return false;
+      
+      return true;
+    });
+  }, [settlements, directionFilter, statusFilter]);
 
   // Card tap handlers
   const handleTotalSpendTap = () => {
-    setSubTab("overview");
+    setSubTab("breakdown");
     setTimeout(() => {
       categoryBreakdownRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
   const handleYouPaidTap = () => {
-    setFilterPayer("Ahmad"); // Current user
+    setFilterPayer(CURRENT_USER);
     setSubTab("expenses");
   };
 
   const handleOwedToYouTap = () => {
-    setSettlementFilter("owedToYou");
-    setSubTab("whopayswho");
+    setDirectionFilter("owesMe");
+    setStatusFilter("all");
+    setSubTab("settle");
   };
 
   const handleYouOweTap = () => {
-    setSettlementFilter("youOwe");
-    setSubTab("whopayswho");
+    setDirectionFilter("iOwe");
+    setStatusFilter("all");
+    setSubTab("settle");
   };
 
   const handleViewQR = (settlement: Settlement) => {
@@ -154,6 +171,11 @@ export function TripExpenses() {
   const handleMarkPaid = (settlement: Settlement) => {
     setSelectedSettlement(settlement);
     setMarkPaidOpen(true);
+  };
+
+  const handleSendReminder = (settlement: Settlement) => {
+    setSelectedSettlement(settlement);
+    setReminderOpen(true);
   };
 
   const handleConfirmPayment = (note?: string, receiptFile?: File) => {
@@ -168,6 +190,11 @@ export function TripExpenses() {
         description: `Payment to ${selectedSettlement.toUser.name} marked as paid${note ? `: ${note}` : ""}`,
       });
     }
+  };
+
+  const handleReminderSend = (message: string) => {
+    console.log("Reminder sent:", message);
+    // Would send notification/chat message here
   };
 
   const handleUploadUserQR = (file: File) => {
@@ -197,23 +224,72 @@ export function TripExpenses() {
     });
   };
 
+  // Check if a settlement can show reminder (pending + others owe current user)
+  const canShowReminder = (settlement: Settlement) => {
+    return settlement.status === "pending" && settlement.toUser.name === CURRENT_USER;
+  };
+
   return (
     <div className="relative">
-      {/* Sub Tabs */}
-      <div className="px-3 sm:px-4 pt-3 sm:pt-4">
+      {/* Always Visible: Header + Stat Cards */}
+      <div className="px-3 sm:px-4 pt-3 sm:pt-4 space-y-4">
+        {/* Header */}
+        <div>
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">Trip Expenses Overview</h2>
+          <p className="text-sm text-muted-foreground">See where the money went and who's settled.</p>
+        </div>
+
+        {/* Interactive Stat Cards - 2x2 Grid - Always Visible */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <StatCard
+            title="Total Trip Spend"
+            value={`RM ${totalCost.toLocaleString()}`}
+            icon={DollarSign}
+            color="blue"
+            description="All group expenses"
+            onClick={handleTotalSpendTap}
+          />
+          <StatCard
+            title="You Paid"
+            value={`RM ${yourExpenses.toLocaleString()}`}
+            icon={Wallet}
+            color="green"
+            description="Your contributions"
+            onClick={handleYouPaidTap}
+          />
+          <StatCard
+            title="You're Owed"
+            value={`RM ${owedToYou.toLocaleString()}`}
+            icon={TrendingUp}
+            color="orange"
+            description="Others owe you"
+            onClick={handleOwedToYouTap}
+          />
+          <StatCard
+            title="You Owe"
+            value={`RM ${youOwe.toLocaleString()}`}
+            icon={TrendingDown}
+            color="red"
+            description="You need to settle"
+            onClick={handleYouOweTap}
+          />
+        </div>
+
+        {/* Sub Tabs - Below Stat Cards */}
         <SegmentedControl
           options={[
-            { label: "Overview", value: "overview" },
+            { label: "Breakdown", value: "breakdown" },
             { label: "Expenses", value: "expenses" },
-            { label: "Settle", value: "whopayswho" },
+            { label: "Settle", value: "settle" },
             { label: "My QR", value: "myqr" },
           ]}
           value={subTab}
           onChange={(value) => {
             setSubTab(value);
             // Reset filters when switching tabs
-            if (value === "whopayswho") {
-              setSettlementFilter("all");
+            if (value === "settle") {
+              setDirectionFilter("all");
+              setStatusFilter("all");
             }
             if (value === "expenses") {
               setFilterPayer("all");
@@ -223,52 +299,10 @@ export function TripExpenses() {
       </div>
 
       {/* Tab Content - Extra padding for sticky CTA */}
-      <div className={subTab === "overview" || subTab === "expenses" ? "pb-24" : "pb-8"}>
-        {/* Overview Tab */}
-        {subTab === "overview" && (
+      <div className={subTab === "breakdown" || subTab === "expenses" ? "pb-24" : "pb-8"}>
+        {/* Breakdown Tab */}
+        {subTab === "breakdown" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6">
-            {/* Header */}
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-foreground">Trip Expenses Overview</h2>
-              <p className="text-sm text-muted-foreground">See where the money went and who's settled.</p>
-            </div>
-
-            {/* Interactive Stat Cards - 2x2 Grid */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <StatCard
-                title="Total Trip Spend"
-                value={`RM ${totalCost.toLocaleString()}`}
-                icon={DollarSign}
-                color="blue"
-                description="All group expenses combined"
-                onClick={handleTotalSpendTap}
-              />
-              <StatCard
-                title="You Paid"
-                value={`RM ${yourExpenses.toLocaleString()}`}
-                icon={Wallet}
-                color="green"
-                description="Total amount paid by you"
-                onClick={handleYouPaidTap}
-              />
-              <StatCard
-                title="You're Owed"
-                value={`RM ${owedToYou.toLocaleString()}`}
-                icon={TrendingUp}
-                color="orange"
-                description="Money others need to pay you"
-                onClick={handleOwedToYouTap}
-              />
-              <StatCard
-                title="You Owe"
-                value={`RM ${youOwe.toLocaleString()}`}
-                icon={TrendingDown}
-                color="red"
-                description="Amount you still need to settle"
-                onClick={handleYouOweTap}
-              />
-            </div>
-
             {/* Category Breakdown */}
             <div ref={categoryBreakdownRef}>
               <Card className="p-3 sm:p-4 border-border/50">
@@ -372,43 +406,82 @@ export function TripExpenses() {
           </div>
         )}
 
-        {/* Who Pays Who Tab */}
-        {subTab === "whopayswho" && (
+        {/* Settle Tab */}
+        {subTab === "settle" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4">
-            {/* Header */}
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-foreground">Who Pays Who</h2>
-              <p className="text-sm text-muted-foreground">Track payment statuses and settle up.</p>
-            </div>
-
-            {/* Filter Pills */}
-            {settlementFilter !== "all" && (
+            {/* Filter Controls */}
+            <div className="space-y-3">
+              {/* Direction Filter */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Filtered:</span>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="h-7 text-xs rounded-full"
-                  onClick={() => setSettlementFilter("all")}
-                >
-                  {settlementFilter === "owedToYou" ? "Owed to you" : "You owe"} ✕
-                </Button>
+                <span className="text-xs text-muted-foreground shrink-0">Direction:</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {[
+                    { value: "all", label: "All" },
+                    { value: "owesMe", label: "Owes Me" },
+                    { value: "iOwe", label: "I Owe" },
+                  ].map((option) => (
+                    <Button
+                      key={option.value}
+                      variant={directionFilter === option.value ? "default" : "secondary"}
+                      size="sm"
+                      className="h-7 text-xs rounded-full px-3"
+                      onClick={() => setDirectionFilter(option.value as typeof directionFilter)}
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            )}
+
+              {/* Status Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground shrink-0">Status:</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {[
+                    { value: "all", label: "All" },
+                    { value: "pending", label: "Pending" },
+                    { value: "paid", label: "Paid" },
+                  ].map((option) => (
+                    <Button
+                      key={option.value}
+                      variant={statusFilter === option.value ? "default" : "secondary"}
+                      size="sm"
+                      className="h-7 text-xs rounded-full px-3"
+                      onClick={() => setStatusFilter(option.value as typeof statusFilter)}
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {/* Settlements */}
             <div className="space-y-2 sm:space-y-3">
               {filteredSettlements.length > 0 ? (
                 filteredSettlements.map((settlement) => (
-                  <SettlementCard
-                    key={settlement.id}
-                    fromUser={settlement.fromUser}
-                    toUser={settlement.toUser}
-                    amount={settlement.amount}
-                    status={settlement.status}
-                    onViewPayment={() => handleViewQR(settlement)}
-                    onMarkPaid={() => handleMarkPaid(settlement)}
-                  />
+                  <div key={settlement.id} className="space-y-2">
+                    <SettlementCard
+                      fromUser={settlement.fromUser}
+                      toUser={settlement.toUser}
+                      amount={settlement.amount}
+                      status={settlement.status}
+                      onViewPayment={() => handleViewQR(settlement)}
+                      onMarkPaid={() => handleMarkPaid(settlement)}
+                    />
+                    {/* Send Reminder Button - Only for pending payments where others owe current user */}
+                    {canShowReminder(settlement) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-8 text-xs rounded-lg"
+                        onClick={() => handleSendReminder(settlement)}
+                      >
+                        <Bell className="h-3.5 w-3.5 mr-1.5" />
+                        Send Reminder to {settlement.fromUser.name}
+                      </Button>
+                    )}
+                  </div>
                 ))
               ) : (
                 <Card className="p-6 text-center border-border/50">
@@ -422,12 +495,6 @@ export function TripExpenses() {
         {/* My QR Tab */}
         {subTab === "myqr" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4">
-            {/* Header */}
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-foreground">My Payment QR</h2>
-              <p className="text-sm text-muted-foreground">Others can scan this to pay you.</p>
-            </div>
-
             {/* QR Management */}
             <YourQRSection
               qrCodeUrl={userQRUrl}
@@ -438,8 +505,8 @@ export function TripExpenses() {
         )}
       </div>
 
-      {/* Sticky CTA - Only on Overview and Expenses tabs */}
-      {(subTab === "overview" || subTab === "expenses") && (
+      {/* Sticky CTA - Only on Breakdown and Expenses tabs */}
+      {(subTab === "breakdown" || subTab === "expenses") && (
         <div className="fixed bottom-20 left-0 right-0 z-40 px-4 pb-2 pointer-events-none">
           <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto pointer-events-auto">
             <Button 
@@ -469,6 +536,16 @@ export function TripExpenses() {
         recipientName={selectedSettlement?.toUser.name || ""}
         amount={selectedSettlement?.amount || 0}
         onConfirm={handleConfirmPayment}
+      />
+
+      {/* Send Reminder Modal */}
+      <SendReminderModal
+        open={reminderOpen}
+        onOpenChange={setReminderOpen}
+        recipientName={selectedSettlement?.fromUser.name || ""}
+        amount={selectedSettlement?.amount || 0}
+        tripName="Cameron Highlands"
+        onSend={handleReminderSend}
       />
     </div>
   );
