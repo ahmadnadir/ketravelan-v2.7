@@ -205,7 +205,7 @@ export function TripExpenses() {
           options={[
             { label: "Overview", value: "overview" },
             { label: "Expenses", value: "expenses" },
-            { label: "Who Pays Who", value: "whopayswho" },
+            { label: "Settle", value: "whopayswho" },
             { label: "My QR", value: "myqr" },
           ]}
           value={subTab}
