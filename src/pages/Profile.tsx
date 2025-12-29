@@ -10,11 +10,37 @@ import {
   Shield,
   HelpCircle,
   LogOut,
+  Instagram,
+  Facebook,
+  Youtube,
+  Twitter,
+  Linkedin,
+  Ghost,
+  AtSign,
+  type LucideIcon,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PillChip } from "@/components/shared/PillChip";
+
+// Platform to icon mapping
+const platformIcons: Record<string, LucideIcon> = {
+  instagram: Instagram,
+  facebook: Facebook,
+  youtube: Youtube,
+  snapchat: Ghost,
+  x: Twitter,
+  threads: AtSign,
+  linkedin: Linkedin,
+};
+
+// Mock social links data - only show platforms user has added
+const socialLinks = [
+  { platform: "instagram", url: "https://instagram.com/ahmadrazak" },
+  { platform: "youtube", url: "https://youtube.com/@ahmadtravels" },
+  { platform: "linkedin", url: "https://linkedin.com/in/ahmadrazak" },
+];
 
 const menuItems = [
   { icon: User, label: "Edit Profile", path: "/profile/edit" },
@@ -79,6 +105,31 @@ export default function Profile() {
             ))}
           </div>
         </Card>
+
+        {/* Social Links - Show only if user has links */}
+        {socialLinks.length > 0 && (
+          <Card className="p-3 sm:p-4 border-border/50">
+            <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Connect</h3>
+            <div className="flex flex-wrap gap-3">
+              {socialLinks.map((link) => {
+                const Icon = platformIcons[link.platform];
+                if (!Icon) return null;
+                return (
+                  <a
+                    key={link.platform}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
+                    aria-label={link.platform}
+                  >
+                    <Icon className="h-5 w-5 text-foreground" />
+                  </a>
+                );
+              })}
+            </div>
+          </Card>
+        )}
 
         {/* Budget Range */}
         <Card className="p-3 sm:p-4 border-border/50">
