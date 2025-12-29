@@ -11,7 +11,7 @@ interface ViewQRModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   recipientName: string;
-  amount: number;
+  amount?: number;
   currency?: string;
   qrCodeUrl?: string;
 }
@@ -65,9 +65,11 @@ export function ViewQRModal({
           <div className="text-center space-y-1">
             <p className="text-muted-foreground text-sm">Pay to</p>
             <p className="text-xl font-semibold text-foreground">{recipientName}</p>
-            <p className="text-2xl font-bold text-primary">
-              {currency} {amount.toLocaleString()}
-            </p>
+            {amount !== undefined && amount > 0 && (
+              <p className="text-2xl font-bold text-primary">
+                {currency} {amount.toLocaleString()}
+              </p>
+            )}
           </div>
 
           {/* Download Button */}

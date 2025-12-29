@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from "react";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User, Bell } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User, Bell, QrCode } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StatCard } from "@/components/shared/StatCard";
 import { ExpenseCard } from "@/components/shared/ExpenseCard";
@@ -78,6 +79,12 @@ export function TripExpenses() {
   // Settlement filters
   const [directionFilter, setDirectionFilter] = useState<"all" | "owesMe" | "iOwe">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid">("all");
+  
+  // QR Codes sub-view toggle
+  const [qrSubView, setQrSubView] = useState<"myqr" | "others">("myqr");
+  
+  // Selected member for QR viewing
+  const [selectedMemberForQR, setSelectedMemberForQR] = useState<typeof mockMembers[0] | null>(null);
 
   // Ref for scrolling to category breakdown
   const categoryBreakdownRef = useRef<HTMLDivElement>(null);
@@ -229,6 +236,17 @@ export function TripExpenses() {
     return settlement.status === "pending" && settlement.toUser.name === CURRENT_USER;
   };
 
+  // Get members who have uploaded QR codes (excluding current user)
+  const membersWithQR = useMemo(() => {
+    return mockMembers.filter(m => m.qrCodeUrl && m.name !== CURRENT_USER);
+  }, []);
+
+  // Handler for viewing a member's QR code
+  const handleViewMemberQR = (member: typeof mockMembers[0]) => {
+    setSelectedMemberForQR(member);
+    setViewQROpen(true);
+  };
+
   return (
     <div className="relative">
       {/* Always Visible: Header + Stat Cards */}
@@ -281,7 +299,7 @@ export function TripExpenses() {
             { label: "Breakdown", value: "breakdown" },
             { label: "Expenses", value: "expenses" },
             { label: "Settle", value: "settle" },
-            { label: "My QR", value: "myqr" },
+            { label: "QR Codes", value: "qrcodes" },
           ]}
           value={subTab}
           onChange={(value) => {
@@ -293,6 +311,9 @@ export function TripExpenses() {
             }
             if (value === "expenses") {
               setFilterPayer("all");
+            }
+            if (value === "qrcodes") {
+              setQrSubView("myqr");
             }
           }}
         />
@@ -478,15 +499,78 @@ export function TripExpenses() {
           </div>
         )}
 
-        {/* My QR Tab */}
-        {subTab === "myqr" && (
+        {/* QR Codes Tab */}
+        {subTab === "qrcodes" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4">
-            {/* QR Management */}
-            <YourQRSection
-              qrCodeUrl={userQRUrl}
-              onUpload={handleUploadUserQR}
-              onRemove={handleRemoveUserQR}
+            {/* Sub-toggle: My QR / Others */}
+            <SegmentedControl
+              options={[
+                { label: "My QR", value: "myqr" },
+                { label: "Others", value: "others" },
+              ]}
+              value={qrSubView}
+              onChange={(value) => setQrSubView(value as "myqr" | "others")}
+              className="max-w-xs mx-auto"
             />
+            
+            {/* My QR View */}
+            {qrSubView === "myqr" && (
+              <YourQRSection
+                qrCodeUrl={userQRUrl}
+                onUpload={handleUploadUserQR}
+                onRemove={handleRemoveUserQR}
+              />
+            )}
+            
+            {/* Others View */}
+            {qrSubView === "others" && (
+              <div className="space-y-3">
+                {/* Description */}
+                <p className="text-sm text-muted-foreground text-center">
+                  View group members' QR codes to make payments
+                </p>
+                
+                {/* Member Cards - Only show members with QR */}
+                {membersWithQR.length > 0 ? (
+                  membersWithQR.map((member) => (
+                    <Card key={member.id} className="p-3 border-border/50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={member.imageUrl} alt={member.name} />
+                            <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-foreground text-sm">{member.name}</p>
+                            <p className="text-xs text-muted-foreground">QR available</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs rounded-lg"
+                          onClick={() => handleViewMemberQR(member)}
+                        >
+                          <QrCode className="h-3.5 w-3.5 mr-1.5" />
+                          View QR
+                        </Button>
+                      </div>
+                    </Card>
+                  ))
+                ) : (
+                  // Empty state
+                  <Card className="p-6 text-center border-border/50">
+                    <QrCode className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      No QR codes available yet.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Ask your group to upload theirs for faster settlement.
+                    </p>
+                  </Card>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -509,10 +593,16 @@ export function TripExpenses() {
       {/* View QR Modal */}
       <ViewQRModal
         open={viewQROpen}
-        onOpenChange={setViewQROpen}
-        recipientName={selectedSettlement?.toUser.name || ""}
-        amount={selectedSettlement?.amount || 0}
-        qrCodeUrl={selectedSettlement?.toUser.qrCodeUrl || userQRUrl || undefined}
+        onOpenChange={(open) => {
+          setViewQROpen(open);
+          if (!open) {
+            setSelectedMemberForQR(null);
+            setSelectedSettlement(null);
+          }
+        }}
+        recipientName={selectedMemberForQR?.name || selectedSettlement?.toUser.name || ""}
+        amount={selectedSettlement?.amount}
+        qrCodeUrl={selectedMemberForQR?.qrCodeUrl || selectedSettlement?.toUser.qrCodeUrl || userQRUrl || undefined}
       />
 
       {/* Mark as Paid Modal */}
