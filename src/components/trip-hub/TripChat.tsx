@@ -16,9 +16,9 @@ export function TripChat() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-130px)]">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
+    <div className="flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-130px)] relative">
+      {/* Messages - add bottom padding to account for fixed composer */}
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 sm:pb-28">
         {mockMessages.map((msg) => {
           const isOwn = msg.senderId === currentUserId;
           const isSystem = msg.type === "system";
@@ -64,30 +64,32 @@ export function TripChat() {
         })}
       </div>
 
-      {/* Composer */}
-      <div className="sticky bottom-0 p-3 sm:p-4 glass border-t border-border/50 safe-bottom">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
-            <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-          </Button>
-          <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
-            <Image className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-          </Button>
-          <Input
-            placeholder="Type a message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            className="flex-1 rounded-full bg-secondary border-0 h-9 sm:h-10 text-sm sm:text-base"
-          />
-          <Button
-            size="icon"
-            className="shrink-0 rounded-full h-9 w-9 sm:h-10 sm:w-10"
-            onClick={handleSend}
-            disabled={!message.trim()}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+      {/* Composer - Fixed to bottom, positioned above BottomNav */}
+      <div className="fixed bottom-16 sm:bottom-[68px] left-0 right-0 p-3 sm:p-4 glass border-t border-border/50 z-40">
+        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
+              <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+            </Button>
+            <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
+              <Image className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+            </Button>
+            <Input
+              placeholder="Type a message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              className="flex-1 rounded-full bg-secondary border-0 h-9 sm:h-10 text-sm sm:text-base"
+            />
+            <Button
+              size="icon"
+              className="shrink-0 rounded-full h-9 w-9 sm:h-10 sm:w-10"
+              onClick={handleSend}
+              disabled={!message.trim()}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
