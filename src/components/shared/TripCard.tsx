@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PillChip } from "./PillChip";
 import { cn } from "@/lib/utils";
+import { TripType } from "@/data/mockData";
 
 interface TripCardProps {
   id: string;
@@ -18,6 +19,7 @@ interface TripCardProps {
   totalSlots: number;
   tags: string[];
   isAlmostFull?: boolean;
+  tripType?: TripType;
   className?: string;
 }
 
@@ -34,6 +36,7 @@ export function TripCard({
   totalSlots,
   tags,
   isAlmostFull,
+  tripType,
   className,
 }: TripCardProps) {
   return (
@@ -46,6 +49,21 @@ export function TripCard({
             alt={title}
             className="h-full w-full object-cover transition-transform hover:scale-105"
           />
+          {/* Trip Type Badge */}
+          {tripType && (
+            <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3">
+              <span
+                className={cn(
+                  "text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full",
+                  tripType === "diy"
+                    ? "bg-primary/90 text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground"
+                )}
+              >
+                {tripType === "diy" ? "DIY" : "Guided"}
+              </span>
+            </div>
+          )}
           {isAlmostFull && (
             <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
               <span className="bg-warning text-warning-foreground text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full">
