@@ -506,23 +506,29 @@ export default function TripDetails() {
               {mockMembers.map((member) => (
                 <Card key={member.id} className="p-3 sm:p-4 border-border/50">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-muted overflow-hidden shrink-0">
-                      {member.imageUrl ? (
-                        <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-muted-foreground font-medium text-sm sm:text-base">
-                          {member.name.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm sm:text-base truncate">{member.name}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{member.role}</p>
-                      {/* Member Descriptor */}
-                      {member.descriptor && (
-                        <p className="text-xs text-muted-foreground/70">{member.descriptor}</p>
-                      )}
-                    </div>
+                    {/* Clickable Avatar + Name area */}
+                    <Link 
+                      to={`/user/${member.id}`}
+                      className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                    >
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-muted overflow-hidden shrink-0">
+                        {member.imageUrl ? (
+                          <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-muted-foreground font-medium text-sm sm:text-base">
+                            {member.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground text-sm sm:text-base truncate">{member.name}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{member.role}</p>
+                        {member.descriptor && (
+                          <p className="text-xs text-muted-foreground/70">{member.descriptor}</p>
+                        )}
+                      </div>
+                    </Link>
+                    {/* Message button stays separate */}
                     <Button variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm">
                       Message
                     </Button>

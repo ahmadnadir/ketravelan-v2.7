@@ -31,8 +31,8 @@ const categoryBreakdown = [
 
 interface Settlement {
   id: string;
-  fromUser: { name: string; imageUrl?: string };
-  toUser: { name: string; imageUrl?: string; qrCodeUrl?: string };
+  fromUser: { id: string; name: string; imageUrl?: string };
+  toUser: { id: string; name: string; imageUrl?: string; qrCodeUrl?: string };
   amount: number;
   status: "pending" | "paid";
 }
@@ -40,29 +40,29 @@ interface Settlement {
 const mockSettlements: Settlement[] = [
   {
     id: "s1",
-    fromUser: { name: "Sarah", imageUrl: mockMembers[1]?.imageUrl },
-    toUser: { name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
+    fromUser: { id: "2", name: "Sarah", imageUrl: mockMembers[1]?.imageUrl },
+    toUser: { id: "1", name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
     amount: 120,
     status: "pending",
   },
   {
     id: "s2",
-    fromUser: { name: "Lisa", imageUrl: mockMembers[2]?.imageUrl },
-    toUser: { name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
+    fromUser: { id: "3", name: "Lisa", imageUrl: mockMembers[2]?.imageUrl },
+    toUser: { id: "1", name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
     amount: 85,
     status: "paid",
   },
   {
     id: "s3",
-    fromUser: { name: "John", imageUrl: mockMembers[3]?.imageUrl },
-    toUser: { name: "Sarah", imageUrl: mockMembers[1]?.imageUrl },
+    fromUser: { id: "4", name: "John", imageUrl: mockMembers[3]?.imageUrl },
+    toUser: { id: "2", name: "Sarah", imageUrl: mockMembers[1]?.imageUrl },
     amount: 45,
     status: "pending",
   },
   {
     id: "s4",
-    fromUser: { name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
-    toUser: { name: "Lisa", imageUrl: mockMembers[2]?.imageUrl },
+    fromUser: { id: "1", name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
+    toUser: { id: "3", name: "Lisa", imageUrl: mockMembers[2]?.imageUrl },
     amount: 60,
     status: "pending",
   },
