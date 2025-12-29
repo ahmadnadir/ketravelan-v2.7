@@ -43,22 +43,12 @@ export function HeroSection() {
               </Button>
             </Link>
           </div>
-
-          {/* Trust Micro-cue - Desktop: below CTAs, Mobile: at bottom */}
-          <p className="text-sm text-muted-foreground hidden md:block">
-            Real people · Verified profiles · Transparent costs
-          </p>
         </div>
 
         {/* Right Column - Interactive Mockup */}
         <div className="order-2 flex justify-center md:justify-end">
           <InteractivePhoneMockup />
         </div>
-
-        {/* Trust Micro-cue - Mobile only, shown after mockup */}
-        <p className="text-sm text-muted-foreground text-center md:hidden order-3 col-span-full">
-          Real people · Verified profiles · Transparent costs
-        </p>
       </div>
     </section>
   );
