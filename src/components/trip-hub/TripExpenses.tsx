@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, MessageCircle, DollarSign, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, MessageCircle, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User } from "lucide-react";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StatCard } from "@/components/shared/StatCard";
 import { ExpenseCard } from "@/components/shared/ExpenseCard";
@@ -7,6 +7,13 @@ import { SettlementCard } from "@/components/shared/SettlementCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { mockExpenses, mockMembers } from "@/data/mockData";
 
 const categoryBreakdown = [
@@ -18,11 +25,38 @@ const categoryBreakdown = [
 
 export function TripExpenses() {
   const [subTab, setSubTab] = useState("breakdown");
+  const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
+  const [filterPayer, setFilterPayer] = useState<string>("all");
 
   const totalCost = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
   const yourExpenses = 680;
   const youOwe = 120;
   const owedToYou = 85;
+
+  // Get unique payers from expenses
+  const uniquePayers = useMemo(() => {
+    const payers = [...new Set(mockExpenses.map(e => e.paidBy))];
+    return payers;
+  }, []);
+
+  // Filter and sort expenses
+  const filteredExpenses = useMemo(() => {
+    let result = [...mockExpenses];
+    
+    // Filter by payer
+    if (filterPayer !== "all") {
+      result = result.filter(e => e.paidBy === filterPayer);
+    }
+    
+    // Sort by date
+    result.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return sortOrder === "latest" ? dateB - dateA : dateA - dateB;
+    });
+    
+    return result;
+  }, [sortOrder, filterPayer]);
 
   return (
     <div className="px-3 sm:px-4 py-3 sm:py-4 pb-8 space-y-4 sm:space-y-6">
@@ -132,16 +166,52 @@ export function TripExpenses() {
 
       {/* Expenses Tab */}
       {subTab === "expenses" && (
-        <div className="space-y-2 sm:space-y-3">
-          {mockExpenses.map((expense) => (
-            <ExpenseCard
-              key={expense.id}
-              {...expense}
-              onEdit={() => console.log("Edit", expense.id)}
-              onDelete={() => console.log("Delete", expense.id)}
-              onViewReceipt={() => console.log("View receipt", expense.id)}
-            />
-          ))}
+        <div className="space-y-3 sm:space-y-4">
+          {/* Filter Row */}
+          <div className="flex gap-2 sm:gap-3">
+            <Select value={sortOrder} onValueChange={(value: "latest" | "oldest") => setSortOrder(value)}>
+              <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue placeholder="Sort by date" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="latest">Latest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterPayer} onValueChange={setFilterPayer}>
+              <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                <User className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue placeholder="Paid by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All members</SelectItem>
+                {uniquePayers.map((payer) => (
+                  <SelectItem key={payer} value={payer}>{payer}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Expense Cards */}
+          <div className="space-y-2 sm:space-y-3">
+            {filteredExpenses.length > 0 ? (
+              filteredExpenses.map((expense) => (
+                <ExpenseCard
+                  key={expense.id}
+                  {...expense}
+                  onEdit={() => console.log("Edit", expense.id)}
+                  onDelete={() => console.log("Delete", expense.id)}
+                  onViewReceipt={() => console.log("View receipt", expense.id)}
+                />
+              ))
+            ) : (
+              <Card className="p-6 text-center border-border/50">
+                <p className="text-sm text-muted-foreground">No expenses found</p>
+              </Card>
+            )}
+          </div>
         </div>
       )}
 
