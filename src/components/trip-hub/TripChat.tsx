@@ -1,18 +1,13 @@
-import { useState } from "react";
-import { Send, Image, Paperclip } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { mockMessages } from "@/data/mockData";
+import { ChatComposer } from "@/components/chat/ChatComposer";
 
 export function TripChat() {
-  const [message, setMessage] = useState("");
   const currentUserId = "1"; // Mock current user
 
-  const handleSend = () => {
-    if (!message.trim()) return;
+  const handleSend = (message: string) => {
+    console.log("Send message:", message);
     // Would send message here
-    setMessage("");
   };
 
   return (
@@ -64,34 +59,8 @@ export function TripChat() {
         })}
       </div>
 
-      {/* Composer - Fixed to bottom, positioned above BottomNav */}
-      <div className="fixed bottom-16 sm:bottom-[68px] left-0 right-0 p-3 sm:p-4 glass border-t border-border/50 z-40">
-        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
-              <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-            </Button>
-            <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
-              <Image className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-            </Button>
-            <Input
-              placeholder="Type a message..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              className="flex-1 rounded-full bg-secondary border-0 h-9 sm:h-10 text-sm sm:text-base"
-            />
-            <Button
-              size="icon"
-              className="shrink-0 rounded-full h-9 w-9 sm:h-10 sm:w-10"
-              onClick={handleSend}
-              disabled={!message.trim()}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Composer */}
+      <ChatComposer onSend={handleSend} />
     </div>
   );
 }
