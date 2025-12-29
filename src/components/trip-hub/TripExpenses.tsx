@@ -4,6 +4,9 @@ import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StatCard } from "@/components/shared/StatCard";
 import { ExpenseCard } from "@/components/shared/ExpenseCard";
 import { SettlementCard } from "@/components/shared/SettlementCard";
+import { ViewQRModal } from "@/components/trip-hub/ViewQRModal";
+import { MarkAsPaidModal } from "@/components/trip-hub/MarkAsPaidModal";
+import { YourQRSection } from "@/components/trip-hub/YourQRSection";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -15,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { mockExpenses, mockMembers } from "@/data/mockData";
+import { toast } from "@/hooks/use-toast";
 
 const categoryBreakdown = [
   { category: "Transport", amount: 770, percentage: 30, color: "bg-stat-blue" },
@@ -23,10 +27,53 @@ const categoryBreakdown = [
   { category: "Activities", amount: 180, percentage: 7, color: "bg-stat-green" },
 ];
 
+interface Settlement {
+  id: string;
+  fromUser: { name: string; imageUrl?: string };
+  toUser: { name: string; imageUrl?: string; qrCodeUrl?: string };
+  amount: number;
+  status: "pending" | "paid";
+}
+
+const mockSettlements: Settlement[] = [
+  {
+    id: "s1",
+    fromUser: { name: "Sarah", imageUrl: mockMembers[1]?.imageUrl },
+    toUser: { name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
+    amount: 120,
+    status: "pending",
+  },
+  {
+    id: "s2",
+    fromUser: { name: "Lisa", imageUrl: mockMembers[2]?.imageUrl },
+    toUser: { name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
+    amount: 85,
+    status: "paid",
+  },
+  {
+    id: "s3",
+    fromUser: { name: "John", imageUrl: mockMembers[3]?.imageUrl },
+    toUser: { name: "Sarah", imageUrl: mockMembers[1]?.imageUrl },
+    amount: 45,
+    status: "pending",
+  },
+];
+
 export function TripExpenses() {
   const [subTab, setSubTab] = useState("breakdown");
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [filterPayer, setFilterPayer] = useState<string>("all");
+
+  // Modal states
+  const [viewQROpen, setViewQROpen] = useState(false);
+  const [markPaidOpen, setMarkPaidOpen] = useState(false);
+  const [selectedSettlement, setSelectedSettlement] = useState<Settlement | null>(null);
+
+  // User's own QR
+  const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
+
+  // Settlement data with local state for status updates
+  const [settlements, setSettlements] = useState<Settlement[]>(mockSettlements);
 
   const totalCost = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
   const yourExpenses = 680;
@@ -57,6 +104,50 @@ export function TripExpenses() {
     
     return result;
   }, [sortOrder, filterPayer]);
+
+  const handleViewQR = (settlement: Settlement) => {
+    setSelectedSettlement(settlement);
+    setViewQROpen(true);
+  };
+
+  const handleMarkPaid = (settlement: Settlement) => {
+    setSelectedSettlement(settlement);
+    setMarkPaidOpen(true);
+  };
+
+  const handleConfirmPayment = (note?: string, receiptFile?: File) => {
+    if (selectedSettlement) {
+      setSettlements((prev) =>
+        prev.map((s) =>
+          s.id === selectedSettlement.id ? { ...s, status: "paid" as const } : s
+        )
+      );
+      toast({
+        title: "Payment confirmed",
+        description: `Payment to ${selectedSettlement.toUser.name} marked as paid${note ? `: ${note}` : ""}`,
+      });
+    }
+  };
+
+  const handleUploadUserQR = (file: File) => {
+    const url = URL.createObjectURL(file);
+    setUserQRUrl(url);
+    toast({
+      title: "QR uploaded",
+      description: "Your payment QR has been saved",
+    });
+  };
+
+  const handleRemoveUserQR = () => {
+    if (userQRUrl) {
+      URL.revokeObjectURL(userQRUrl);
+      setUserQRUrl(null);
+    }
+    toast({
+      title: "QR removed",
+      description: "Your payment QR has been removed",
+    });
+  };
 
   return (
     <div className="px-3 sm:px-4 py-3 sm:py-4 pb-8 space-y-4 sm:space-y-6">
@@ -217,32 +308,49 @@ export function TripExpenses() {
 
       {/* Settlement Tab */}
       {subTab === "settlement" && (
-        <div className="space-y-2 sm:space-y-3">
-          <SettlementCard
-            fromUser={{ name: "Sarah", imageUrl: mockMembers[1].imageUrl }}
-            toUser={{ name: "Ahmad", imageUrl: mockMembers[0].imageUrl }}
-            amount={120}
-            status="pending"
-            onViewPayment={() => console.log("View payment")}
-            onMarkPaid={() => console.log("Mark paid")}
+        <div className="space-y-4">
+          {/* Your QR Section */}
+          <YourQRSection
+            qrCodeUrl={userQRUrl}
+            onUpload={handleUploadUserQR}
+            onRemove={handleRemoveUserQR}
           />
-          <SettlementCard
-            fromUser={{ name: "Lisa", imageUrl: mockMembers[2].imageUrl }}
-            toUser={{ name: "Ahmad", imageUrl: mockMembers[0].imageUrl }}
-            amount={85}
-            status="paid"
-            onViewPayment={() => console.log("View payment")}
-          />
-          <SettlementCard
-            fromUser={{ name: "John", imageUrl: mockMembers[3].imageUrl }}
-            toUser={{ name: "Sarah", imageUrl: mockMembers[1].imageUrl }}
-            amount={45}
-            status="pending"
-            onViewPayment={() => console.log("View payment")}
-            onMarkPaid={() => console.log("Mark paid")}
-          />
+
+          {/* Settlements */}
+          <div className="space-y-2 sm:space-y-3">
+            <h3 className="font-semibold text-foreground text-sm sm:text-base">Settlements</h3>
+            {settlements.map((settlement) => (
+              <SettlementCard
+                key={settlement.id}
+                fromUser={settlement.fromUser}
+                toUser={settlement.toUser}
+                amount={settlement.amount}
+                status={settlement.status}
+                onViewPayment={() => handleViewQR(settlement)}
+                onMarkPaid={() => handleMarkPaid(settlement)}
+              />
+            ))}
+          </div>
         </div>
       )}
+
+      {/* View QR Modal */}
+      <ViewQRModal
+        open={viewQROpen}
+        onOpenChange={setViewQROpen}
+        recipientName={selectedSettlement?.toUser.name || ""}
+        amount={selectedSettlement?.amount || 0}
+        qrCodeUrl={selectedSettlement?.toUser.qrCodeUrl || userQRUrl || undefined}
+      />
+
+      {/* Mark as Paid Modal */}
+      <MarkAsPaidModal
+        open={markPaidOpen}
+        onOpenChange={setMarkPaidOpen}
+        recipientName={selectedSettlement?.toUser.name || ""}
+        amount={selectedSettlement?.amount || 0}
+        onConfirm={handleConfirmPayment}
+      />
     </div>
   );
 }

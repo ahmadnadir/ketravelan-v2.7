@@ -1,18 +1,41 @@
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Users } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { cn } from "@/lib/utils";
 import { mockChats } from "@/data/mockData";
 
 export default function Chat() {
+  const [chatFilter, setChatFilter] = useState<"trips" | "direct">("trips");
+
+  const filteredChats = useMemo(() => {
+    return mockChats.filter((chat) =>
+      chatFilter === "trips" ? chat.type === "trip" : chat.type === "direct"
+    );
+  }, [chatFilter]);
+
+  const tripCount = mockChats.filter((c) => c.type === "trip").length;
+  const directCount = mockChats.filter((c) => c.type === "direct").length;
+
   return (
     <AppLayout>
-      <div className="py-6 space-y-6">
+      <div className="py-6 space-y-4">
         <h1 className="text-2xl font-bold text-foreground">Messages</h1>
 
+        {/* Tabs */}
+        <SegmentedControl
+          options={[
+            { label: "Trips", value: "trips", count: tripCount },
+            { label: "Direct", value: "direct", count: directCount },
+          ]}
+          value={chatFilter}
+          onChange={(value) => setChatFilter(value as "trips" | "direct")}
+        />
+
         <div className="space-y-2">
-          {mockChats.map((chat) => (
+          {filteredChats.map((chat) => (
             <Link
               key={chat.id}
               to={
@@ -33,7 +56,11 @@ export default function Chat() {
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center">
-                          <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                          {chat.type === "trip" ? (
+                            <Users className="h-5 w-5 text-muted-foreground" />
+                          ) : (
+                            <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                          )}
                         </div>
                       )}
                     </div>
@@ -73,10 +100,18 @@ export default function Chat() {
           ))}
         </div>
 
-        {mockChats.length === 0 && (
+        {filteredChats.length === 0 && (
           <div className="text-center py-12">
-            <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No messages yet</p>
+            {chatFilter === "trips" ? (
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            ) : (
+              <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            )}
+            <p className="text-muted-foreground">
+              {chatFilter === "trips"
+                ? "No trip chats yet"
+                : "No direct messages yet"}
+            </p>
           </div>
         )}
       </div>
