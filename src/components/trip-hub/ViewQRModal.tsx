@@ -1,4 +1,4 @@
-import { Download, X } from "lucide-react";
+import { Download } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -36,13 +36,7 @@ export function ViewQRModal({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
-        <SheetHeader className="relative pb-4">
-          <button
-            onClick={() => onOpenChange(false)}
-            className="absolute right-0 top-0 p-2 rounded-full hover:bg-muted transition-colors"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
+        <SheetHeader className="pb-4">
           <SheetTitle className="text-center text-lg font-semibold">
             Payment QR Code
           </SheetTitle>

@@ -409,51 +409,37 @@ export function TripExpenses() {
         {/* Settle Tab */}
         {subTab === "settle" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4">
-            {/* Filter Controls */}
-            <div className="space-y-3">
-              {/* Direction Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground shrink-0">Direction:</span>
-                <div className="flex gap-1.5 flex-wrap">
-                  {[
-                    { value: "all", label: "All" },
-                    { value: "owesMe", label: "Owes Me" },
-                    { value: "iOwe", label: "I Owe" },
-                  ].map((option) => (
-                    <Button
-                      key={option.value}
-                      variant={directionFilter === option.value ? "default" : "secondary"}
-                      size="sm"
-                      className="h-7 text-xs rounded-full px-3"
-                      onClick={() => setDirectionFilter(option.value as typeof directionFilter)}
-                    >
-                      {option.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+            {/* Filter Controls - Dropdowns */}
+            <div className="flex gap-2">
+              {/* Direction Filter Dropdown */}
+              <Select 
+                value={directionFilter} 
+                onValueChange={(value: "all" | "owesMe" | "iOwe") => setDirectionFilter(value)}
+              >
+                <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                  <SelectValue placeholder="Direction" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border">
+                  <SelectItem value="all">All Directions</SelectItem>
+                  <SelectItem value="owesMe">Owes Me</SelectItem>
+                  <SelectItem value="iOwe">I Owe</SelectItem>
+                </SelectContent>
+              </Select>
 
-              {/* Status Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground shrink-0">Status:</span>
-                <div className="flex gap-1.5 flex-wrap">
-                  {[
-                    { value: "all", label: "All" },
-                    { value: "pending", label: "Pending" },
-                    { value: "paid", label: "Paid" },
-                  ].map((option) => (
-                    <Button
-                      key={option.value}
-                      variant={statusFilter === option.value ? "default" : "secondary"}
-                      size="sm"
-                      className="h-7 text-xs rounded-full px-3"
-                      onClick={() => setStatusFilter(option.value as typeof statusFilter)}
-                    >
-                      {option.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              {/* Status Filter Dropdown */}
+              <Select 
+                value={statusFilter} 
+                onValueChange={(value: "all" | "pending" | "paid") => setStatusFilter(value)}
+              >
+                <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border">
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Settlements */}
