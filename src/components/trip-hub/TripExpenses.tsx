@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User, Bell, QrCode } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User, Bell, QrCode, Layers } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StatCard } from "@/components/shared/StatCard";
@@ -28,6 +28,35 @@ const categoryBreakdown = [
   { category: "Accommodation", amount: 1200, percentage: 47, color: "bg-purple-500" },
   { category: "Activities", amount: 180, percentage: 7, color: "bg-stat-green" },
 ];
+
+// Category mapping for expense filtering
+const categoryMap: Record<string, string> = {
+  "Ferry": "Transport",
+  "Rental": "Transport",
+  "car": "Transport",
+  "taxi": "Transport",
+  "flight": "Transport",
+  "dinner": "Food & Drinks",
+  "lunch": "Food & Drinks",
+  "breakfast": "Food & Drinks",
+  "restaurant": "Food & Drinks",
+  "food": "Food & Drinks",
+  "Accommodation": "Accommodation",
+  "hotel": "Accommodation",
+  "resort": "Accommodation",
+  "Bridge": "Activities",
+  "ticket": "Activities",
+  "tour": "Activities",
+  "activity": "Activities",
+};
+
+const getCategoryFromTitle = (title: string): string => {
+  const lowerTitle = title.toLowerCase();
+  for (const [keyword, category] of Object.entries(categoryMap)) {
+    if (lowerTitle.includes(keyword.toLowerCase())) return category;
+  }
+  return "Other";
+};
 
 interface Settlement {
   id: string;
@@ -75,6 +104,7 @@ export function TripExpenses() {
   const [subTab, setSubTab] = useState("breakdown");
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [filterPayer, setFilterPayer] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
   
   // Settlement filters
   const [directionFilter, setDirectionFilter] = useState<"all" | "owesMe" | "iOwe">("all");
@@ -102,7 +132,7 @@ export function TripExpenses() {
   const [settlements, setSettlements] = useState<Settlement[]>(mockSettlements);
 
   const totalCost = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
-  const yourExpenses = 680;
+  const yourTotalExpenses = 680;
   const youOwe = 120;
   const owedToYou = 85;
 
@@ -121,6 +151,11 @@ export function TripExpenses() {
       result = result.filter(e => e.paidBy === filterPayer);
     }
     
+    // Filter by category
+    if (filterCategory !== "all") {
+      result = result.filter(e => getCategoryFromTitle(e.title) === filterCategory);
+    }
+    
     // Sort by date
     result.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
@@ -129,7 +164,7 @@ export function TripExpenses() {
     });
     
     return result;
-  }, [sortOrder, filterPayer]);
+  }, [sortOrder, filterPayer, filterCategory]);
 
   // Filter settlements based on direction and status filters
   const filteredSettlements = useMemo(() => {
@@ -268,11 +303,12 @@ export function TripExpenses() {
             onClick={handleTotalSpendTap}
           />
           <StatCard
-            title="You Paid"
-            value={`RM ${yourExpenses.toLocaleString()}`}
+            title="Your Total Expenses"
+            value={`RM ${yourTotalExpenses.toLocaleString()}`}
             icon={Wallet}
             color="green"
-            description="Your contributions"
+            subtitle="Your share of all trip costs"
+            tooltip="Includes expenses paid by others that were split with you"
             onClick={handleYouPaidTap}
           />
           <StatCard
@@ -311,6 +347,7 @@ export function TripExpenses() {
             }
             if (value === "expenses") {
               setFilterPayer("all");
+              setFilterCategory("all");
             }
             if (value === "qrcodes") {
               setQrSubView("myqr");
@@ -380,28 +417,42 @@ export function TripExpenses() {
         {subTab === "expenses" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
             {/* Filter Row */}
-            <div className="flex gap-2 sm:gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               <Select value={sortOrder} onValueChange={(value: "latest" | "oldest") => setSortOrder(value)}>
-                <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                <SelectTrigger className="flex-1 min-w-[100px] h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
                   <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue placeholder="Sort by date" />
+                  <SelectValue placeholder="Sort" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border-border">
                   <SelectItem value="latest">Latest first</SelectItem>
                   <SelectItem value="oldest">Oldest first</SelectItem>
                 </SelectContent>
               </Select>
               
               <Select value={filterPayer} onValueChange={setFilterPayer}>
-                <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                <SelectTrigger className="flex-1 min-w-[100px] h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
                   <User className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
                   <SelectValue placeholder="Paid by" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border-border">
                   <SelectItem value="all">All members</SelectItem>
                   {uniquePayers.map((payer) => (
                     <SelectItem key={payer} value={payer}>{payer}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="flex-1 min-w-[100px] h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                  <Layers className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border">
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="Transport">Transport</SelectItem>
+                  <SelectItem value="Food & Drinks">Food & Drinks</SelectItem>
+                  <SelectItem value="Accommodation">Accommodation</SelectItem>
+                  <SelectItem value="Activities">Activities</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -564,10 +615,10 @@ export function TripExpenses() {
         )}
       </div>
 
-      {/* Sticky CTA - Only on Breakdown and Expenses tabs */}
+      {/* Fixed Bottom Action Container - Only on Breakdown and Expenses tabs */}
       {(subTab === "breakdown" || subTab === "expenses") && (
-        <div className="fixed bottom-20 left-0 right-0 z-40 px-4 pb-2 pointer-events-none">
-          <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto pointer-events-auto">
+        <div className="fixed bottom-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50">
+          <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
             <Button 
               className="w-full h-12 rounded-xl text-sm font-medium shadow-lg"
               onClick={handleAddExpense}

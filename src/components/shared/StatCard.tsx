@@ -1,6 +1,12 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface StatCardProps {
   title: string;
@@ -9,6 +15,7 @@ interface StatCardProps {
   color?: "blue" | "green" | "orange" | "red";
   subtitle?: string;
   description?: string;
+  tooltip?: string;
   onClick?: () => void;
   className?: string;
 }
@@ -27,6 +34,7 @@ export function StatCard({
   color = "blue",
   subtitle,
   description,
+  tooltip,
   onClick,
   className,
 }: StatCardProps) {
@@ -41,7 +49,21 @@ export function StatCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
-          <p className="text-xs sm:text-sm text-muted-foreground truncate">{title}</p>
+          <div className="flex items-center gap-1">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">{title}</p>
+            {tooltip && (
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Info className="h-3 w-3 text-muted-foreground/60 shrink-0 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px] text-xs">
+                    {tooltip}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
           <p className="text-base sm:text-xl font-bold text-foreground truncate">{value}</p>
           {subtitle && (
             <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{subtitle}</p>
