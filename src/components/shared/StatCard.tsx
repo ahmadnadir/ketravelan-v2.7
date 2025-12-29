@@ -8,6 +8,8 @@ interface StatCardProps {
   icon: LucideIcon;
   color?: "blue" | "green" | "orange" | "red";
   subtitle?: string;
+  description?: string;
+  onClick?: () => void;
   className?: string;
 }
 
@@ -24,16 +26,28 @@ export function StatCard({
   icon: Icon,
   color = "blue",
   subtitle,
+  description,
+  onClick,
   className,
 }: StatCardProps) {
   return (
-    <Card className={cn("p-3 sm:p-4 border-border/50", className)}>
+    <Card 
+      className={cn(
+        "p-3 sm:p-4 border-border/50 transition-all",
+        onClick && "cursor-pointer hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
+        className
+      )}
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
           <p className="text-xs sm:text-sm text-muted-foreground truncate">{title}</p>
           <p className="text-base sm:text-xl font-bold text-foreground truncate">{value}</p>
           {subtitle && (
             <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{subtitle}</p>
+          )}
+          {description && (
+            <p className="text-[10px] sm:text-xs text-muted-foreground/80 truncate">{description}</p>
           )}
         </div>
         <div className={cn("p-1.5 sm:p-2 rounded-lg sm:rounded-xl shrink-0", colorStyles[color])}>
