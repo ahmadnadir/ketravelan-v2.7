@@ -190,7 +190,7 @@ export default function TripDetails() {
 
   return (
     <AppLayout hideHeader>
-      <div className="pb-24">
+      <div className="pb-36">
         {/* Image Gallery */}
         <div className="relative -mx-4 sm:-mx-6">
           <div className="aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
@@ -259,10 +259,6 @@ export default function TripDetails() {
             <div className="flex items-start justify-between gap-2">
               <div className="space-y-1">
                 <h1 className="text-xl sm:text-2xl font-bold text-foreground">{tripData.title}</h1>
-                {/* Value Proposition */}
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {valueProposition}
-                </p>
               </div>
               {isPublishedTrip && (
                 <span className={`px-2 py-1 text-xs font-medium rounded-full shrink-0 ${
@@ -341,28 +337,8 @@ export default function TripDetails() {
                 Organized by <span className="text-foreground font-medium">{organizer.name}</span>
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Questions? Message the organizer before joining.
-            </p>
           </div>
 
-          {/* CTAs */}
-          <div className="space-y-2">
-            <div className="flex gap-2 sm:gap-3">
-              <Link to={`/trip/${id}/hub`} className="flex-1">
-                <Button size="lg" className="w-full rounded-xl text-sm sm:text-base">
-                  Request to Join
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="rounded-xl shrink-0">
-                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
-            </div>
-            {/* CTA Helper Text */}
-            <p className="text-xs text-muted-foreground text-center">
-              No payment required at this stage. You'll be added to the group chat once approved.
-            </p>
-          </div>
 
           {/* Tabs */}
           <SegmentedControl
@@ -391,11 +367,10 @@ export default function TripDetails() {
                 </ul>
               </Card>
 
-              {/* Requirements - Renamed */}
+              {/* Requirements */}
               {tripData.requirements.length > 0 && (
                 <Card className="p-3 sm:p-4 border-border/50">
-                  <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">Good to Know</h3>
-                  <p className="text-xs text-muted-foreground mb-2 sm:mb-3">Who this trip is for</p>
+                  <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">What to Expect</h3>
                   <ul className="space-y-1.5 sm:space-y-2">
                     {tripData.requirements.map((req, index) => (
                       <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
@@ -435,10 +410,12 @@ export default function TripDetails() {
                           RM {tripData.price}
                         </span>
                       </div>
-                      {/* Budget Reassurance */}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Estimated budget · Tracked transparently using the group expense tracker.
-                      </p>
+                      {/* Budget Clarification */}
+                      <div className="mt-2 p-2 bg-secondary/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          <span className="font-medium text-foreground">Estimated shared expenses.</span> This is the amount you should be prepared to spend during the trip. You don't pay this to the organizer — expenses are tracked and split transparently in the group.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -554,6 +531,25 @@ export default function TripDetails() {
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Sticky CTA Bar */}
+      <div className="fixed bottom-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
+        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Link to={`/trip/${id}/hub`} className="flex-1">
+              <Button size="lg" className="w-full rounded-xl text-sm sm:text-base">
+                Request to Join
+              </Button>
+            </Link>
+            <Button size="lg" variant="outline" className="rounded-xl shrink-0 h-11 w-11 p-0">
+              <MessageCircle className="h-5 w-5" />
+            </Button>
+          </div>
+          <p className="text-[10px] sm:text-xs text-muted-foreground text-center mt-1.5">
+            No payment required to join
+          </p>
         </div>
       </div>
     </AppLayout>
