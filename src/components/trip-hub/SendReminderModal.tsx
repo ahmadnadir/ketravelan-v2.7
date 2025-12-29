@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Mail, MessageCircle, Bell } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ interface SendReminderModalProps {
   recipientName: string;
   amount: number;
   tripName: string;
+  lastReminderSent?: Date;
   onSend: (message: string) => void;
 }
 
@@ -25,16 +27,17 @@ export function SendReminderModal({
   recipientName,
   amount,
   tripName,
+  lastReminderSent,
   onSend,
 }: SendReminderModalProps) {
-  const defaultMessage = `Hey 👋 Just a friendly reminder to settle RM${amount} for our ${tripName} trip. Thanks!`;
+  const defaultMessage = `Hey 👋 Just a reminder to settle RM${amount} for our ${tripName} trip. Thanks!`;
   const [message, setMessage] = useState(defaultMessage);
 
   const handleSend = () => {
     onSend(message);
     toast({
       title: "Reminder sent",
-      description: `Payment reminder sent to ${recipientName}`,
+      description: `Payment reminder sent to ${recipientName} via notification, chat, and email`,
     });
     onOpenChange(false);
     setMessage(defaultMessage);
@@ -59,6 +62,25 @@ export function SendReminderModal({
             placeholder="Write your reminder message..."
             className="min-h-[100px] resize-none"
           />
+
+          {/* Multi-channel notification info */}
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+            <div className="flex gap-1.5 mt-0.5">
+              <Bell className="h-3.5 w-3.5 text-muted-foreground" />
+              <MessageCircle className="h-3.5 w-3.5 text-muted-foreground" />
+              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              This will be sent via in-app notification, chat, and email.
+            </p>
+          </div>
+
+          {/* Last reminder sent timestamp */}
+          {lastReminderSent && (
+            <p className="text-xs text-muted-foreground/70 text-center">
+              Last reminder sent {formatDistanceToNow(lastReminderSent)} ago
+            </p>
+          )}
 
           <Button className="w-full" onClick={handleSend}>
             <Send className="h-4 w-4 mr-2" />
