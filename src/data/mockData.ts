@@ -1,5 +1,7 @@
 // Mock data for Ketravelan app
 
+export type TripType = "diy" | "guided";
+
 export const mockTrips = [
   {
     id: "1",
@@ -13,6 +15,7 @@ export const mockTrips = [
     totalSlots: 8,
     tags: ["Nature & Outdoor", "Beach", "Community"],
     isAlmostFull: true,
+    tripType: "diy" as TripType,
     description: "Join us for an unforgettable adventure exploring the beautiful beaches and rainforests of Langkawi. We'll visit iconic spots like the Sky Bridge, cable car, and pristine beaches.",
     requirements: [
       "Comfortable with swimming",
@@ -39,6 +42,7 @@ export const mockTrips = [
     totalSlots: 10,
     tags: ["Nature & Outdoor", "Cross Border"],
     isAlmostFull: false,
+    tripType: "diy" as TripType,
     description: "Escape the city heat with a refreshing trip to Cameron Highlands. Enjoy tea plantations, strawberry farms, and cool mountain air.",
     requirements: [
       "Warm clothing for cool weather",
@@ -63,6 +67,7 @@ export const mockTrips = [
     totalSlots: 12,
     tags: ["City & Urban", "Food", "Culture"],
     isAlmostFull: false,
+    tripType: "diy" as TripType,
     description: "Discover the rich heritage and incredible street food of Georgetown, Penang. Visit temples, street art, and eat your way through hawker centers.",
     requirements: [
       "Adventurous appetite",
@@ -87,6 +92,7 @@ export const mockTrips = [
     totalSlots: 8,
     tags: ["Nature & Outdoor", "Adventure"],
     isAlmostFull: false,
+    tripType: "diy" as TripType,
     description: "Explore one of the world's oldest rainforests! Canopy walk, night safari, river cruise, and indigenous village visit included.",
     requirements: [
       "Good physical fitness",
@@ -99,6 +105,82 @@ export const mockTrips = [
       { category: "Accommodation", amount: 280, icon: "bed" },
       { category: "Food", amount: 140, icon: "utensils" },
       { category: "Activities", amount: 150, icon: "ticket" },
+    ],
+  },
+  // Guided Trips
+  {
+    id: "5",
+    title: "Bali Wellness Retreat",
+    destination: "Bali, Indonesia",
+    imageUrl: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800",
+    startDate: "Mar 20, 2025",
+    endDate: "Mar 25, 2025",
+    price: 1850,
+    slotsLeft: 3,
+    totalSlots: 12,
+    tags: ["Wellness", "Guided", "Retreat"],
+    isAlmostFull: true,
+    tripType: "guided" as TripType,
+    description: "A curated wellness retreat in Ubud with daily yoga, spa treatments, and healthy cuisine. Led by certified wellness coaches.",
+    requirements: [
+      "Open to wellness activities",
+      "Basic yoga experience helpful",
+    ],
+    budgetBreakdown: [
+      { category: "Transport", amount: 400, icon: "car" },
+      { category: "Accommodation", amount: 800, icon: "bed" },
+      { category: "Food", amount: 350, icon: "utensils" },
+      { category: "Activities", amount: 300, icon: "ticket" },
+    ],
+  },
+  {
+    id: "6",
+    title: "Japan Cherry Blossom Tour",
+    destination: "Tokyo & Kyoto, Japan",
+    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800",
+    startDate: "Apr 1, 2025",
+    endDate: "Apr 8, 2025",
+    price: 3200,
+    slotsLeft: 5,
+    totalSlots: 15,
+    tags: ["Culture", "Guided", "Seasonal"],
+    isAlmostFull: false,
+    tripType: "guided" as TripType,
+    description: "Experience the magic of sakura season with a local guide. Visit Tokyo, Kyoto, and hidden gem locations for the best cherry blossom viewing.",
+    requirements: [
+      "Valid passport",
+      "Comfortable walking for 5+ km daily",
+    ],
+    budgetBreakdown: [
+      { category: "Transport", amount: 800, icon: "car" },
+      { category: "Accommodation", amount: 1400, icon: "bed" },
+      { category: "Food", amount: 600, icon: "utensils" },
+      { category: "Activities", amount: 400, icon: "ticket" },
+    ],
+  },
+  {
+    id: "7",
+    title: "Vietnam Heritage Journey",
+    destination: "Hanoi to Ho Chi Minh",
+    imageUrl: "https://images.unsplash.com/photo-1528127269322-539801943592?w=800",
+    startDate: "Apr 15, 2025",
+    endDate: "Apr 22, 2025",
+    price: 1450,
+    slotsLeft: 8,
+    totalSlots: 16,
+    tags: ["Heritage", "Guided", "Food"],
+    isAlmostFull: false,
+    tripType: "guided" as TripType,
+    description: "Journey through Vietnam from North to South. Explore Ha Long Bay, Hoi An, and the bustling streets of Saigon with expert local guides.",
+    requirements: [
+      "Valid passport",
+      "Adventurous appetite",
+    ],
+    budgetBreakdown: [
+      { category: "Transport", amount: 350, icon: "car" },
+      { category: "Accommodation", amount: 600, icon: "bed" },
+      { category: "Food", amount: 300, icon: "utensils" },
+      { category: "Activities", amount: 200, icon: "ticket" },
     ],
   },
 ];
