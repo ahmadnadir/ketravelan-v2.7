@@ -222,3 +222,121 @@ export const mockChats = [
   { id: "dm-1", name: "Sarah Tan", type: "direct" as const, lastMessage: "Thanks for the info!", unread: 1, imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" },
   { id: "dm-2", name: "John Lee", type: "direct" as const, lastMessage: "See you there", unread: 0, imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200" },
 ];
+
+// Extended user profiles for public profile view
+export interface UserProfile {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  location?: string;
+  bio?: string;
+  travelStyles: string[];
+  socialLinks?: { platform: string; url: string }[];
+  stats: {
+    tripsCount: number;
+    countriesCount: number;
+    rating?: number;
+  };
+  previousTrips: {
+    id: string;
+    title: string;
+    destination: string;
+    imageUrl: string;
+    startDate: string;
+    endDate: string;
+    tripType: "diy" | "guided";
+  }[];
+}
+
+export const mockUserProfiles: Record<string, UserProfile> = {
+  "1": {
+    id: "1",
+    name: "Ahmad Razak",
+    imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+    location: "Kuala Lumpur, Malaysia",
+    bio: "Passionate traveler who loves exploring new cultures and cuisines. Always looking for the next adventure! I've been organizing group trips for 5 years and love bringing people together.",
+    travelStyles: ["Adventure", "Budget-friendly", "Nature", "Food"],
+    socialLinks: [
+      { platform: "instagram", url: "https://instagram.com/ahmadrazak" },
+      { platform: "youtube", url: "https://youtube.com/@ahmadtravels" },
+    ],
+    stats: {
+      tripsCount: 12,
+      countriesCount: 8,
+      rating: 4.8,
+    },
+    previousTrips: [
+      { id: "1", title: "Langkawi Island Adventure", destination: "Langkawi, Malaysia", imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400", startDate: "Jan 15", endDate: "Jan 18, 2025", tripType: "diy" },
+      { id: "2", title: "Cameron Highlands Retreat", destination: "Cameron Highlands", imageUrl: "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400", startDate: "Feb 5", endDate: "Feb 7, 2025", tripType: "diy" },
+    ],
+  },
+  "2": {
+    id: "2",
+    name: "Sarah Tan",
+    imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200",
+    location: "Singapore",
+    bio: "Weekend explorer and coffee enthusiast. Love discovering hidden gems and local experiences. First time doing DIY group travel!",
+    travelStyles: ["City & Urban", "Food", "Culture", "Photography"],
+    socialLinks: [
+      { platform: "instagram", url: "https://instagram.com/sarahtan" },
+    ],
+    stats: {
+      tripsCount: 5,
+      countriesCount: 4,
+      rating: 4.9,
+    },
+    previousTrips: [
+      { id: "3", title: "Penang Food & Culture Tour", destination: "Penang, Malaysia", imageUrl: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400", startDate: "Feb 20", endDate: "Feb 23, 2025", tripType: "diy" },
+    ],
+  },
+  "3": {
+    id: "3",
+    name: "Lisa Wong",
+    imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200",
+    location: "Johor Bahru, Malaysia",
+    bio: "Frequent DIY traveler with a passion for nature and adventure. Always up for hiking and exploring off-the-beaten-path destinations.",
+    travelStyles: ["Adventure", "Nature", "Hiking", "Wildlife"],
+    stats: {
+      tripsCount: 18,
+      countriesCount: 12,
+      rating: 4.7,
+    },
+    previousTrips: [
+      { id: "4", title: "Taman Negara Jungle Expedition", destination: "Pahang, Malaysia", imageUrl: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400", startDate: "Mar 10", endDate: "Mar 13, 2025", tripType: "diy" },
+      { id: "1", title: "Langkawi Island Adventure", destination: "Langkawi, Malaysia", imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400", startDate: "Jan 15", endDate: "Jan 18, 2025", tripType: "diy" },
+    ],
+  },
+  "4": {
+    id: "4",
+    name: "John Lee",
+    imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
+    location: "Penang, Malaysia",
+    bio: "Photography lover who travels to capture beautiful moments. Always carrying my camera and looking for the perfect shot.",
+    travelStyles: ["Photography", "Nature", "City & Urban", "Sunrise/Sunset"],
+    socialLinks: [
+      { platform: "instagram", url: "https://instagram.com/johnleephoto" },
+      { platform: "youtube", url: "https://youtube.com/@johnleephoto" },
+      { platform: "website", url: "https://johnleephoto.com" },
+    ],
+    stats: {
+      tripsCount: 8,
+      countriesCount: 6,
+      rating: 4.6,
+    },
+    previousTrips: [
+      { id: "2", title: "Cameron Highlands Retreat", destination: "Cameron Highlands", imageUrl: "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400", startDate: "Feb 5", endDate: "Feb 7, 2025", tripType: "diy" },
+    ],
+  },
+  "5": {
+    id: "5",
+    name: "Priya Kumar",
+    location: "Kuala Lumpur, Malaysia",
+    bio: "Adventure seeker and solo traveler. Love meeting new people and trying local cuisines wherever I go.",
+    travelStyles: ["Adventure", "Solo Travel", "Food", "Budget-friendly"],
+    stats: {
+      tripsCount: 3,
+      countriesCount: 2,
+    },
+    previousTrips: [],
+  },
+};

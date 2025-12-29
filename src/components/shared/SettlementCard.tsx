@@ -1,11 +1,12 @@
+import { Link } from "react-router-dom";
 import { ArrowRight, QrCode } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface SettlementCardProps {
-  fromUser: { name: string; imageUrl?: string };
-  toUser: { name: string; imageUrl?: string };
+  fromUser: { id: string; name: string; imageUrl?: string };
+  toUser: { id: string; name: string; imageUrl?: string };
   amount: number;
   currency?: string;
   status: "pending" | "paid";
@@ -25,8 +26,11 @@ export function SettlementCard({
   return (
     <Card className="p-4 border-border/50">
       <div className="flex items-center gap-3">
-        {/* From User */}
-        <div className="flex flex-col items-center gap-1">
+        {/* From User - Clickable */}
+        <Link 
+          to={`/user/${fromUser.id}`}
+          className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
+        >
           <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
             {fromUser.imageUrl ? (
               <img src={fromUser.imageUrl} alt={fromUser.name} className="h-full w-full object-cover" />
@@ -39,7 +43,7 @@ export function SettlementCard({
           <span className="text-xs text-muted-foreground truncate max-w-[60px]">
             {fromUser.name}
           </span>
-        </div>
+        </Link>
 
         {/* Arrow & Amount */}
         <div className="flex-1 flex flex-col items-center gap-1">
@@ -53,8 +57,11 @@ export function SettlementCard({
           </span>
         </div>
 
-        {/* To User */}
-        <div className="flex flex-col items-center gap-1">
+        {/* To User - Clickable */}
+        <Link 
+          to={`/user/${toUser.id}`}
+          className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
+        >
           <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
             {toUser.imageUrl ? (
               <img src={toUser.imageUrl} alt={toUser.name} className="h-full w-full object-cover" />
@@ -67,7 +74,7 @@ export function SettlementCard({
           <span className="text-xs text-muted-foreground truncate max-w-[60px]">
             {toUser.name}
           </span>
-        </div>
+        </Link>
       </div>
 
       {/* Status & Actions */}

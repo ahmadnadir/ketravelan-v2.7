@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ChatComposer } from "@/components/chat/ChatComposer";
+import { UserQuickActionsModal } from "@/components/chat/UserQuickActionsModal";
 import { cn } from "@/lib/utils";
 
 // Mock direct messages for demo
@@ -16,15 +18,16 @@ const mockDirectMessages = [
   { id: "6", senderId: "me", content: "Thanks for the info!", timestamp: "10:10 AM" },
 ];
 
-// Mock user data
-const mockUsers: Record<string, { name: string; imageUrl?: string }> = {
-  "dm-1": { name: "Sarah Tan", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" },
-  "dm-2": { name: "John Lee", imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200" },
+// Mock user data with IDs
+const mockUsers: Record<string, { id: string; name: string; imageUrl?: string }> = {
+  "dm-1": { id: "2", name: "Sarah Tan", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" },
+  "dm-2": { id: "4", name: "John Lee", imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200" },
 };
 
 export default function DirectChat() {
   const { id } = useParams();
-  const user = mockUsers[id || "dm-1"] || { name: "Unknown User" };
+  const user = mockUsers[id || "dm-1"] || { id: "1", name: "Unknown User" };
+  const [userModalOpen, setUserModalOpen] = useState(false);
 
   const handleSend = (message: string) => {
     console.log("Send message:", message);
@@ -42,13 +45,19 @@ export default function DirectChat() {
                 <ChevronLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <Avatar className="h-9 w-9">
-              <AvatarImage src={user.imageUrl} alt={user.name} />
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <h1 className="font-semibold text-foreground truncate">{user.name}</h1>
-            </div>
+            {/* Clickable Avatar + Name opens modal */}
+            <button 
+              onClick={() => setUserModalOpen(true)}
+              className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-left"
+            >
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={user.imageUrl} alt={user.name} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <h1 className="font-semibold text-foreground truncate">{user.name}</h1>
+              </div>
+            </button>
           </div>
         </div>
       </header>
@@ -86,6 +95,13 @@ export default function DirectChat() {
 
       {/* Composer */}
       <ChatComposer onSend={handleSend} />
+
+      {/* User Quick Actions Modal */}
+      <UserQuickActionsModal
+        open={userModalOpen}
+        onOpenChange={setUserModalOpen}
+        user={user}
+      />
 
       <BottomNav />
     </div>
