@@ -807,18 +807,26 @@ export function TripExpenses() {
         {/* Settle Tab */}
         {subTab === "settle" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4">
-            {/* Filter Controls - Dropdowns */}
+            {/* Header */}
+            <div className="mb-2">
+              <h2 className="text-lg font-semibold text-foreground">Settlement Summary</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Net balances between group members for this trip
+              </p>
+            </div>
+
+            {/* Filter Controls - Compact Pill Dropdowns */}
             <div className="flex gap-2">
               {/* Direction Filter Dropdown */}
               <Select 
                 value={directionFilter} 
                 onValueChange={(value: "all" | "owesMe" | "iOwe") => setDirectionFilter(value)}
               >
-                <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                <SelectTrigger className="w-auto min-w-[100px] h-8 text-xs rounded-full bg-secondary border-0 px-3">
                   <SelectValue placeholder="Direction" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border">
-                  <SelectItem value="all">All Directions</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="owesMe">Owes Me</SelectItem>
                   <SelectItem value="iOwe">I Owe</SelectItem>
                 </SelectContent>
@@ -829,11 +837,11 @@ export function TripExpenses() {
                 value={statusFilter} 
                 onValueChange={(value: "all" | "pending" | "paid") => setStatusFilter(value)}
               >
-                <SelectTrigger className="flex-1 h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                <SelectTrigger className="w-auto min-w-[90px] h-8 text-xs rounded-full bg-secondary border-0 px-3">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border">
-                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="paid">Paid</SelectItem>
                 </SelectContent>
