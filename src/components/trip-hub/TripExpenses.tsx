@@ -872,14 +872,14 @@ export function TripExpenses() {
               </p>
             </div>
 
-            {/* Filter Controls - Compact Pill Dropdowns */}
-            <div className="flex gap-2">
+            {/* Filter Controls - Full-Width 2-Column Grid */}
+            <div className="grid grid-cols-2 gap-2">
               {/* Direction Filter Dropdown */}
               <Select 
                 value={directionFilter} 
                 onValueChange={(value: "all" | "owesMe" | "iOwe") => setDirectionFilter(value)}
               >
-                <SelectTrigger className="w-auto min-w-[100px] h-8 text-xs rounded-full bg-secondary border-0 px-3">
+                <SelectTrigger className="w-full h-9 text-xs rounded-full bg-secondary border-0 px-4">
                   <SelectValue placeholder="Direction" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border">
@@ -894,7 +894,7 @@ export function TripExpenses() {
                 value={statusFilter} 
                 onValueChange={(value: "all" | "pending" | "paid") => setStatusFilter(value)}
               >
-                <SelectTrigger className="w-auto min-w-[90px] h-8 text-xs rounded-full bg-secondary border-0 px-3">
+                <SelectTrigger className="w-full h-9 text-xs rounded-full bg-secondary border-0 px-4">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border">
