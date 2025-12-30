@@ -2,7 +2,6 @@ import { MoreVertical } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getCategoryById, getCategoryFromTitle } from "@/lib/expenseCategories";
+import { cn } from "@/lib/utils";
 
 // User role types for expense actions
 type ExpenseRole = "payer" | "owes" | "settled";
@@ -131,22 +131,25 @@ export function ExpenseCard({
             </div>
           )}
 
-          {/* Primary Action Button (Role-Aware) - Only show if not fully settled */}
-          {role !== "settled" && (
-            <div className="pt-2 flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPrimaryAction();
-                }}
-                className="h-8 px-4 text-xs font-medium border-border/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-150"
-              >
-                {role === "payer" ? "View Payment" : "Mark as Paid"}
-              </Button>
-            </div>
-          )}
+          {/* Primary Action Button - Always visible */}
+          <div className="pt-3">
+            <Button
+              variant={role === "settled" ? "ghost" : "outline"}
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                role === "settled" ? onCardClick() : onPrimaryAction();
+              }}
+              className={cn(
+                "w-full h-9 text-xs font-medium transition-all duration-150",
+                role === "settled" 
+                  ? "text-muted-foreground hover:bg-secondary/50" 
+                  : "border-border/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
+              )}
+            >
+              {role === "payer" ? "View Payments" : role === "owes" ? "Mark as Paid" : "View Details"}
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
