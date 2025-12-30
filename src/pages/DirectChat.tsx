@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BottomNav } from "@/components/layout/BottomNav";
+import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { ChatComposer } from "@/components/chat/ChatComposer";
 import { UserQuickActionsModal } from "@/components/chat/UserQuickActionsModal";
 import { cn } from "@/lib/utils";
@@ -34,36 +34,46 @@ export default function DirectChat() {
     // Would send message here
   };
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border/50">
-        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
-          <div className="flex items-center gap-3 h-14">
-            <Link to="/chat">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            {/* Clickable Avatar + Name opens modal */}
-            <button 
-              onClick={() => setUserModalOpen(true)}
-              className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-left"
-            >
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={user.imageUrl} alt={user.name} />
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <h1 className="font-semibold text-foreground truncate">{user.name}</h1>
-              </div>
-            </button>
-          </div>
+  const headerContent = (
+    <header className="glass border-b border-border/50 safe-top">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
+        <div className="flex items-center gap-3 h-14">
+          <Link to="/chat">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          {/* Clickable Avatar + Name opens modal */}
+          <button 
+            onClick={() => setUserModalOpen(true)}
+            className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-left"
+          >
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={user.imageUrl} alt={user.name} />
+              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h1 className="font-semibold text-foreground truncate">{user.name}</h1>
+            </div>
+          </button>
         </div>
-      </header>
+      </div>
+    </header>
+  );
 
-      {/* Messages */}
-      <main className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3 pb-28">
+  const footerContent = (
+    <div className="safe-bottom">
+      <ChatComposer onSend={handleSend} />
+    </div>
+  );
+
+  return (
+    <FocusedFlowLayout 
+      headerContent={headerContent} 
+      footerContent={footerContent}
+      showBottomNav={true}
+    >
+      <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-3">
         {mockDirectMessages.map((msg) => {
           const isOwn = msg.senderId === "me";
 
@@ -91,10 +101,7 @@ export default function DirectChat() {
             </div>
           );
         })}
-      </main>
-
-      {/* Composer */}
-      <ChatComposer onSend={handleSend} />
+      </div>
 
       {/* User Quick Actions Modal */}
       <UserQuickActionsModal
@@ -102,8 +109,6 @@ export default function DirectChat() {
         onOpenChange={setUserModalOpen}
         user={user}
       />
-
-      <BottomNav />
-    </div>
+    </FocusedFlowLayout>
   );
 }

@@ -21,7 +21,7 @@ import {
   ClipboardList,
   X,
 } from "lucide-react";
-import { AppLayout } from "@/components/layout/AppLayout";
+import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -162,12 +162,13 @@ export default function CreateTrip() {
 
   const { essentials, optionalCount } = getCompletionStats();
 
-  return (
-    <AppLayout>
-      <div className="py-4 sm:py-6 pb-40">
+  // Header content with step indicator
+  const headerContent = (
+    <div className="bg-background border-b border-border/50 px-4 py-3 safe-top">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
         {/* Draft Banner */}
         {showDraftBanner && (
-          <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between">
+          <div className="mb-3 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm text-foreground">
@@ -194,7 +195,7 @@ export default function CreateTrip() {
         )}
 
         {/* Header with draft indicator */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create a Trip</h1>
           {lastSaved && (
             <span className="text-xs text-muted-foreground">
@@ -203,8 +204,8 @@ export default function CreateTrip() {
           )}
         </div>
 
-        {/* Progress */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Progress steps */}
+        <div className="flex items-center justify-between">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <button
@@ -235,7 +236,55 @@ export default function CreateTrip() {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
 
+  // Footer content with CTA buttons
+  const footerContent = (
+    <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4 safe-bottom">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto flex gap-3">
+        {currentStep > 1 && (
+          <Button
+            variant="outline"
+            onClick={prevStep}
+            className="rounded-xl"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
+        )}
+        {currentStep < 4 ? (
+          <Button
+            onClick={nextStep}
+            disabled={currentStep === 2 && !canProceedStep2()}
+            className="flex-1 rounded-xl"
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handlePublish}
+            disabled={!essentials}
+            className="flex-1 rounded-xl"
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Publish Trip
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <FocusedFlowLayout
+      headerContent={headerContent}
+      footerContent={footerContent}
+      showBottomNav={true}
+      className="px-4 sm:px-6"
+    >
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto py-4 sm:py-6">
         {/* Step 1: Visibility */}
         {currentStep === 1 && (
           <div className="space-y-4">
@@ -790,41 +839,6 @@ export default function CreateTrip() {
         )}
       </div>
 
-      {/* Sticky Bottom CTA - positioned above BottomNav */}
-      <div className="fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 z-40">
-        <div className="max-w-lg mx-auto flex gap-3">
-          {currentStep > 1 && (
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              className="rounded-xl"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back
-            </Button>
-          )}
-          {currentStep < 4 ? (
-            <Button
-              onClick={nextStep}
-              disabled={currentStep === 2 && !canProceedStep2()}
-              className="flex-1 rounded-xl"
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handlePublish}
-              disabled={!essentials}
-              className="flex-1 rounded-xl"
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Publish Trip
-            </Button>
-          )}
-        </div>
-      </div>
-
       {/* Share Modal */}
       <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
         <DialogContent className="sm:max-w-md">
@@ -889,6 +903,6 @@ export default function CreateTrip() {
           </div>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </FocusedFlowLayout>
   );
 }
