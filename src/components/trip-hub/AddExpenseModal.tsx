@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, Upload, Receipt, Users, UserCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Upload, Receipt, Users, UserCheck, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,11 @@ const expenseCategories = [
   { id: "other", label: "Other", icon: "📦" },
 ];
 
+export interface CustomSplitAmount {
+  memberId: string;
+  amount: number;
+}
+
 export interface NewExpense {
   title: string;
   amount: number;
@@ -37,15 +42,33 @@ export interface NewExpense {
   paidBy: string;
   splitType: "equal" | "custom";
   splitWith: string[];
+  customSplitAmounts?: CustomSplitAmount[];
   notes?: string;
   receiptFile?: File;
   date: string;
+}
+
+export interface ExpenseData {
+  id: string;
+  title: string;
+  amount: number;
+  paidBy: string;
+  date: string;
+  hasReceipt?: boolean;
+  paymentProgress?: number;
+  category?: string;
+  splitType?: "equal" | "custom";
+  splitWith?: string[];
+  customSplitAmounts?: CustomSplitAmount[];
+  notes?: string;
 }
 
 interface AddExpenseModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddExpense: (expense: NewExpense) => void;
+  onEditExpense?: (id: string, expense: NewExpense) => void;
+  editingExpense?: ExpenseData | null;
   currentUser?: string;
 }
 
@@ -53,6 +76,8 @@ export function AddExpenseModal({
   open,
   onOpenChange,
   onAddExpense,
+  onEditExpense,
+  editingExpense,
   currentUser = "Ahmad Razak",
 }: AddExpenseModalProps) {
   const [title, setTitle] = useState("");
@@ -63,9 +88,36 @@ export function AddExpenseModal({
   const [splitWith, setSplitWith] = useState<string[]>(
     mockMembers.map((m) => m.id)
   );
+  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+
+  const isEditMode = !!editingExpense;
+
+  // Load editing expense data
+  useEffect(() => {
+    if (editingExpense && open) {
+      setTitle(editingExpense.title);
+      setAmount(editingExpense.amount.toString());
+      setCategory(editingExpense.category || "other");
+      setPaidBy(editingExpense.paidBy);
+      setSplitType(editingExpense.splitType || "equal");
+      setSplitWith(editingExpense.splitWith || mockMembers.map((m) => m.id));
+      setNotes(editingExpense.notes || "");
+      
+      // Load custom amounts if available
+      if (editingExpense.customSplitAmounts) {
+        const amounts: Record<string, string> = {};
+        editingExpense.customSplitAmounts.forEach((item) => {
+          amounts[item.memberId] = item.amount.toString();
+        });
+        setCustomAmounts(amounts);
+      }
+    } else if (!open) {
+      resetForm();
+    }
+  }, [editingExpense, open]);
 
   const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,11 +137,22 @@ export function AddExpenseModal({
   };
 
   const toggleMemberSplit = (memberId: string) => {
-    setSplitWith((prev) =>
-      prev.includes(memberId)
+    setSplitWith((prev) => {
+      const newSplitWith = prev.includes(memberId)
         ? prev.filter((id) => id !== memberId)
-        : [...prev, memberId]
-    );
+        : [...prev, memberId];
+      
+      // Clear custom amount when member is deselected
+      if (!newSplitWith.includes(memberId)) {
+        setCustomAmounts((prev) => {
+          const updated = { ...prev };
+          delete updated[memberId];
+          return updated;
+        });
+      }
+      
+      return newSplitWith;
+    });
   };
 
   const handleSelectAll = () => {
@@ -98,6 +161,14 @@ export function AddExpenseModal({
 
   const handleDeselectAll = () => {
     setSplitWith([]);
+    setCustomAmounts({});
+  };
+
+  const handleCustomAmountChange = (memberId: string, value: string) => {
+    setCustomAmounts((prev) => ({
+      ...prev,
+      [memberId]: value,
+    }));
   };
 
   const resetForm = () => {
@@ -107,6 +178,7 @@ export function AddExpenseModal({
     setPaidBy(currentUser);
     setSplitType("equal");
     setSplitWith(mockMembers.map((m) => m.id));
+    setCustomAmounts({});
     setNotes("");
     setReceiptFile(null);
     setReceiptPreview(null);
@@ -115,6 +187,13 @@ export function AddExpenseModal({
   const handleSubmit = () => {
     if (!title.trim() || !amount || !category) return;
 
+    const customSplitAmounts: CustomSplitAmount[] = splitType === "custom" 
+      ? splitWith.map((memberId) => ({
+          memberId,
+          amount: parseFloat(customAmounts[memberId] || "0"),
+        }))
+      : [];
+
     const expense: NewExpense = {
       title: title.trim(),
       amount: parseFloat(amount),
@@ -122,24 +201,43 @@ export function AddExpenseModal({
       paidBy,
       splitType,
       splitWith,
+      customSplitAmounts: splitType === "custom" ? customSplitAmounts : undefined,
       notes: notes.trim() || undefined,
       receiptFile: receiptFile || undefined,
-      date: new Date().toLocaleDateString("en-US", {
+      date: editingExpense?.date || new Date().toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
       }),
     };
 
-    onAddExpense(expense);
+    if (isEditMode && onEditExpense && editingExpense) {
+      onEditExpense(editingExpense.id, expense);
+    } else {
+      onAddExpense(expense);
+    }
+    
     resetForm();
     onOpenChange(false);
   };
 
-  const isValid = title.trim() && parseFloat(amount) > 0 && category && splitWith.length > 0;
+  // Calculate totals for validation
+  const totalCustomAmount = splitWith.reduce((sum, memberId) => {
+    return sum + (parseFloat(customAmounts[memberId] || "0") || 0);
+  }, 0);
+  
+  const totalAmount = parseFloat(amount) || 0;
+  const customAmountDifference = totalAmount - totalCustomAmount;
+
+  const isValid = 
+    title.trim() && 
+    parseFloat(amount) > 0 && 
+    category && 
+    splitWith.length > 0 &&
+    (splitType === "equal" || Math.abs(customAmountDifference) < 0.01);
 
   const perPersonAmount =
-    splitWith.length > 0 && parseFloat(amount) > 0
+    splitWith.length > 0 && parseFloat(amount) > 0 && splitType === "equal"
       ? (parseFloat(amount) / splitWith.length).toFixed(2)
       : "0.00";
 
@@ -148,8 +246,17 @@ export function AddExpenseModal({
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-primary" />
-            Add Shared Expense
+            {isEditMode ? (
+              <>
+                <Pencil className="h-5 w-5 text-primary" />
+                Edit Expense
+              </>
+            ) : (
+              <>
+                <Receipt className="h-5 w-5 text-primary" />
+                Add Shared Expense
+              </>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -168,7 +275,7 @@ export function AddExpenseModal({
 
           {/* Amount */}
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount (RM) *</Label>
+            <Label htmlFor="amount">Total Amount (RM) *</Label>
             <Input
               id="amount"
               type="number"
@@ -245,7 +352,6 @@ export function AddExpenseModal({
                 size="sm"
                 onClick={() => setSplitType("custom")}
                 className="flex-1"
-                disabled
               >
                 <UserCheck className="h-4 w-4 mr-1.5" />
                 Custom Split
@@ -278,36 +384,80 @@ export function AddExpenseModal({
                 </Button>
               </div>
             </div>
-            <div className="border border-border rounded-lg p-2 space-y-1 max-h-40 overflow-y-auto">
+            <div className="border border-border rounded-lg p-2 space-y-1 max-h-48 overflow-y-auto">
               {mockMembers.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center gap-2 p-2 rounded-md hover:bg-secondary/50 cursor-pointer"
-                  onClick={() => toggleMemberSplit(member.id)}
+                  className="flex items-center gap-2 p-2 rounded-md hover:bg-secondary/50"
                 >
-                  <Checkbox
-                    checked={splitWith.includes(member.id)}
-                    onCheckedChange={() => toggleMemberSplit(member.id)}
-                  />
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={member.imageUrl} />
-                    <AvatarFallback className="text-[10px]">
-                      {member.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm flex-1">{member.name}</span>
-                  {splitWith.includes(member.id) && parseFloat(amount) > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      RM {perPersonAmount}
-                    </span>
+                  <div 
+                    className="flex items-center gap-2 cursor-pointer flex-1"
+                    onClick={() => toggleMemberSplit(member.id)}
+                  >
+                    <Checkbox
+                      checked={splitWith.includes(member.id)}
+                      onCheckedChange={() => toggleMemberSplit(member.id)}
+                    />
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={member.imageUrl} />
+                      <AvatarFallback className="text-[10px]">
+                        {member.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm flex-1">{member.name}</span>
+                  </div>
+                  
+                  {splitWith.includes(member.id) && (
+                    splitType === "custom" ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">RM</span>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          value={customAmounts[member.id] || ""}
+                          onChange={(e) => handleCustomAmountChange(member.id, e.target.value)}
+                          className="w-20 h-7 text-xs"
+                          min="0"
+                          step="0.01"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    ) : (
+                      parseFloat(amount) > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          RM {perPersonAmount}
+                        </span>
+                      )
+                    )
                   )}
                 </div>
               ))}
             </div>
+            
+            {/* Summary */}
             {splitWith.length > 0 && parseFloat(amount) > 0 && (
-              <p className="text-xs text-muted-foreground">
-                Each person pays: <span className="font-medium text-foreground">RM {perPersonAmount}</span>
-              </p>
+              <div className="space-y-1">
+                {splitType === "equal" ? (
+                  <p className="text-xs text-muted-foreground">
+                    Each person pays: <span className="font-medium text-foreground">RM {perPersonAmount}</span>
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Total assigned: <span className="font-medium text-foreground">RM {totalCustomAmount.toFixed(2)}</span>
+                      {" / "}
+                      <span className="font-medium">RM {totalAmount.toFixed(2)}</span>
+                    </p>
+                    {Math.abs(customAmountDifference) >= 0.01 && (
+                      <p className={`text-xs ${customAmountDifference > 0 ? "text-destructive" : "text-amber-500"}`}>
+                        {customAmountDifference > 0 
+                          ? `RM ${customAmountDifference.toFixed(2)} remaining to assign` 
+                          : `RM ${Math.abs(customAmountDifference).toFixed(2)} over-assigned`}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -379,7 +529,7 @@ export function AddExpenseModal({
               onClick={handleSubmit}
               disabled={!isValid}
             >
-              Add Expense
+              {isEditMode ? "Save Changes" : "Add Expense"}
             </Button>
           </div>
         </div>
