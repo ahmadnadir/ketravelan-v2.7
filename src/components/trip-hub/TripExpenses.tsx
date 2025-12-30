@@ -728,7 +728,11 @@ export function TripExpenses() {
                     category={expense.category}
                     paymentProgress={expense.paymentProgress}
                     currentUser={CURRENT_USER}
+                    currentUserId="1"
                     splitWith={expense.splitWith}
+                    splitType={expense.splitType}
+                    customSplitAmounts={expense.customSplitAmounts}
+                    payments={expense.payments}
                     onCardClick={() => handleCardClick(expense)}
                     onPrimaryAction={() => handlePrimaryAction(expense)}
                     onEdit={() => openEditExpense(expense)}
