@@ -223,7 +223,16 @@ export function ExpenseDetailsModal({
 
   // Handle viewing a payment for review
   const handleViewPayment = (member: typeof mockMembers[0], payment: MemberPayment, amount: number) => {
-    setReviewingPayment({ member, payment, amount });
+    // Add mock receipt data for submitted payments in demo
+    const enhancedPayment = payment.status === "submitted" && !payment.receiptUrl
+      ? {
+          ...payment,
+          receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop",
+          uploadedAt: "Jan 16, 2025",
+          payerNote: "Paid via TNG on Jan 16"
+        }
+      : payment;
+    setReviewingPayment({ member, payment: enhancedPayment, amount });
   };
 
   // Handle confirming payment from review modal
@@ -471,31 +480,24 @@ export function ExpenseDetailsModal({
                   const isPaid = isThisMemberPayer || memberPayment?.status === "received";
 
                   return (
-                    <Card
-                      key={memberId}
-                      className="p-2.5 border-border/50"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={member.imageUrl} alt={member.name} />
-                            <AvatarFallback className="text-xs">
-                              {member.name.split(" ").map(n => n[0]).join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <p className="text-sm font-medium text-foreground">{member.name}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-foreground">
-                            RM {amount.toFixed(2)}
-                          </p>
-                          <Badge 
-                            variant={isPaid ? "default" : memberPayment?.status === "submitted" ? "secondary" : "outline"} 
-                            className={`text-[10px] px-1.5 py-0 ${isPaid ? "bg-stat-green text-stat-green-foreground" : memberPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600 border-blue-500/30" : ""}`}
-                          >
-                            {isPaid ? "Received" : memberPayment?.status === "submitted" ? "Payment Submitted" : "Awaiting Payment"}
-                          </Badge>
-                        </div>
+                    <Card key={memberId} className="p-3 border-border/50">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9 shrink-0">
+                          <AvatarImage src={member.imageUrl} alt={member.name} />
+                          <AvatarFallback className="text-xs">
+                            {member.name.split(" ").map(n => n[0]).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="flex-1 min-w-0 text-sm font-medium text-foreground truncate">{member.name}</p>
+                        <p className="text-sm font-semibold text-foreground whitespace-nowrap">
+                          RM {amount.toFixed(2)}
+                        </p>
+                        <Badge 
+                          variant={isPaid ? "default" : memberPayment?.status === "submitted" ? "secondary" : "outline"} 
+                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green text-stat-green-foreground" : memberPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600 border-blue-500/30" : ""}`}
+                        >
+                          {isPaid ? "Received" : memberPayment?.status === "submitted" ? "Submitted" : "Awaiting"}
+                        </Badge>
                       </div>
                     </Card>
                   );
@@ -573,49 +575,47 @@ export function ExpenseDetailsModal({
 
                       return (
                         <Card key={memberId} className="p-3 border-border/50">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={member.imageUrl} alt={member.name} />
-                                <AvatarFallback className="text-xs">
-                                  {member.name.split(" ").map(n => n[0]).join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium text-foreground text-sm">{member.name}</p>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-muted-foreground">RM {amount.toFixed(2)}</span>
-                                  {getStatusBadge()}
-                                </div>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 shrink-0">
+                              <AvatarImage src={member.imageUrl} alt={member.name} />
+                              <AvatarFallback className="text-xs">
+                                {member.name.split(" ").map(n => n[0]).join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">RM {amount.toFixed(2)}</span>
+                                {getStatusBadge()}
                               </div>
                             </div>
-                            {!isReceived && (
-                              <div className="flex items-center gap-1">
-                                {memberPayment?.status === "awaiting" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                      toast({
-                                        title: "Reminder sent",
-                                        description: `${member.name} has been notified about their pending payment.`,
-                                      });
-                                    }}
-                                    className="h-8 w-8"
-                                  >
-                                    <Bell className="h-4 w-4" />
-                                  </Button>
-                                )}
+                            <div className="flex items-center gap-1 shrink-0">
+                              {!isReceived && memberPayment?.status === "awaiting" && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    toast({
+                                      title: "Reminder sent",
+                                      description: `${member.name} has been notified about their pending payment.`,
+                                    });
+                                  }}
+                                  className="h-8 w-8"
+                                >
+                                  <Bell className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {!isReceived && (
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleViewPayment(member, memberPayment!, amount)}
-                                  className="h-8 text-xs"
+                                  className="h-8 text-xs whitespace-nowrap"
                                 >
                                   View Payment
                                 </Button>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </Card>
                       );
