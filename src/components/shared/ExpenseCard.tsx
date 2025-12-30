@@ -1,4 +1,4 @@
-import { MoreVertical, CheckCircle } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -133,34 +133,18 @@ export function ExpenseCard({
 
           {/* Primary Action Button (Role-Aware) - Only show if not fully settled */}
           {role !== "settled" && (
-            <div className="pt-1">
-              {role === "payer" ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPrimaryAction();
-                  }}
-                  className="h-8 px-4 text-xs gap-1.5 bg-stat-green/10 border-stat-green/30 text-stat-green hover:bg-stat-green/20 hover:text-stat-green"
-                >
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Mark as Received
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPrimaryAction();
-                  }}
-                  className="h-8 px-4 text-xs gap-1.5 bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:text-primary"
-                >
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Mark as Paid
-                </Button>
-              )}
+            <div className="pt-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPrimaryAction();
+                }}
+                className="w-full h-9 text-xs font-medium"
+              >
+                {role === "payer" ? "Mark as Received" : "Mark as Paid"}
+              </Button>
             </div>
           )}
         </div>
