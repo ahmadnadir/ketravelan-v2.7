@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Calendar, MapPin, Users, Heart, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -39,6 +40,16 @@ export function TripCard({
   tripType,
   className,
 }: TripCardProps) {
+  const [isFavourited, setIsFavourited] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const handleFavourite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsAnimating(true);
+    setIsFavourited(!isFavourited);
+    setTimeout(() => setIsAnimating(false), 300);
+  };
+
   return (
     <Card className={cn("overflow-hidden border-border/50 shadow-sm", className)}>
       <Link to={`/trip/${id}`}>
@@ -71,13 +82,18 @@ export function TripCard({
             <Button
               variant="secondary"
               size="icon"
-              className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-card/80 backdrop-blur-sm"
-              onClick={(e) => {
-                e.preventDefault();
-                // Save logic
-              }}
+              className={cn(
+                "h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-card/80 backdrop-blur-sm transition-transform duration-300",
+                isAnimating && "scale-125"
+              )}
+              onClick={handleFavourite}
             >
-              <Heart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <Heart 
+                className={cn(
+                  "h-3.5 w-3.5 sm:h-4 sm:w-4 transition-all duration-300",
+                  isFavourited ? "fill-destructive text-destructive scale-110" : "fill-transparent"
+                )} 
+              />
             </Button>
           </div>
         </div>
