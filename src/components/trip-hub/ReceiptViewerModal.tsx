@@ -44,37 +44,41 @@ export function ReceiptViewerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col w-[calc(100%-2rem)] sm:w-full rounded-2xl">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-lg h-[85vh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0">
+        {/* Fixed Header */}
+        <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
           <DialogTitle className="flex items-center justify-between pr-6 text-lg font-semibold">
             <span className="truncate">Receipt: {expenseTitle}</span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden relative rounded-xl bg-secondary/30">
-          {receiptUrl ? (
-            <div className="h-full overflow-auto scrollbar-hide">
-              <div 
-                className="flex items-center justify-center min-h-[300px] p-4"
-                style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
-              >
-                <img
-                  src={receiptUrl}
-                  alt={`Receipt for ${expenseTitle}`}
-                  className="max-w-full h-auto rounded-xl shadow-lg"
-                />
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4">
+          <div className="rounded-xl bg-secondary/30 min-h-[200px]">
+            {receiptUrl ? (
+              <div className="overflow-hidden">
+                <div 
+                  className="flex items-center justify-center min-h-[300px] p-4"
+                  style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
+                >
+                  <img
+                    src={receiptUrl}
+                    alt={`Receipt for ${expenseTitle}`}
+                    className="max-w-full h-auto rounded-xl shadow-lg"
+                  />
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-muted-foreground">
-              <p className="text-sm">No receipt image available</p>
-              <p className="text-xs mt-1">The receipt may have been uploaded as a file reference only</p>
-            </div>
-          )}
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-muted-foreground">
+                <p className="text-sm">No receipt image available</p>
+                <p className="text-xs mt-1">The receipt may have been uploaded as a file reference only</p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex items-center justify-between pt-4 border-t border-border flex-shrink-0">
+        {/* Fixed Footer with Controls */}
+        <div className="flex-none flex items-center justify-between p-4 border-t border-border/50">
           <div className="flex items-center gap-2 p-1 bg-secondary/50 rounded-xl">
             <Button
               variant="ghost"

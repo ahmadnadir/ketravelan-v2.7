@@ -95,14 +95,16 @@ export function ReceiptsFromOthersModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto scrollbar-hide w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0">
-        <DialogHeader className="p-4 pb-2 border-b border-border/50">
+      <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+        {/* Fixed Header */}
+        <DialogHeader className="flex-none p-4 pb-2 border-b border-border/50">
           <DialogTitle className="text-lg font-semibold">
             Payment Receipts from Others
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-4 space-y-3">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-3">
           {pendingMembers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <CheckCircle className="h-12 w-12 mx-auto mb-3 text-stat-green" />

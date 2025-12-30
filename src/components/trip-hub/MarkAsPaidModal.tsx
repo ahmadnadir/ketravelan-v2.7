@@ -64,14 +64,16 @@ export function MarkAsPaidModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md mx-4 rounded-2xl">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden max-h-[85vh]">
+        {/* Fixed Header */}
+        <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
           <DialogTitle className="text-lg">
             Confirm Payment to {recipientName}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-4">
           {/* Amount */}
           <div className="text-center py-3 bg-secondary/50 rounded-xl">
             <p className="text-sm text-muted-foreground">Amount</p>
@@ -150,7 +152,11 @@ export function MarkAsPaidModal({
             )}
           </div>
 
-          {/* Confirm Button */}
+          {/* Confirm Button - Now in fixed footer */}
+        </div>
+        
+        {/* Fixed Footer */}
+        <div className="flex-none p-4 pt-3 border-t border-border/50">
           <Button
             onClick={handleConfirm}
             className="w-full h-12 rounded-xl"
