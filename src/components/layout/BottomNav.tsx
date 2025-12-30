@@ -10,11 +10,18 @@ const navItems = [
   { icon: Map, label: "My Trips", path: "/my-trips" },
 ];
 
-export function BottomNav() {
+interface BottomNavProps {
+  inline?: boolean;
+}
+
+export function BottomNav({ inline = false }: BottomNavProps) {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border/50 safe-bottom">
+    <nav className={cn(
+      "z-50 glass border-t border-border/50 safe-bottom",
+      inline ? "" : "fixed bottom-0 left-0 right-0"
+    )}>
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-around h-16 sm:h-18">
           {navItems.map((item) => {
