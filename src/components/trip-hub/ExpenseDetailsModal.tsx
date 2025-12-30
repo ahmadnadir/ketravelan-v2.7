@@ -38,7 +38,7 @@ interface ExpenseDetailsModalProps {
 // Mock payment data for each member
 interface MemberPayment {
   memberId: string;
-  status: "awaiting" | "submitted" | "received";
+  status: "pending" | "submitted" | "settled";
   receiptUrl?: string;
   uploadedAt?: string;
   payerNote?: string;
@@ -105,7 +105,7 @@ export function ExpenseDetailsModal({
         // Create default payments
         setMemberPayments(splitMembers.map(memberId => ({
           memberId,
-          status: memberId === payerMember?.id ? "received" : "awaiting",
+          status: memberId === payerMember?.id ? "settled" : "pending",
         })));
       }
     }
@@ -199,17 +199,17 @@ export function ExpenseDetailsModal({
     setUploadNote("");
   };
 
-  // Handle marking a member's payment as received
-  const handleMarkMemberReceived = (memberId: string) => {
+  // Handle marking a member's payment as settled
+  const handleMarkMemberSettled = (memberId: string) => {
     setMemberPayments(prev => 
-      prev.map(p => p.memberId === memberId ? { ...p, status: "received" as const } : p)
+      prev.map(p => p.memberId === memberId ? { ...p, status: "settled" as const } : p)
     );
     
     const member = getMemberById(memberId);
     
     // Calculate new progress
-    const receivedCount = memberPayments.filter(p => p.status === "received").length + 1;
-    const newProgress = Math.round((receivedCount / memberCount) * 100);
+    const settledCount = memberPayments.filter(p => p.status === "settled").length + 1;
+    const newProgress = Math.round((settledCount / memberCount) * 100);
     
     // Call the new confirmation handler if provided
     if (onConfirmPaymentReceived && expense) {
@@ -220,8 +220,8 @@ export function ExpenseDetailsModal({
     onUpdateProgress?.(newProgress);
     
     toast({
-      title: "Payment received",
-      description: `${member?.name}'s payment has been marked as received.`,
+      title: "Payment settled",
+      description: `${member?.name}'s payment has been marked as settled.`,
     });
   };
 
@@ -242,7 +242,7 @@ export function ExpenseDetailsModal({
   // Handle confirming payment from review modal
   const handleConfirmFromReview = () => {
     if (!reviewingPayment) return;
-    handleMarkMemberReceived(reviewingPayment.member.id);
+    handleMarkMemberSettled(reviewingPayment.member.id);
     setReviewingPayment(null);
   };
 
@@ -286,8 +286,8 @@ export function ExpenseDetailsModal({
             {/* Progress bar with amount */}
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {expense.paymentProgress}% · RM {settledAmount.toFixed(0)}/{expense.amount} settled
+                <span className={`font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : "text-yellow-600"}`}>
+                  {expense.paymentProgress}% settled · RM {settledAmount.toFixed(0)}/{expense.amount}
                 </span>
               </div>
               <Progress value={expense.paymentProgress} className="h-2" />
@@ -487,7 +487,7 @@ export function ExpenseDetailsModal({
 
                   const isThisMemberPayer = member.name === expense.paidBy;
                   const memberPayment = memberPayments.find(p => p.memberId === memberId);
-                  const isPaid = isThisMemberPayer || memberPayment?.status === "received";
+                  const isPaid = isThisMemberPayer || memberPayment?.status === "settled";
 
                   return (
                     <Card key={memberId} className="p-3 border-border/50">
@@ -504,9 +504,9 @@ export function ExpenseDetailsModal({
                         </p>
                         <Badge 
                           variant={isPaid ? "default" : memberPayment?.status === "submitted" ? "secondary" : "outline"} 
-                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green text-stat-green-foreground" : memberPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600 border-blue-500/30" : ""}`}
+                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green text-stat-green-foreground" : memberPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600 border-blue-500/30" : "text-yellow-600 border-yellow-500/30 bg-yellow-500/10"}`}
                         >
-                          {isPaid ? "Received" : memberPayment?.status === "submitted" ? "Submitted" : "Awaiting"}
+                          {isPaid ? "Settled" : memberPayment?.status === "submitted" ? "Submitted" : "Pending"}
                         </Badge>
                       </div>
                     </Card>
@@ -540,7 +540,7 @@ export function ExpenseDetailsModal({
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      const pendingCount = memberPayments.filter(p => p.status === "awaiting").length;
+                      const pendingCount = memberPayments.filter(p => p.status === "pending").length;
                       toast({
                         title: "Reminders sent",
                         description: `${pendingCount} member(s) have been notified about their pending payment.`,
@@ -569,15 +569,15 @@ export function ExpenseDetailsModal({
                       }
 
                       const memberPayment = memberPayments.find(p => p.memberId === memberId);
-                      const isReceived = memberPayment?.status === "received";
+                      const isSettled = memberPayment?.status === "settled";
                       const isSubmitted = memberPayment?.status === "submitted";
 
                       // Get status badge with updated styling
                       const getStatusBadge = () => {
-                        if (isReceived) {
+                        if (isSettled) {
                           return (
                             <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border-stat-green/30">
-                              Paid
+                              Settled
                             </Badge>
                           );
                         }
@@ -590,7 +590,7 @@ export function ExpenseDetailsModal({
                         }
                         return (
                           <Badge variant="outline" className="text-xs px-2 py-0.5 text-yellow-600 border-yellow-500/30 bg-yellow-500/10">
-                            Awaiting Payment
+                            Pending
                           </Badge>
                         );
                       };
@@ -621,7 +621,7 @@ export function ExpenseDetailsModal({
                             </div>
 
                             {/* Button Row - Full Width */}
-                            {!isReceived && (
+                            {!isSettled && (
                               <Button
                                 variant="default"
                                 size="sm"
@@ -654,17 +654,17 @@ export function ExpenseDetailsModal({
                       <p className="text-xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
                     </div>
                     <Badge 
-                      variant={currentUserPayment?.status === "received" ? "default" : currentUserPayment?.status === "submitted" ? "secondary" : "outline"}
-                      className={currentUserPayment?.status === "received" ? "bg-stat-green text-stat-green-foreground" : currentUserPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600" : ""}
+                      variant={currentUserPayment?.status === "settled" ? "default" : currentUserPayment?.status === "submitted" ? "secondary" : "outline"}
+                      className={currentUserPayment?.status === "settled" ? "bg-stat-green text-stat-green-foreground" : currentUserPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600" : "text-yellow-600 border-yellow-500/30 bg-yellow-500/10"}
                     >
-                      {currentUserPayment?.status === "received" ? "Received" : 
-                       currentUserPayment?.status === "submitted" ? "Pending Verification" : "Awaiting Payment"}
+                      {currentUserPayment?.status === "settled" ? "Settled" : 
+                       currentUserPayment?.status === "submitted" ? "Pending Verification" : "Pending"}
                     </Badge>
                   </div>
                 </Card>
 
                 {/* Upload Payment Proof Section */}
-                {currentUserPayment?.status !== "received" && (
+                {currentUserPayment?.status !== "settled" && (
                   <div className="space-y-3">
                     <Separator />
                     
@@ -772,7 +772,7 @@ export function ExpenseDetailsModal({
               const payment = memberPayments.find(p => p.memberId === memberId);
               return { member, amount, payment };
             })}
-          onMarkAsReceived={handleMarkMemberReceived}
+          onMarkAsReceived={handleMarkMemberSettled}
           onSendReminder={(memberId, memberName) => {
             toast({
               title: "Reminder sent",

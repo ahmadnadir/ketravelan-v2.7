@@ -15,7 +15,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface MemberPayment {
   memberId: string;
-  status: "awaiting" | "submitted" | "received";
+  status: "pending" | "submitted" | "settled";
   receiptUrl?: string;
   uploadedAt?: string;
   payerNote?: string;
@@ -64,10 +64,10 @@ export function ReceiptsFromOthersModal({
   };
 
   const getStatusBadge = (payment?: MemberPayment) => {
-    if (payment?.status === "received") {
+    if (payment?.status === "settled") {
       return (
         <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border-stat-green/30">
-          Paid
+          Settled
         </Badge>
       );
     }
@@ -80,7 +80,7 @@ export function ReceiptsFromOthersModal({
     }
     return (
       <Badge variant="outline" className="text-xs px-2 py-0.5 text-yellow-600 border-yellow-500/30 bg-yellow-500/10">
-        Awaiting Payment
+        Pending
       </Badge>
     );
   };
@@ -108,12 +108,12 @@ export function ReceiptsFromOthersModal({
           {pendingMembers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <CheckCircle className="h-12 w-12 mx-auto mb-3 text-stat-green" />
-              <p className="font-medium">All payments received!</p>
+              <p className="font-medium">All payments settled!</p>
               <p className="text-sm">Everyone has settled their share.</p>
             </div>
           ) : (
             pendingMembers.map(({ member, amount, payment }) => {
-              const isReceived = payment?.status === "received";
+              const isSettled = payment?.status === "settled";
               const isSubmitted = payment?.status === "submitted";
               const hasReceipt = !!payment?.receiptUrl;
               const isExpanded = expandedReceipt === member.id;
@@ -250,7 +250,7 @@ export function ReceiptsFromOthersModal({
                   </div>
 
                   {/* Action Buttons */}
-                  {!isReceived && (
+                  {!isSettled && (
                     <>
                       <Separator />
                       <div className="p-3 flex gap-2">
@@ -271,19 +271,19 @@ export function ReceiptsFromOthersModal({
                           disabled={!isSubmitted && !hasReceipt}
                         >
                           <CheckCircle className="h-3.5 w-3.5" />
-                          Mark as Received
+                          Mark as Settled
                         </Button>
                       </div>
                     </>
                   )}
 
-                  {isReceived && (
+                  {isSettled && (
                     <>
                       <Separator />
                       <div className="p-3 bg-stat-green/5">
                         <div className="flex items-center justify-center gap-2 text-stat-green">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm font-medium">Payment Received</span>
+                          <span className="text-sm font-medium">Payment Settled</span>
                         </div>
                       </div>
                     </>

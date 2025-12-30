@@ -15,7 +15,7 @@ export interface SettlementExpense {
   title: string;
   date: string;
   shareAmount: number;
-  status: "awaiting" | "submitted" | "received";
+  status: "pending" | "submitted" | "settled";
   category: string;
 }
 
@@ -54,10 +54,10 @@ export function SettlementBreakdownModal({
   
   const getStatusBadge = (expenseStatus: SettlementExpense["status"]) => {
     switch (expenseStatus) {
-      case "awaiting":
+      case "pending":
         return (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning-foreground">
-            Awaiting Payment
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600">
+            Pending
           </span>
         );
       case "submitted":
@@ -66,10 +66,10 @@ export function SettlementBreakdownModal({
             Pending Verification
           </span>
         );
-      case "received":
+      case "settled":
         return (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
-            Paid
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-stat-green/10 text-stat-green">
+            Settled
           </span>
         );
     }

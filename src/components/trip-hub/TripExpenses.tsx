@@ -192,11 +192,11 @@ export function TripExpenses() {
         
         // Determine payment status for this member
         const memberPayment = expense.payments?.find(p => p.memberId === settlement.fromUser.id);
-        const status: SettlementExpense["status"] = memberPayment?.status === "received" 
-          ? "received" 
+        const status: SettlementExpense["status"] = memberPayment?.status === "settled" 
+          ? "settled" 
           : memberPayment?.status === "submitted" 
             ? "submitted" 
-            : "awaiting";
+            : "pending";
         
         contributingExpenses.push({
           expenseId: expense.id,
@@ -436,15 +436,15 @@ export function TripExpenses() {
     }));
   };
 
-  // Handle confirming payment received (with verification)
-  const handleConfirmPaymentReceived = (expenseId: string, memberId: string) => {
+  // Handle confirming payment settled (with verification)
+  const handleConfirmPaymentSettled = (expenseId: string, memberId: string) => {
     setExpenses(prev => prev.map(expense => {
       if (expense.id === expenseId && expense.payments) {
         const updatedPayments = expense.payments.map(p => 
-          p.memberId === memberId ? { ...p, status: "received" as const } : p
+          p.memberId === memberId ? { ...p, status: "settled" as const } : p
         );
-        const receivedCount = updatedPayments.filter(p => p.status === "received").length;
-        const newProgress = Math.round((receivedCount / updatedPayments.length) * 100);
+        const settledCount = updatedPayments.filter(p => p.status === "settled").length;
+        const newProgress = Math.round((settledCount / updatedPayments.length) * 100);
         
         return { 
           ...expense, 
@@ -457,7 +457,7 @@ export function TripExpenses() {
     
     toast({
       title: "Payment confirmed",
-      description: "The payment has been verified and marked as received.",
+      description: "The payment has been verified and marked as settled.",
     });
   };
 
@@ -919,7 +919,7 @@ export function TripExpenses() {
             handleUpdateProgress(viewingExpenseDetails.id, newProgress);
           }
         }}
-        onConfirmPaymentReceived={handleConfirmPaymentReceived}
+        onConfirmPaymentReceived={handleConfirmPaymentSettled}
       />
 
       {/* Settlement Breakdown Modal */}
