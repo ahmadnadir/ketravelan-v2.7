@@ -194,11 +194,11 @@ export const mockMembers = [
 ];
 
 export const mockExpenses = [
-  { id: "1", title: "Accommodation - 3 nights", amount: 1200, paidBy: "Ahmad Razak", date: "Jan 15, 2025", hasReceipt: true, paymentProgress: 75 },
-  { id: "2", title: "Ferry tickets", amount: 320, paidBy: "Sarah Tan", date: "Jan 15, 2025", hasReceipt: true, paymentProgress: 100 },
-  { id: "3", title: "Rental car", amount: 450, paidBy: "Ahmad Razak", date: "Jan 15, 2025", hasReceipt: false, paymentProgress: 50 },
-  { id: "4", title: "Group dinner", amount: 280, paidBy: "Lisa Wong", date: "Jan 16, 2025", hasReceipt: true, paymentProgress: 25 },
-  { id: "5", title: "Sky Bridge tickets", amount: 180, paidBy: "John Lee", date: "Jan 17, 2025", hasReceipt: true, paymentProgress: 0 },
+  { id: "1", title: "Accommodation - 3 nights", amount: 1200, paidBy: "Ahmad Razak", date: "Jan 15, 2025", hasReceipt: true, paymentProgress: 75, category: "Accommodation", splitType: "equal" as const, splitWith: ["1", "2", "3", "4"] },
+  { id: "2", title: "Ferry tickets", amount: 320, paidBy: "Sarah Tan", date: "Jan 15, 2025", hasReceipt: true, paymentProgress: 100, category: "Transport", splitType: "equal" as const, splitWith: ["1", "2", "3", "4", "5"] },
+  { id: "3", title: "Rental car", amount: 450, paidBy: "Ahmad Razak", date: "Jan 15, 2025", hasReceipt: false, paymentProgress: 50, category: "Transport", splitType: "custom" as const, splitWith: ["1", "2", "3"], customSplitAmounts: [{ memberId: "1", amount: 150 }, { memberId: "2", amount: 150 }, { memberId: "3", amount: 150 }] },
+  { id: "4", title: "Group dinner", amount: 280, paidBy: "Lisa Wong", date: "Jan 16, 2025", hasReceipt: true, paymentProgress: 25, category: "Food & Drinks", splitType: "equal" as const, splitWith: ["1", "2", "3", "4", "5"], notes: "Seafood dinner at the beach restaurant" },
+  { id: "5", title: "Sky Bridge tickets", amount: 180, paidBy: "John Lee", date: "Jan 17, 2025", hasReceipt: true, paymentProgress: 0, category: "Activities", splitType: "equal" as const, splitWith: ["1", "2", "3", "4"] },
 ];
 
 export const mockMessages = [

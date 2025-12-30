@@ -12,6 +12,7 @@ import { YourQRSection } from "@/components/trip-hub/YourQRSection";
 import { AddExpenseModal, NewExpense, ExpenseData } from "@/components/trip-hub/AddExpenseModal";
 import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
 import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
+import { ExpenseDetailsModal } from "@/components/trip-hub/ExpenseDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { mockExpenses as initialMockExpenses, mockMembers } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
+import { getCategoryFromTitle } from "@/lib/expenseCategories";
 
 const categoryBreakdown = [
   { category: "Transport", amount: 770, percentage: 30, color: "bg-stat-blue" },
@@ -32,34 +34,6 @@ const categoryBreakdown = [
   { category: "Activities", amount: 180, percentage: 7, color: "bg-stat-green" },
 ];
 
-// Category mapping for expense filtering
-const categoryMap: Record<string, string> = {
-  "Ferry": "Transport",
-  "Rental": "Transport",
-  "car": "Transport",
-  "taxi": "Transport",
-  "flight": "Transport",
-  "dinner": "Food & Drinks",
-  "lunch": "Food & Drinks",
-  "breakfast": "Food & Drinks",
-  "restaurant": "Food & Drinks",
-  "food": "Food & Drinks",
-  "Accommodation": "Accommodation",
-  "hotel": "Accommodation",
-  "resort": "Accommodation",
-  "Bridge": "Activities",
-  "ticket": "Activities",
-  "tour": "Activities",
-  "activity": "Activities",
-};
-
-const getCategoryFromTitle = (title: string): string => {
-  const lowerTitle = title.toLowerCase();
-  for (const [keyword, category] of Object.entries(categoryMap)) {
-    if (lowerTitle.includes(keyword.toLowerCase())) return category;
-  }
-  return "Other";
-};
 
 interface Settlement {
   id: string;
@@ -133,6 +107,8 @@ export function TripExpenses() {
   const [deletingExpense, setDeletingExpense] = useState<ExpenseData | null>(null);
   const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
   const [viewingReceipt, setViewingReceipt] = useState<{ title: string; url?: string } | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [viewingExpenseDetails, setViewingExpenseDetails] = useState<ExpenseData | null>(null);
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
@@ -359,6 +335,11 @@ export function TripExpenses() {
     setReceiptViewerOpen(true);
   };
 
+  const openExpenseDetails = (expense: ExpenseData) => {
+    setViewingExpenseDetails(expense);
+    setDetailsModalOpen(true);
+  };
+
   // Check if a settlement can show reminder (pending + others owe current user)
   const canShowReminder = (settlement: Settlement) => {
     return settlement.status === "pending" && settlement.toUser.name === CURRENT_USER;
@@ -557,9 +538,11 @@ export function TripExpenses() {
                   <ExpenseCard
                     key={expense.id}
                     {...expense}
+                    category={expense.category}
                     onEdit={() => openEditExpense(expense)}
                     onDelete={() => openDeleteExpense(expense)}
                     onViewReceipt={() => openReceiptViewer(expense)}
+                    onViewDetails={() => openExpenseDetails(expense)}
                   />
                 ))
               ) : (
@@ -788,6 +771,16 @@ export function TripExpenses() {
         }}
         expenseTitle={viewingReceipt?.title || ""}
         receiptUrl={viewingReceipt?.url}
+      />
+
+      {/* Expense Details Modal */}
+      <ExpenseDetailsModal
+        open={detailsModalOpen}
+        onOpenChange={(open) => {
+          setDetailsModalOpen(open);
+          if (!open) setViewingExpenseDetails(null);
+        }}
+        expense={viewingExpenseDetails}
       />
     </div>
   );
