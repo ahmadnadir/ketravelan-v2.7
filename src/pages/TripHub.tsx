@@ -8,7 +8,6 @@ import { mockTrips, mockMembers } from "@/data/mockData";
 import { TripChat } from "@/components/trip-hub/TripChat";
 import { TripExpenses } from "@/components/trip-hub/TripExpenses";
 import { TripNotes } from "@/components/trip-hub/TripNotes";
-import { TripItinerary } from "@/components/trip-hub/TripItinerary";
 import { GroupInfoModal } from "@/components/trip-hub/GroupInfoModal";
 
 export default function TripHub() {
@@ -54,14 +53,13 @@ export default function TripHub() {
           </button>
         </div>
 
-        {/* Tabs - Replaced Members with Itinerary */}
+        {/* Tabs - Chat, Expenses, Notes */}
         <div className="pb-2 sm:pb-3">
           <SegmentedControl
             options={[
               { label: "Chat", value: "chat" },
               { label: "Expenses", value: "expenses" },
               { label: "Notes", value: "notes" },
-              { label: "Itinerary", value: "itinerary" },
             ]}
             value={activeTab}
             onChange={setActiveTab}
@@ -78,7 +76,6 @@ export default function TripHub() {
           {activeTab === "chat" && <TripChat />}
           {activeTab === "expenses" && <TripExpenses />}
           {activeTab === "notes" && <TripNotes tripId={id || "1"} />}
-          {activeTab === "itinerary" && <TripItinerary tripId={id || "1"} />}
         </div>
       </FocusedFlowLayout>
 

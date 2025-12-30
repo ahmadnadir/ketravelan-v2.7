@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Pin, Trash2, Check, Square, CheckSquare, List, ListOrdered } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TripNote, saveNote, deleteNote } from "@/lib/tripNotes";
@@ -29,6 +29,8 @@ interface NoteEditorProps {
   onTogglePin: (id: string) => void;
 }
 
+type SaveState = "idle" | "saving" | "saved";
+
 export function NoteEditor({
   note,
   open,
@@ -40,10 +42,14 @@ export function NoteEditor({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isPinned, setIsPinned] = useState(false);
-  const [showSaved, setShowSaved] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const titleRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const isInitialMount = useRef(true);
+  const lastSavedContent = useRef({ title: "", content: "", isPinned: false });
 
   // Initialize state when note changes
   useEffect(() => {
@@ -51,6 +57,9 @@ export function NoteEditor({
       setTitle(note.title);
       setContent(note.content);
       setIsPinned(note.pinned);
+      lastSavedContent.current = { title: note.title, content: note.content, isPinned: note.pinned };
+      setSaveState("idle");
+      isInitialMount.current = true;
     }
   }, [note]);
 
@@ -61,46 +70,83 @@ export function NoteEditor({
     }
   }, [open]);
 
-  // Auto-save with debounce
-  const autoSave = useCallback(() => {
-    if (!note) return;
-    
-    const updatedNote: TripNote = {
-      ...note,
-      title: title || "Untitled",
-      content,
-      pinned: isPinned,
-      updatedAt: Date.now(),
-    };
-    
-    saveNote(updatedNote);
-    onSave(updatedNote);
-    
-    setShowSaved(true);
-    setTimeout(() => setShowSaved(false), 2000);
-  }, [note, title, content, isPinned, onSave]);
-
-  // Debounced save on content change
+  // Debounced save with proper state management
   useEffect(() => {
     if (!note || !open) return;
     
+    // Skip initial mount to avoid saving on load
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    // Check if content actually changed
+    const hasChanges = 
+      title !== lastSavedContent.current.title ||
+      content !== lastSavedContent.current.content ||
+      isPinned !== lastSavedContent.current.isPinned;
+    
+    if (!hasChanges) return;
+    
+    // Clear previous timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
     
-    saveTimeoutRef.current = setTimeout(autoSave, 500);
+    // Set idle while typing (no indicator shown)
+    setSaveState("idle");
+    
+    // Debounce save for 1 second of inactivity
+    saveTimeoutRef.current = setTimeout(() => {
+      setSaveState("saving");
+      
+      const updatedNote: TripNote = {
+        ...note,
+        title: title || "Untitled",
+        content,
+        pinned: isPinned,
+        updatedAt: Date.now(),
+      };
+      
+      saveNote(updatedNote);
+      onSave(updatedNote);
+      
+      // Update last saved content
+      lastSavedContent.current = { title: title || "Untitled", content, isPinned };
+      
+      // Brief delay before showing "Saved" for perceived stability
+      setTimeout(() => {
+        setSaveState("saved");
+      }, 150);
+      
+    }, 1000);
     
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [title, content, autoSave, note, open]);
+  }, [title, content, isPinned, note, open, onSave]);
 
   const handleClose = () => {
-    // Save immediately on close
+    // Save immediately on close if there are unsaved changes
     if (note && (title || content)) {
-      autoSave();
+      const hasChanges = 
+        title !== lastSavedContent.current.title ||
+        content !== lastSavedContent.current.content ||
+        isPinned !== lastSavedContent.current.isPinned;
+      
+      if (hasChanges) {
+        const updatedNote: TripNote = {
+          ...note,
+          title: title || "Untitled",
+          content,
+          pinned: isPinned,
+          updatedAt: Date.now(),
+        };
+        saveNote(updatedNote);
+        onSave(updatedNote);
+      }
     }
     onClose();
   };
@@ -121,23 +167,42 @@ export function NoteEditor({
     }
   };
 
-  // Insert formatting at current position or beginning of content
+  // Insert formatting and focus textarea
   const insertFormat = (type: "bullet" | "number" | "checklist") => {
     const prefix = type === "bullet" ? "- " : type === "number" ? "1. " : "[ ] ";
     
+    let newContent: string;
     if (!content.trim()) {
-      setContent(prefix);
-      return;
+      newContent = prefix;
+    } else {
+      newContent = content + (content.endsWith("\n") ? "" : "\n") + prefix;
     }
     
-    // Add format to a new line
-    setContent(content + (content.endsWith("\n") ? "" : "\n") + prefix);
+    setContent(newContent);
+    
+    // Focus the content textarea and place cursor at end
+    setTimeout(() => {
+      if (contentRef.current) {
+        contentRef.current.focus();
+        const length = newContent.length;
+        contentRef.current.setSelectionRange(length, length);
+      }
+    }, 10);
   };
 
-  // Parse content for formatted items (bullets, numbers, checklists)
-  const renderFormattedContent = (text: string) => {
+  const toggleChecklistItem = (lineIndex: number, check: boolean) => {
+    const lines = content.split("\n");
+    if (check) {
+      lines[lineIndex] = lines[lineIndex].replace(/\[\s*\]/, "[x]");
+    } else {
+      lines[lineIndex] = lines[lineIndex].replace(/\[x\]/i, "[ ]");
+    }
+    setContent(lines.join("\n"));
+  };
+
+  // Parse content for formatted items (bullets, numbers, checklists) - for preview only
+  const renderFormattedPreview = (text: string) => {
     const lines = text.split("\n");
-    let numberCounter = 0;
     
     return lines.map((line, index) => {
       // Checklist - unchecked
@@ -188,7 +253,6 @@ export function NoteEditor({
       // Numbered list
       const numberMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
       if (numberMatch) {
-        numberCounter++;
         return (
           <div key={index} className="flex items-start gap-2 py-0.5">
             <span className="text-muted-foreground min-w-[1.5rem] text-right">{numberMatch[2]}.</span>
@@ -200,16 +264,6 @@ export function NoteEditor({
       // Regular line
       return <div key={index}>{line || "\u00A0"}</div>;
     });
-  };
-
-  const toggleChecklistItem = (lineIndex: number, check: boolean) => {
-    const lines = content.split("\n");
-    if (check) {
-      lines[lineIndex] = lines[lineIndex].replace(/\[\s*\]/, "[x]");
-    } else {
-      lines[lineIndex] = lines[lineIndex].replace(/\[x\]/i, "[ ]");
-    }
-    setContent(lines.join("\n"));
   };
 
   // Check if content has any formatting
@@ -236,12 +290,20 @@ export function NoteEditor({
               </DrawerTitle>
               
               <div className="flex items-center gap-1">
-                {showSaved && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1 mr-2">
-                    <Check className="h-3 w-3 text-green-500" />
-                    Saved
-                  </span>
-                )}
+                {/* Save state indicator - stable, no blinking */}
+                <div className="mr-2 min-w-[60px] text-right">
+                  {saveState === "saving" && (
+                    <span className="text-xs text-muted-foreground">
+                      Saving...
+                    </span>
+                  )}
+                  {saveState === "saved" && (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1 justify-end transition-opacity duration-200">
+                      <Check className="h-3 w-3 text-green-500" />
+                      Saved
+                    </span>
+                  )}
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -308,19 +370,29 @@ export function NoteEditor({
                 className="w-full text-2xl sm:text-3xl font-semibold bg-transparent border-none outline-none placeholder:text-muted-foreground/50"
               />
               
-              {/* Content */}
+              {/* Content - Always editable textarea */}
               {hasFormatting ? (
-                <div className="text-base sm:text-lg leading-relaxed">
-                  {renderFormattedContent(content)}
-                  <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Start typing..."
-                    className="sr-only"
-                  />
+                <div className="space-y-4">
+                  {/* Interactive formatted preview */}
+                  <div className="text-base sm:text-lg leading-relaxed">
+                    {renderFormattedPreview(content)}
+                  </div>
+                  
+                  {/* Editable raw content area - tap to edit */}
+                  <div className="border-t border-border/30 pt-4">
+                    <p className="text-xs text-muted-foreground mb-2">Edit raw content:</p>
+                    <textarea
+                      ref={contentRef}
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder="Start typing..."
+                      className="w-full min-h-[30vh] text-sm bg-muted/30 rounded-lg p-3 border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed font-mono"
+                    />
+                  </div>
                 </div>
               ) : (
                 <textarea
+                  ref={contentRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Start typing..."
