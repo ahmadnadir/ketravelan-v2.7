@@ -4,8 +4,8 @@ import { InteractivePhoneMockup } from "./InteractivePhoneMockup";
 
 export function HeroSection() {
   return (
-    <section className="py-6 sm:py-10 md:py-14">
-      <div className="grid md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-center">
+    <section className="py-6 sm:py-10 md:py-14 overflow-hidden">
+      <div className="grid md:grid-cols-2 gap-10 md:gap-8 lg:gap-12 items-center">
         {/* Left Column - Value Proposition */}
         <div className="space-y-6 text-center md:text-left order-1">
           {/* Headline */}
@@ -46,7 +46,7 @@ export function HeroSection() {
         </div>
 
         {/* Right Column - Interactive Mockup */}
-        <div className="order-2 flex justify-center md:justify-end">
+        <div className="order-2 hidden md:flex justify-center lg:justify-end">
           <InteractivePhoneMockup />
         </div>
       </div>
