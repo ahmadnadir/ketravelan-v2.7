@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronLeft, Pin, Trash2, Check, Square, CheckSquare } from "lucide-react";
+import { ChevronLeft, Pin, Trash2, Check, Square, CheckSquare, List, ListOrdered } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TripNote, saveNote, deleteNote } from "@/lib/tripNotes";
 import {
@@ -121,13 +121,27 @@ export function NoteEditor({
     }
   };
 
-  // Parse content for checklist items
-  const renderContentWithChecklists = (text: string) => {
+  // Insert formatting at current position or beginning of content
+  const insertFormat = (type: "bullet" | "number" | "checklist") => {
+    const prefix = type === "bullet" ? "- " : type === "number" ? "1. " : "[ ] ";
+    
+    if (!content.trim()) {
+      setContent(prefix);
+      return;
+    }
+    
+    // Add format to a new line
+    setContent(content + (content.endsWith("\n") ? "" : "\n") + prefix);
+  };
+
+  // Parse content for formatted items (bullets, numbers, checklists)
+  const renderFormattedContent = (text: string) => {
     const lines = text.split("\n");
+    let numberCounter = 0;
+    
     return lines.map((line, index) => {
+      // Checklist - unchecked
       const uncheckedMatch = line.match(/^(\s*)-?\s*\[\s*\]\s*(.*)$/);
-      const checkedMatch = line.match(/^(\s*)-?\s*\[x\]\s*(.*)$/i);
-      
       if (uncheckedMatch) {
         return (
           <div key={index} className="flex items-start gap-2 py-0.5">
@@ -143,6 +157,8 @@ export function NoteEditor({
         );
       }
       
+      // Checklist - checked
+      const checkedMatch = line.match(/^(\s*)-?\s*\[x\]\s*(.*)$/i);
       if (checkedMatch) {
         return (
           <div key={index} className="flex items-start gap-2 py-0.5">
@@ -158,6 +174,30 @@ export function NoteEditor({
         );
       }
       
+      // Bullet point
+      const bulletMatch = line.match(/^(\s*)-\s+(.*)$/);
+      if (bulletMatch && !line.match(/\[[\sx]?\]/i)) {
+        return (
+          <div key={index} className="flex items-start gap-2 py-0.5">
+            <span className="text-muted-foreground mt-0.5">•</span>
+            <span className="flex-1">{bulletMatch[2]}</span>
+          </div>
+        );
+      }
+      
+      // Numbered list
+      const numberMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
+      if (numberMatch) {
+        numberCounter++;
+        return (
+          <div key={index} className="flex items-start gap-2 py-0.5">
+            <span className="text-muted-foreground min-w-[1.5rem] text-right">{numberMatch[2]}.</span>
+            <span className="flex-1">{numberMatch[3]}</span>
+          </div>
+        );
+      }
+      
+      // Regular line
       return <div key={index}>{line || "\u00A0"}</div>;
     });
   };
@@ -172,7 +212,8 @@ export function NoteEditor({
     setContent(lines.join("\n"));
   };
 
-  const hasChecklist = /\[[\sx]\]/i.test(content);
+  // Check if content has any formatting
+  const hasFormatting = /(\[[\sx]?\]|^\s*-\s+|^\s*\d+\.\s+)/im.test(content);
 
   return (
     <>
@@ -224,36 +265,69 @@ export function NoteEditor({
             </div>
           </DrawerHeader>
           
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-            {/* Title */}
-            <input
-              ref={titleRef}
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title"
-              className="w-full text-2xl sm:text-3xl font-semibold bg-transparent border-none outline-none placeholder:text-muted-foreground/50"
-            />
-            
-            {/* Content */}
-            {hasChecklist ? (
-              <div className="text-base sm:text-lg leading-relaxed">
-                {renderContentWithChecklists(content)}
+          <div className="flex-1 overflow-y-auto overscroll-contain flex flex-col">
+            {/* Formatting Toolbar */}
+            <div className="flex gap-1 px-4 py-2 border-b border-border/50 bg-accent/30">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => insertFormat("bullet")}
+                className="h-8 w-8 p-0"
+                title="Bullet list"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => insertFormat("number")}
+                className="h-8 w-8 p-0"
+                title="Numbered list"
+              >
+                <ListOrdered className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => insertFormat("checklist")}
+                className="h-8 w-8 p-0"
+                title="Checklist"
+              >
+                <Square className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex-1 p-4 sm:p-6 space-y-4">
+              {/* Title */}
+              <input
+                ref={titleRef}
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Title"
+                className="w-full text-2xl sm:text-3xl font-semibold bg-transparent border-none outline-none placeholder:text-muted-foreground/50"
+              />
+              
+              {/* Content */}
+              {hasFormatting ? (
+                <div className="text-base sm:text-lg leading-relaxed">
+                  {renderFormattedContent(content)}
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Start typing..."
+                    className="sr-only"
+                  />
+                </div>
+              ) : (
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Start typing..."
-                  className="sr-only"
+                  className="w-full min-h-[50vh] text-base sm:text-lg bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
                 />
-              </div>
-            ) : (
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Start typing...&#10;&#10;Tip: Use [ ] for checklists"
-                className="w-full min-h-[60vh] text-base sm:text-lg bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
-              />
-            )}
+              )}
+            </div>
           </div>
         </DrawerContent>
       </Drawer>

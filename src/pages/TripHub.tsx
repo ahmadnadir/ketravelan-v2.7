@@ -8,11 +8,13 @@ import { mockTrips, mockMembers } from "@/data/mockData";
 import { TripChat } from "@/components/trip-hub/TripChat";
 import { TripExpenses } from "@/components/trip-hub/TripExpenses";
 import { TripNotes } from "@/components/trip-hub/TripNotes";
-import { TripMembers } from "@/components/trip-hub/TripMembers";
+import { TripItinerary } from "@/components/trip-hub/TripItinerary";
+import { GroupInfoModal } from "@/components/trip-hub/GroupInfoModal";
 
 export default function TripHub() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState("chat");
+  const [groupInfoOpen, setGroupInfoOpen] = useState(false);
 
   const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
 
@@ -25,26 +27,41 @@ export default function TripHub() {
               <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </Link>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-semibold text-foreground truncate text-sm sm:text-base">{trip.title}</h1>
-            <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
-              <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
-              <span className="truncate">{trip.destination}</span>
-              <span>•</span>
-              <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
-              <span>{mockMembers.length}</span>
+          
+          {/* Interactive Trip Header - Opens Group Info Modal */}
+          <button
+            onClick={() => setGroupInfoOpen(true)}
+            className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
+          >
+            {/* Circular Trip Image */}
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full overflow-hidden shrink-0 border-2 border-background shadow-sm">
+              <img
+                src={trip.imageUrl}
+                alt={trip.title}
+                className="h-full w-full object-cover"
+              />
             </div>
-          </div>
+            <div className="min-w-0">
+              <h1 className="font-semibold text-foreground truncate text-sm sm:text-base">{trip.title}</h1>
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                <span className="truncate">{trip.destination}</span>
+                <span>•</span>
+                <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                <span>{mockMembers.length}</span>
+              </div>
+            </div>
+          </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Replaced Members with Itinerary */}
         <div className="pb-2 sm:pb-3">
           <SegmentedControl
             options={[
               { label: "Chat", value: "chat" },
               { label: "Expenses", value: "expenses" },
               { label: "Notes", value: "notes" },
-              { label: "Members", value: "members" },
+              { label: "Itinerary", value: "itinerary" },
             ]}
             value={activeTab}
             onChange={setActiveTab}
@@ -55,13 +72,23 @@ export default function TripHub() {
   );
 
   return (
-    <FocusedFlowLayout headerContent={headerContent} showBottomNav={true}>
-      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
-        {activeTab === "chat" && <TripChat />}
-        {activeTab === "expenses" && <TripExpenses />}
-        {activeTab === "notes" && <TripNotes tripId={id || "1"} />}
-        {activeTab === "members" && <TripMembers />}
-      </div>
-    </FocusedFlowLayout>
+    <>
+      <FocusedFlowLayout headerContent={headerContent} showBottomNav={true}>
+        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
+          {activeTab === "chat" && <TripChat />}
+          {activeTab === "expenses" && <TripExpenses />}
+          {activeTab === "notes" && <TripNotes tripId={id || "1"} />}
+          {activeTab === "itinerary" && <TripItinerary tripId={id || "1"} />}
+        </div>
+      </FocusedFlowLayout>
+
+      {/* Group Info Modal */}
+      <GroupInfoModal
+        open={groupInfoOpen}
+        onOpenChange={setGroupInfoOpen}
+        trip={trip}
+        members={mockMembers}
+      />
+    </>
   );
 }
