@@ -602,28 +602,36 @@ export function TripExpenses() {
               <div className="space-y-2">
                 {(() => {
                   // Calculate actual contributions from expenses
-                  const contributions: Record<string, number> = {};
+                  const contributions: Record<string, { amount: number; imageUrl?: string }> = {};
                   mockMembers.forEach(member => {
-                    contributions[member.name] = 0;
+                    contributions[member.name] = { amount: 0, imageUrl: member.imageUrl };
                   });
                   expenses.forEach(expense => {
                     if (contributions[expense.paidBy] !== undefined) {
-                      contributions[expense.paidBy] += expense.amount;
+                      contributions[expense.paidBy].amount += expense.amount;
                     }
                   });
                   
                   // Sort by contribution amount (highest first) - intentional ordering
                   const sortedContributions = Object.entries(contributions)
-                    .sort(([, a], [, b]) => b - a);
+                    .sort(([, a], [, b]) => b.amount - a.amount);
                   
-                  return sortedContributions.map(([name, contribution]) => {
+                  return sortedContributions.map(([name, { amount: contribution, imageUrl }]) => {
                     const percentage = totalCost > 0 ? Math.round((contribution / totalCost) * 100) : 0;
                     return (
-                      <div key={name} className="flex items-center gap-3 py-1.5">
-                        {/* Member Name - Left */}
-                        <span className="text-xs sm:text-sm text-foreground min-w-[80px] sm:min-w-[100px] truncate">
-                          {name}
-                        </span>
+                      <div key={name} className="flex items-center gap-2 sm:gap-3 py-1.5">
+                        {/* Avatar + Member Name - Left */}
+                        <div className="flex items-center gap-2 min-w-[100px] sm:min-w-[120px]">
+                          <Avatar className="h-6 w-6 sm:h-7 sm:w-7 shrink-0">
+                            <AvatarImage src={imageUrl} alt={name} />
+                            <AvatarFallback className="text-[10px] sm:text-xs bg-secondary text-muted-foreground">
+                              {name.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs sm:text-sm text-foreground truncate">
+                            {name}
+                          </span>
+                        </div>
                         
                         {/* Progress Bar - Center (flexible width, neutral colors) */}
                         <div className="flex-1 h-2 bg-secondary/60 rounded-full overflow-hidden">
