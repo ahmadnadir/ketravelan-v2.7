@@ -148,13 +148,12 @@ export function SettlementBreakdownModal({
           {contributingExpenses.length > 0 ? (
             contributingExpenses.map((expense) => {
               const categoryData = getCategoryById(expense.category);
-              const CategoryIcon = categoryData.icon;
               return (
                 <Card key={expense.expenseId} className="p-3 border-border/50">
                   <div className="flex items-start gap-3">
                     {/* Category Icon */}
                     <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                      <CategoryIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-base">{categoryData.emoji}</span>
                     </div>
 
                     {/* Expense Details */}

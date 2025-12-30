@@ -115,7 +115,6 @@ export function ExpenseDetailsModal({
   if (!expense) return null;
 
   const category = getCategoryById(expense.category || "Other");
-  const CategoryIcon = category.icon;
 
   // Calculate split amounts
   const splitMembers = expense.splitWith || mockMembers.map(m => m.id);
@@ -276,7 +275,7 @@ export function ExpenseDetailsModal({
             <DialogTitle className="sr-only">{expense.title} Details</DialogTitle>
             <div className="flex items-start gap-3">
               <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${category.color.split(' ')[0]}`}>
-                <CategoryIcon className={`h-6 w-6 ${category.color.split(' ')[1]}`} />
+                <span className="text-xl">{category.emoji}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-lg font-semibold text-foreground truncate">{expense.title}</p>

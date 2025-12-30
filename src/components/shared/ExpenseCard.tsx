@@ -50,7 +50,6 @@ export function ExpenseCard({
   // Get category info - use provided category or derive from title
   const categoryId = category || getCategoryFromTitle(title);
   const categoryInfo = getCategoryById(categoryId);
-  const CategoryIcon = categoryInfo.icon;
 
   // Determine user's role for this expense
   const isFullySettled = paymentProgress === 100;
@@ -82,7 +81,7 @@ export function ExpenseCard({
       <div className="flex items-start gap-3">
         {/* Category Icon */}
         <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${categoryInfo.color.split(' ')[0]}`}>
-          <CategoryIcon className={`h-5 w-5 ${categoryInfo.color.split(' ')[1]}`} />
+          <span className="text-lg">{categoryInfo.emoji}</span>
         </div>
 
         <div className="flex-1 min-w-0 space-y-2">
