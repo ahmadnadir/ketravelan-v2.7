@@ -4,20 +4,26 @@ export interface ExpenseCategory {
   id: string;
   label: string;
   icon: LucideIcon;
+  emoji: string;
   color: string;
 }
 
 export const expenseCategories: ExpenseCategory[] = [
-  { id: "Transport", label: "Transport", icon: Car, color: "bg-stat-blue text-stat-blue" },
-  { id: "Accommodation", label: "Accommodation", icon: Bed, color: "bg-purple-500/20 text-purple-500" },
-  { id: "Food & Drinks", label: "Food & Drinks", icon: Utensils, color: "bg-stat-orange text-stat-orange" },
-  { id: "Activities", label: "Activities", icon: Ticket, color: "bg-stat-green text-stat-green" },
-  { id: "Shopping", label: "Shopping", icon: ShoppingBag, color: "bg-pink-500/20 text-pink-500" },
-  { id: "Other", label: "Other", icon: Package, color: "bg-secondary text-muted-foreground" },
+  { id: "Transport", label: "Transport", icon: Car, emoji: "🚗", color: "bg-stat-blue text-stat-blue" },
+  { id: "Accommodation", label: "Accommodation", icon: Bed, emoji: "🏨", color: "bg-purple-500/20 text-purple-500" },
+  { id: "Food & Drinks", label: "Food & Drinks", icon: Utensils, emoji: "🍴", color: "bg-stat-orange text-stat-orange" },
+  { id: "Activities", label: "Activities", icon: Ticket, emoji: "🎫", color: "bg-stat-green text-stat-green" },
+  { id: "Shopping", label: "Shopping", icon: ShoppingBag, emoji: "🛍️", color: "bg-pink-500/20 text-pink-500" },
+  { id: "Other", label: "Other", icon: Package, emoji: "📦", color: "bg-secondary text-muted-foreground" },
 ];
 
 export function getCategoryById(categoryId: string): ExpenseCategory {
   return expenseCategories.find(c => c.id === categoryId) || expenseCategories[expenseCategories.length - 1];
+}
+
+export function getCategoryEmoji(categoryId: string): string {
+  const category = expenseCategories.find(c => c.id === categoryId);
+  return category?.emoji || "📦";
 }
 
 // Category mapping for expense filtering based on title keywords
