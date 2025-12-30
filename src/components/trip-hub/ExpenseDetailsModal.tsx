@@ -1,4 +1,4 @@
-import { Receipt, Users, User, Calendar, Wallet, FileText, ZoomIn, ZoomOut, Download } from "lucide-react";
+import { Receipt, Users, User, Calendar, Wallet, FileText, ZoomIn, ZoomOut, Download, Eye } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ export function ExpenseDetailsModal({
   expense,
 }: ExpenseDetailsModalProps) {
   const [zoom, setZoom] = useState(1);
+  const [showFullReceipt, setShowFullReceipt] = useState(false);
 
   if (!expense) return null;
 
@@ -63,30 +64,24 @@ export function ExpenseDetailsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto scrollbar-hide w-[calc(100%-2rem)] sm:w-full rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
-            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${category.color.split(' ')[0]}`}>
-              <CategoryIcon className={`h-5 w-5 ${category.color.split(' ')[1]}`} />
+          {/* 1. Header: Category Icon, Title, Category Label, Amount */}
+          <DialogTitle className="sr-only">{expense.title} Details</DialogTitle>
+          <div className="flex items-start gap-3">
+            <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${category.color.split(' ')[0]}`}>
+              <CategoryIcon className={`h-6 w-6 ${category.color.split(' ')[1]}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="truncate">{expense.title}</p>
-              <p className="text-sm font-normal text-muted-foreground">{category.label}</p>
+              <p className="text-lg font-semibold text-foreground truncate">{expense.title}</p>
+              <p className="text-sm text-muted-foreground">{category.label}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">
+                RM {expense.amount.toLocaleString()}
+              </p>
             </div>
-          </DialogTitle>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          {/* Amount */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Wallet className="h-4 w-4" />
-              <span className="text-sm">Total Amount</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">
-              RM {expense.amount.toLocaleString()}
-            </span>
-          </div>
-
-          {/* Paid by & Date */}
+          {/* 2. Meta Information: Paid by & Date */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-xl bg-secondary/50">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -104,15 +99,132 @@ export function ExpenseDetailsModal({
             </div>
           </div>
 
+          {/* 3. Receipt Section (if available) */}
+          {expense.hasReceipt && receiptUrl && (
+            <>
+              <Separator />
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Receipt className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold text-foreground">Receipt</h3>
+                </div>
+                
+                {/* Receipt Thumbnail */}
+                <div className="rounded-xl bg-secondary/30 overflow-hidden">
+                  {showFullReceipt ? (
+                    <>
+                      {/* Full Receipt View with Zoom */}
+                      <div className="flex items-center justify-between px-3 py-2 border-b border-border/50">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleZoomOut}
+                            className="h-7 w-7"
+                            disabled={zoom <= 0.5}
+                          >
+                            <ZoomOut className="h-3.5 w-3.5" />
+                          </Button>
+                          <span className="text-xs text-muted-foreground w-10 text-center">
+                            {Math.round(zoom * 100)}%
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleZoomIn}
+                            className="h-7 w-7"
+                            disabled={zoom >= 3}
+                          >
+                            <ZoomIn className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleDownload}
+                            className="h-7 w-7"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowFullReceipt(false)}
+                            className="h-7 text-xs"
+                          >
+                            Collapse
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="max-h-[300px] overflow-auto scrollbar-hide">
+                        <div
+                          className="flex items-center justify-center p-2"
+                          style={{ transform: `scale(${zoom})`, transformOrigin: "center top" }}
+                        >
+                          <img
+                            src={receiptUrl}
+                            alt="Receipt"
+                            className="rounded-lg max-w-full"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    /* Thumbnail View */
+                    <div className="relative">
+                      <img
+                        src={receiptUrl}
+                        alt="Receipt thumbnail"
+                        className="w-full h-32 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                      <div className="absolute bottom-2 left-2 right-2 flex items-center gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setShowFullReceipt(true)}
+                          className="h-8 text-xs gap-1.5 flex-1"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          View
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={() => {
+                            setShowFullReceipt(true);
+                            handleZoomIn();
+                          }}
+                          className="h-8 w-8"
+                        >
+                          <ZoomIn className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={handleDownload}
+                          className="h-8 w-8"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
           <Separator />
 
-          {/* Split Breakdown */}
+          {/* 4. Split Breakdown */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">Split Breakdown</h3>
+              <h3 className="text-sm font-semibold text-foreground">Split breakdown</h3>
               <Badge variant="secondary" className="text-xs">
-                {expense.splitType === "equal" ? "Equal Split" : "Custom Split"}
+                {expense.splitType === "equal" ? "Equal split" : "Custom split"}
               </Badge>
             </div>
 
@@ -142,20 +254,18 @@ export function ExpenseDetailsModal({
                           {member.name.split(" ").map(n => n[0]).join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{member.name}</p>
-                        {isPayer && (
-                          <p className="text-xs text-primary">Paid the expense</p>
-                        )}
-                      </div>
+                      <p className="text-sm font-medium text-foreground">{member.name}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-foreground">
                         RM {amount.toFixed(2)}
                       </p>
-                      {!isPayer && (
-                        <p className="text-xs text-muted-foreground">owes</p>
-                      )}
+                      <Badge 
+                        variant={isPayer ? "default" : "outline"} 
+                        className={`text-[10px] px-1.5 py-0 ${isPayer ? "bg-stat-green text-stat-green-foreground" : ""}`}
+                      >
+                        {isPayer ? "Paid" : "Owes"}
+                      </Badge>
                     </div>
                   </div>
                 );
@@ -163,7 +273,7 @@ export function ExpenseDetailsModal({
             </div>
           </div>
 
-          {/* Notes */}
+          {/* 5. Notes (Optional) */}
           {expense.notes && (
             <>
               <Separator />
@@ -175,66 +285,6 @@ export function ExpenseDetailsModal({
                 <p className="text-sm text-muted-foreground bg-secondary/30 p-3 rounded-xl">
                   {expense.notes}
                 </p>
-              </div>
-            </>
-          )}
-
-          {/* Receipt */}
-          {expense.hasReceipt && receiptUrl && (
-            <>
-              <Separator />
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Receipt className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-sm font-semibold text-foreground">Receipt</h3>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleZoomOut}
-                      className="h-7 w-7"
-                      disabled={zoom <= 0.5}
-                    >
-                      <ZoomOut className="h-3.5 w-3.5" />
-                    </Button>
-                    <span className="text-xs text-muted-foreground w-10 text-center">
-                      {Math.round(zoom * 100)}%
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleZoomIn}
-                      className="h-7 w-7"
-                      disabled={zoom >= 3}
-                    >
-                      <ZoomIn className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleDownload}
-                      className="h-7 w-7"
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="rounded-xl bg-secondary/30 overflow-hidden">
-                  <div className="max-h-[300px] overflow-auto scrollbar-hide">
-                    <div
-                      className="flex items-center justify-center p-2"
-                      style={{ transform: `scale(${zoom})`, transformOrigin: "center top" }}
-                    >
-                      <img
-                        src={receiptUrl}
-                        alt="Receipt"
-                        className="rounded-lg max-w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
               </div>
             </>
           )}

@@ -13,6 +13,7 @@ import { AddExpenseModal, NewExpense, ExpenseData } from "@/components/trip-hub/
 import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
 import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
 import { ExpenseDetailsModal } from "@/components/trip-hub/ExpenseDetailsModal";
+import { UploadPaymentProofModal } from "@/components/trip-hub/UploadPaymentProofModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -109,6 +110,12 @@ export function TripExpenses() {
   const [viewingReceipt, setViewingReceipt] = useState<{ title: string; url?: string } | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [viewingExpenseDetails, setViewingExpenseDetails] = useState<ExpenseData | null>(null);
+  
+  // New states for role-aware actions
+  const [uploadProofOpen, setUploadProofOpen] = useState(false);
+  const [uploadProofExpense, setUploadProofExpense] = useState<ExpenseData | null>(null);
+  const [expenseReminderOpen, setExpenseReminderOpen] = useState(false);
+  const [reminderExpense, setReminderExpense] = useState<ExpenseData | null>(null);
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
@@ -340,6 +347,48 @@ export function TripExpenses() {
     setDetailsModalOpen(true);
   };
 
+  // Role-aware expense handlers
+  const handleExpenseReminder = (expense: ExpenseData) => {
+    setReminderExpense(expense);
+    setExpenseReminderOpen(true);
+  };
+
+  const handleExpenseReminderSend = (message: string) => {
+    console.log("Expense reminder sent:", message);
+    // Would send notification/chat message here
+  };
+
+  const handleMarkAsReceived = (expense: ExpenseData) => {
+    setExpenses(prev => prev.map(e => {
+      if (e.id === expense.id) {
+        return { ...e, paymentProgress: 100 };
+      }
+      return e;
+    }));
+    toast({
+      title: "Payment received",
+      description: `${expense.title} has been marked as fully settled`,
+    });
+  };
+
+  const handleUploadProof = (expense: ExpenseData) => {
+    setUploadProofExpense(expense);
+    setUploadProofOpen(true);
+  };
+
+  const handleProofUpload = (file: File, note?: string) => {
+    if (!uploadProofExpense) return;
+    // In a real app, this would upload the file and notify the payer
+    console.log("Proof uploaded:", file, note);
+    // Optionally update payment progress
+    setExpenses(prev => prev.map(e => {
+      if (e.id === uploadProofExpense.id) {
+        return { ...e, paymentProgress: Math.min((e.paymentProgress || 0) + 25, 100) };
+      }
+      return e;
+    }));
+  };
+
   // Check if a settlement can show reminder (pending + others owe current user)
   const canShowReminder = (settlement: Settlement) => {
     return settlement.status === "pending" && settlement.toUser.name === CURRENT_USER;
@@ -537,12 +586,21 @@ export function TripExpenses() {
                 filteredExpenses.map((expense) => (
                   <ExpenseCard
                     key={expense.id}
-                    {...expense}
+                    id={expense.id}
+                    title={expense.title}
+                    amount={expense.amount}
+                    paidBy={expense.paidBy}
+                    date={expense.date}
                     category={expense.category}
+                    paymentProgress={expense.paymentProgress}
+                    currentUser={CURRENT_USER}
+                    splitWith={expense.splitWith}
+                    onViewDetails={() => openExpenseDetails(expense)}
+                    onSendReminder={() => handleExpenseReminder(expense)}
+                    onMarkAsReceived={() => handleMarkAsReceived(expense)}
+                    onUploadProof={() => handleUploadProof(expense)}
                     onEdit={() => openEditExpense(expense)}
                     onDelete={() => openDeleteExpense(expense)}
-                    onViewReceipt={() => openReceiptViewer(expense)}
-                    onViewDetails={() => openExpenseDetails(expense)}
                   />
                 ))
               ) : (
@@ -781,6 +839,32 @@ export function TripExpenses() {
           if (!open) setViewingExpenseDetails(null);
         }}
         expense={viewingExpenseDetails}
+      />
+
+      {/* Upload Payment Proof Modal */}
+      <UploadPaymentProofModal
+        open={uploadProofOpen}
+        onOpenChange={(open) => {
+          setUploadProofOpen(open);
+          if (!open) setUploadProofExpense(null);
+        }}
+        expenseTitle={uploadProofExpense?.title || ""}
+        amount={uploadProofExpense?.amount || 0}
+        payerName={uploadProofExpense?.paidBy || ""}
+        onUpload={handleProofUpload}
+      />
+
+      {/* Expense-based Reminder Modal */}
+      <SendReminderModal
+        open={expenseReminderOpen}
+        onOpenChange={(open) => {
+          setExpenseReminderOpen(open);
+          if (!open) setReminderExpense(null);
+        }}
+        recipientName="Group Members"
+        amount={reminderExpense?.amount || 0}
+        tripName="Cameron Highlands"
+        onSend={handleExpenseReminderSend}
       />
     </div>
   );

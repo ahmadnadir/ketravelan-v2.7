@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Upload, Receipt, Users, UserCheck, Pencil } from "lucide-react";
+import { expenseCategories } from "@/lib/expenseCategories";
 import {
   Dialog,
   DialogContent,
@@ -21,14 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { mockMembers } from "@/data/mockData";
 
-const expenseCategories = [
-  { id: "transport", label: "Transport", icon: "🚗" },
-  { id: "accommodation", label: "Accommodation", icon: "🏨" },
-  { id: "food", label: "Food & Drinks", icon: "🍽️" },
-  { id: "activities", label: "Activities", icon: "🎫" },
-  { id: "shopping", label: "Shopping", icon: "🛍️" },
-  { id: "other", label: "Other", icon: "📦" },
-];
+// Using expenseCategories from lib for consistency
 
 export interface CustomSplitAmount {
   memberId: string;
@@ -297,14 +291,17 @@ export function AddExpenseModal({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
-                {expenseCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id} className="rounded-lg">
-                    <span className="flex items-center gap-2">
-                      <span>{cat.icon}</span>
-                      <span>{cat.label}</span>
-                    </span>
-                  </SelectItem>
-                ))}
+                {expenseCategories.map((cat) => {
+                  const IconComponent = cat.icon;
+                  return (
+                    <SelectItem key={cat.id} value={cat.id} className="rounded-lg">
+                      <span className="flex items-center gap-2">
+                        <IconComponent className={`h-4 w-4 ${cat.color.split(' ')[1]}`} />
+                        <span>{cat.label}</span>
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
