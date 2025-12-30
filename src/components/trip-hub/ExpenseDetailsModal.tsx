@@ -520,14 +520,75 @@ export function ExpenseDetailsModal({
           {/* Payments Tab */}
           <TabsContent value="payments" className="p-4 space-y-4 mt-0">
             {isFullySettled ? (
-              /* Fully Settled State */
-              <Card className="p-6 text-center border-border/50">
-                <CheckCircle className="h-12 w-12 mx-auto text-stat-green mb-3" />
-                <p className="font-medium text-foreground">All payments have been settled</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Everyone has paid their share for this expense.
-                </p>
-              </Card>
+              /* Fully Settled State - Show payment history with receipts */
+              <div className="space-y-4">
+                <Card className="p-4 text-center border-border/50 bg-stat-green/5">
+                  <CheckCircle className="h-10 w-10 mx-auto text-stat-green mb-2" />
+                  <p className="font-medium text-foreground">All payments settled</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Everyone has paid their share for this expense.
+                  </p>
+                </Card>
+
+                {/* Payment History List */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-muted-foreground">Payment History</h3>
+                  {splitMembers
+                    .filter(memberId => {
+                      const member = getMemberById(memberId);
+                      return member && member.name !== expense.paidBy;
+                    })
+                    .map((memberId) => {
+                      const member = getMemberById(memberId);
+                      if (!member) return null;
+
+                      let amount = equalSplitAmount;
+                      if (expense.splitType === "custom" && expense.customSplitAmounts) {
+                        const customAmount = expense.customSplitAmounts.find(c => c.memberId === memberId);
+                        amount = customAmount?.amount || 0;
+                      }
+
+                      const memberPayment = memberPayments.find(p => p.memberId === memberId);
+
+                      return (
+                        <Card key={memberId} className="p-3 border-border/50">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 shrink-0">
+                              <AvatarImage src={member.imageUrl} alt={member.name} />
+                              <AvatarFallback className="text-xs">
+                                {member.name.split(" ").map(n => n[0]).join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
+                              <p className="text-xs text-muted-foreground">RM {amount.toFixed(2)}</p>
+                            </div>
+                            <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border-stat-green/30">
+                              Settled
+                            </Badge>
+                            {memberPayment?.receiptUrl && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setReviewingPayment({
+                                    member,
+                                    payment: memberPayment,
+                                    amount
+                                  });
+                                }}
+                                className="h-7 text-xs text-primary"
+                              >
+                                <Eye className="h-3.5 w-3.5 mr-1" />
+                                View Receipt
+                              </Button>
+                            )}
+                          </div>
+                        </Card>
+                      );
+                    })}
+                </div>
+              </div>
             ) : isPayer ? (
               /* Case B: Others owe me - Show pending payments */
               <div className="space-y-4">

@@ -119,32 +119,28 @@ export function ExpenseCard({
             </div>
           </div>
 
-          {/* Status Section - Always show progress bar when there's progress */}
-          {paymentProgress > 0 && (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className={`text-xs font-medium ${isFullySettled ? "text-stat-green" : "text-yellow-600"}`}>
-                  {paymentProgress}% settled
-                </span>
-              </div>
-              <Progress value={paymentProgress} className="h-1.5" />
+          {/* Status Section - Always show progress bar */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className={`text-xs font-medium ${isFullySettled ? "text-stat-green" : "text-yellow-600"}`}>
+                {paymentProgress}% settled
+              </span>
             </div>
-          )}
+            <Progress value={paymentProgress} className="h-1.5" />
+          </div>
 
           {/* Primary Action Button - Always visible */}
           <div className="pt-3">
             <Button
-              variant={role === "settled" ? "ghost" : "outline"}
+              variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                role === "settled" ? onCardClick() : onPrimaryAction();
+                onPrimaryAction();
               }}
               className={cn(
                 "w-full h-9 text-xs font-medium transition-all duration-150",
-                role === "settled" 
-                  ? "text-muted-foreground hover:bg-secondary/50" 
-                  : "border-border/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
+                "border-border/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
               )}
             >
               {role === "payer" ? "View Payments" : role === "owes" ? "Mark as Paid" : "View Details"}
