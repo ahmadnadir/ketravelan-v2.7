@@ -256,10 +256,18 @@ export default function Explore() {
           <div
             className={cn(
               "overflow-hidden transition-all duration-200 ease-out",
-              showBudgetSlider ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
+              showBudgetSlider ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
             )}
           >
-            <div className="space-y-2 pt-1 pb-2">
+            <div className="space-y-3 pt-1 pb-2">
+              {/* Range Display */}
+              <div className="text-center">
+                <span className="text-sm font-medium text-foreground">
+                  Budget per person: RM {pendingBudgetRange[0].toLocaleString()} – RM {pendingBudgetRange[1].toLocaleString()}{pendingBudgetRange[1] >= 5000 ? '+' : ''}
+                </span>
+              </div>
+              
+              {/* Dual-handle Slider */}
               <Slider
                 value={pendingBudgetRange}
                 onValueChange={setPendingBudgetRange}
@@ -267,6 +275,8 @@ export default function Explore() {
                 max={5000}
                 step={100}
               />
+              
+              {/* Min/Max Labels */}
               <div className="flex justify-between text-xs text-muted-foreground/60">
                 <span>RM 0</span>
                 <span>RM 5,000+</span>

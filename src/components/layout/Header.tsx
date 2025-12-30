@@ -1,14 +1,15 @@
-import { Bell, User, FileText, Settings, LogOut } from "lucide-react";
+import { Bell, User, FileText, Settings, LogOut, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -17,13 +18,20 @@ interface HeaderProps {
 
 export function Header({ onNotificationsClick }: HeaderProps) {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
+    setMenuOpen(false);
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
     });
     navigate("/");
+  };
+
+  const handleNavigation = (path: string) => {
+    setMenuOpen(false);
+    navigate(path);
   };
 
   return (
@@ -49,9 +57,9 @@ export function Header({ onNotificationsClick }: HeaderProps) {
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
           </Button>
           
-          {/* Profile Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          {/* Profile Modal */}
+          <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
+            <DialogTrigger asChild>
               <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10">
                 <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden">
                   <img 
@@ -61,42 +69,72 @@ export function Header({ onNotificationsClick }: HeaderProps) {
                   />
                 </div>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background border-border">
-              <DropdownMenuItem asChild>
-                <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
-                  <User className="h-4 w-4" />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/approvals" className="flex items-center gap-2 cursor-pointer">
-                  <FileText className="h-4 w-4" />
-                  Approvals & Requests
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/my-trips?tab=draft" className="flex items-center gap-2 cursor-pointer">
-                  <FileText className="h-4 w-4" />
-                  Draft Trips
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/settings" className="flex items-center gap-2 cursor-pointer">
-                  <Settings className="h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-destructive focus:text-destructive cursor-pointer"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Log Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm mx-4 rounded-2xl">
+              <DialogHeader className="pb-2">
+                <DialogTitle className="text-center">Account</DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-1">
+                {/* Profile */}
+                <button
+                  onClick={() => handleNavigation("/profile")}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary transition-colors text-left"
+                >
+                  <User className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm font-medium">Profile</span>
+                </button>
+                
+                {/* Favourites (NEW) */}
+                <button
+                  onClick={() => handleNavigation("/favourites")}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary transition-colors text-left"
+                >
+                  <Heart className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm font-medium">Favourites</span>
+                </button>
+                
+                {/* Approvals & Requests */}
+                <button
+                  onClick={() => handleNavigation("/approvals")}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary transition-colors text-left"
+                >
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm font-medium">Approvals & Requests</span>
+                </button>
+                
+                {/* Draft Trips */}
+                <button
+                  onClick={() => handleNavigation("/my-trips?tab=draft")}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary transition-colors text-left"
+                >
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm font-medium">Draft Trips</span>
+                </button>
+                
+                {/* Settings */}
+                <button
+                  onClick={() => handleNavigation("/settings")}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary transition-colors text-left"
+                >
+                  <Settings className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm font-medium">Settings</span>
+                </button>
+                
+                {/* Separator */}
+                <div className="h-px bg-border my-2" />
+                
+                {/* Log Out (destructive) */}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-destructive/10 transition-colors text-destructive text-left"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="text-sm font-medium">Log Out</span>
+                </button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </header>
