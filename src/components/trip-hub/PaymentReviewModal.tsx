@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, ZoomIn, ZoomOut, ImageIcon, CheckCircle, X } from "lucide-react";
+import { Download, ZoomIn, ZoomOut, ImageIcon, CheckCircle, Bell } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ExpensePayment } from "@/data/mockData";
+import { toast } from "@/hooks/use-toast";
 
 interface Member {
   id: string;
@@ -185,11 +186,28 @@ export function PaymentReviewModal({
                 <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">No receipt uploaded yet</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  The payer hasn't submitted proof of payment.
+                  {member.name} hasn't submitted proof of payment.
                 </p>
               </Card>
             )}
           </div>
+
+          {/* Send Reminder Button - Only show if awaiting payment */}
+          {!isReceived && !hasReceipt && (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                toast({
+                  title: "Reminder sent",
+                  description: `${member.name} has been notified about their pending payment.`,
+                });
+              }}
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Send Reminder to {member.name}
+            </Button>
+          )}
 
           {/* Payer Note */}
           {payment.payerNote && (
@@ -202,22 +220,14 @@ export function PaymentReviewModal({
           )}
 
           {/* Action Button - Only show if not received and has receipt */}
-          {!isReceived && (
+          {!isReceived && hasReceipt && (
             <Button
               className="w-full"
               onClick={onConfirmReceived}
-              disabled={!hasReceipt}
             >
               <CheckCircle className="h-4 w-4 mr-2" />
               Confirm & Mark as Received
             </Button>
-          )}
-
-          {/* Disabled state hint */}
-          {!isReceived && !hasReceipt && (
-            <p className="text-xs text-muted-foreground text-center">
-              You can confirm payment once the payer uploads a receipt.
-            </p>
           )}
         </div>
       </DialogContent>
