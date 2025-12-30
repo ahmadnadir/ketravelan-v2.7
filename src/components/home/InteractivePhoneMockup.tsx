@@ -81,6 +81,12 @@ export function InteractivePhoneMockup() {
   );
 }
 
+// Create a map of member data for quick lookup
+const memberMap = mockMembers.reduce((acc, member) => {
+  acc[member.id] = member;
+  return acc;
+}, {} as Record<string, typeof mockMembers[0]>);
+
 function MockChatContent() {
   const currentUserId = "1";
 
@@ -91,6 +97,7 @@ function MockChatContent() {
         {mockMessages.map((msg) => {
           const isOwn = msg.senderId === currentUserId;
           const isSystem = msg.type === "system";
+          const sender = memberMap[msg.senderId];
 
           if (isSystem) {
             return (
@@ -105,29 +112,44 @@ function MockChatContent() {
           return (
             <div
               key={msg.id}
-              className={cn("flex flex-col gap-0.5", isOwn && "items-end")}
+              className={cn("flex gap-1.5", isOwn ? "justify-end" : "justify-start")}
             >
+              {/* Avatar for other users (WhatsApp style) */}
               {!isOwn && (
-                <span className="text-[8px] text-muted-foreground ml-2">
-                  {msg.senderName}
-                </span>
+                <div className="h-5 w-5 rounded-full bg-muted overflow-hidden shrink-0 mt-3">
+                  {sender?.imageUrl ? (
+                    <img src={sender.imageUrl} alt={msg.senderName} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-muted-foreground font-semibold text-[8px]">
+                      {msg.senderName.charAt(0)}
+                    </div>
+                  )}
+                </div>
               )}
-              <div
-                className={cn(
-                  "max-w-[85%] px-2.5 py-1.5 rounded-xl",
-                  isOwn
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-secondary text-secondary-foreground rounded-bl-sm"
+              
+              <div className={cn("flex flex-col gap-0.5", isOwn && "items-end")}>
+                {!isOwn && (
+                  <span className="text-[8px] text-muted-foreground ml-2">
+                    {msg.senderName}
+                  </span>
                 )}
-              >
-                <p className="text-[10px]">{msg.content}</p>
+                <div
+                  className={cn(
+                    "max-w-[85%] px-2.5 py-1.5 rounded-2xl",
+                    isOwn
+                      ? "bg-primary text-primary-foreground rounded-br-sm"
+                      : "bg-secondary text-secondary-foreground rounded-bl-sm"
+                  )}
+                >
+                  <p className="text-[10px]">{msg.content}</p>
+                </div>
+                <span className={cn(
+                  "text-[7px] text-muted-foreground",
+                  isOwn ? "mr-1" : "ml-2"
+                )}>
+                  {msg.timestamp}
+                </span>
               </div>
-              <span className={cn(
-                "text-[7px] text-muted-foreground",
-                isOwn ? "mr-1" : "ml-2"
-              )}>
-                {msg.timestamp}
-              </span>
             </div>
           );
         })}
@@ -136,13 +158,13 @@ function MockChatContent() {
       {/* Composer */}
       <div className="border-t border-border/50 bg-card px-2 py-1.5">
         <div className="flex items-center gap-1.5">
-          <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center">
+          <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors">
             <Paperclip className="h-3 w-3 text-muted-foreground" />
           </div>
           <div className="flex-1 bg-secondary rounded-full px-2.5 py-1">
             <span className="text-[9px] text-muted-foreground">Type a message...</span>
           </div>
-          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors">
             <Send className="h-3 w-3 text-primary-foreground" />
           </div>
         </div>
