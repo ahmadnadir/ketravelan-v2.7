@@ -207,39 +207,19 @@ export function TripExpenses() {
     }, 0);
   }, [expenses]);
 
-  // Calculate what current user still owes (unpaid shares to others)
+  // Calculate NET amount current user owes others (from settlements)
   const youOwe = useMemo(() => {
-    return expenses
-      .filter(expense => expense.paidBy !== CURRENT_USER) // Expenses paid by others
-      .reduce((sum, expense) => {
-        const userPayment = expense.payments?.find(p => p.memberId === CURRENT_USER_ID);
-        // Only count if user hasn't settled yet
-        if (!userPayment || userPayment.status === "pending") {
-          return sum + calculateUserShare(expense, CURRENT_USER_ID);
-        }
-        return sum;
-      }, 0);
-  }, [expenses]);
+    return settlements
+      .filter(s => s.fromUser.id === CURRENT_USER_ID)
+      .reduce((sum, s) => sum + s.amount, 0);
+  }, [settlements]);
 
-  // Calculate what others owe current user (for expenses current user paid)
+  // Calculate NET amount others owe current user (from settlements)
   const owedToYou = useMemo(() => {
-    return expenses
-      .filter(expense => expense.paidBy === CURRENT_USER) // Expenses paid by current user
-      .reduce((sum, expense) => {
-        // Sum up unsettled amounts from other members
-        const unsettledFromOthers = expense.splitWith
-          .filter(memberId => memberId !== CURRENT_USER_ID)
-          .reduce((memberSum, memberId) => {
-            const memberPayment = expense.payments?.find(p => p.memberId === memberId);
-            // Only count if member hasn't settled yet
-            if (!memberPayment || memberPayment.status !== "settled") {
-              return memberSum + calculateUserShare(expense, memberId);
-            }
-            return memberSum;
-          }, 0);
-        return sum + unsettledFromOthers;
-      }, 0);
-  }, [expenses]);
+    return settlements
+      .filter(s => s.toUser.id === CURRENT_USER_ID)
+      .reduce((sum, s) => sum + s.amount, 0);
+  }, [settlements]);
 
   // Get unique payers from expenses
   const uniquePayers = useMemo(() => {
@@ -647,7 +627,8 @@ export function TripExpenses() {
             value={`RM ${owedToYou.toLocaleString()}`}
             icon={TrendingUp}
             color="orange"
-            description="Others owe you"
+            description="Net from others"
+            tooltip="Net amount after offsetting what you owe them"
             onClick={handleOwedToYouTap}
           />
           <StatCard
@@ -655,7 +636,8 @@ export function TripExpenses() {
             value={`RM ${youOwe.toLocaleString()}`}
             icon={TrendingDown}
             color="red"
-            description="You need to settle"
+            description="Net to others"
+            tooltip="Net amount after offsetting what they owe you"
             onClick={handleYouOweTap}
           />
         </div>
