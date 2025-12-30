@@ -73,7 +73,7 @@ export default function DirectChat() {
       footerContent={footerContent}
       showBottomNav={true}
     >
-      <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-3">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3">
         {mockDirectMessages.map((msg) => {
           const isOwn = msg.senderId === "me";
 
