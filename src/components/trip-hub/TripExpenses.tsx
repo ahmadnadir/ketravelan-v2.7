@@ -371,6 +371,31 @@ export function TripExpenses() {
     }));
   };
 
+  // Handle confirming payment received (with verification)
+  const handleConfirmPaymentReceived = (expenseId: string, memberId: string) => {
+    setExpenses(prev => prev.map(expense => {
+      if (expense.id === expenseId && expense.payments) {
+        const updatedPayments = expense.payments.map(p => 
+          p.memberId === memberId ? { ...p, status: "received" as const } : p
+        );
+        const receivedCount = updatedPayments.filter(p => p.status === "received").length;
+        const newProgress = Math.round((receivedCount / updatedPayments.length) * 100);
+        
+        return { 
+          ...expense, 
+          payments: updatedPayments,
+          paymentProgress: newProgress 
+        };
+      }
+      return expense;
+    }));
+    
+    toast({
+      title: "Payment confirmed",
+      description: "The payment has been verified and marked as received.",
+    });
+  };
+
   // Check if a settlement can show reminder (pending + others owe current user)
   const canShowReminder = (settlement: Settlement) => {
     return settlement.status === "pending" && settlement.toUser.name === CURRENT_USER;
@@ -828,6 +853,7 @@ export function TripExpenses() {
             handleUpdateProgress(viewingExpenseDetails.id, newProgress);
           }
         }}
+        onConfirmPaymentReceived={handleConfirmPaymentReceived}
       />
     </div>
   );

@@ -196,9 +196,10 @@ export const mockMembers = [
 // Payment tracking for each expense member
 export interface ExpensePayment {
   memberId: string;
-  status: "pending" | "uploaded" | "confirmed";
+  status: "awaiting" | "submitted" | "received";
   receiptUrl?: string;
   uploadedAt?: string;
+  payerNote?: string;
 }
 
 // Enhanced expense data with payments tracking
@@ -231,10 +232,10 @@ export const mockExpenses: ExpenseData[] = [
     splitType: "equal" as const, 
     splitWith: ["1", "2", "3", "4"],
     payments: [
-      { memberId: "1", status: "confirmed" },
-      { memberId: "2", status: "confirmed" },
-      { memberId: "3", status: "confirmed" },
-      { memberId: "4", status: "pending" },
+      { memberId: "1", status: "received" },
+      { memberId: "2", status: "received" },
+      { memberId: "3", status: "received" },
+      { memberId: "4", status: "awaiting" },
     ]
   },
   { 
@@ -249,11 +250,11 @@ export const mockExpenses: ExpenseData[] = [
     splitType: "equal" as const, 
     splitWith: ["1", "2", "3", "4", "5"],
     payments: [
-      { memberId: "1", status: "confirmed" },
-      { memberId: "2", status: "confirmed" },
-      { memberId: "3", status: "confirmed" },
-      { memberId: "4", status: "confirmed" },
-      { memberId: "5", status: "confirmed" },
+      { memberId: "1", status: "received" },
+      { memberId: "2", status: "received" },
+      { memberId: "3", status: "received" },
+      { memberId: "4", status: "received" },
+      { memberId: "5", status: "received" },
     ]
   },
   { 
@@ -269,9 +270,9 @@ export const mockExpenses: ExpenseData[] = [
     splitWith: ["1", "2", "3"], 
     customSplitAmounts: [{ memberId: "1", amount: 150 }, { memberId: "2", amount: 150 }, { memberId: "3", amount: 150 }],
     payments: [
-      { memberId: "1", status: "confirmed" },
-      { memberId: "2", status: "uploaded", receiptUrl: "https://example.com/receipt.jpg", uploadedAt: "Jan 16, 2025" },
-      { memberId: "3", status: "pending" },
+      { memberId: "1", status: "received" },
+      { memberId: "2", status: "submitted", receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop", uploadedAt: "Jan 16, 2025", payerNote: "Paid via TNG on Jan 16" },
+      { memberId: "3", status: "awaiting" },
     ]
   },
   { 
@@ -287,11 +288,11 @@ export const mockExpenses: ExpenseData[] = [
     splitWith: ["1", "2", "3", "4", "5"], 
     notes: "Seafood dinner at the beach restaurant",
     payments: [
-      { memberId: "1", status: "pending" },
-      { memberId: "2", status: "pending" },
-      { memberId: "3", status: "confirmed" },
-      { memberId: "4", status: "pending" },
-      { memberId: "5", status: "pending" },
+      { memberId: "1", status: "submitted", receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop", uploadedAt: "Jan 17, 2025", payerNote: "Bank transfer completed" },
+      { memberId: "2", status: "awaiting" },
+      { memberId: "3", status: "received" },
+      { memberId: "4", status: "awaiting" },
+      { memberId: "5", status: "awaiting" },
     ]
   },
   { 
@@ -306,10 +307,10 @@ export const mockExpenses: ExpenseData[] = [
     splitType: "equal" as const, 
     splitWith: ["1", "2", "3", "4"],
     payments: [
-      { memberId: "1", status: "pending" },
-      { memberId: "2", status: "pending" },
-      { memberId: "3", status: "pending" },
-      { memberId: "4", status: "confirmed" },
+      { memberId: "1", status: "awaiting" },
+      { memberId: "2", status: "awaiting" },
+      { memberId: "3", status: "awaiting" },
+      { memberId: "4", status: "received" },
     ]
   },
 ];

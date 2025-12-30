@@ -16,8 +16,9 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ExpenseData } from "@/components/trip-hub/AddExpenseModal";
 import { getCategoryById } from "@/lib/expenseCategories";
-import { mockMembers } from "@/data/mockData";
+import { mockMembers, ExpensePayment } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
+import { PaymentReviewModal } from "./PaymentReviewModal";
 
 type TabType = "overview" | "payments";
 
@@ -30,14 +31,16 @@ interface ExpenseDetailsModalProps {
   onMarkAsReceived?: (memberId: string) => void;
   onUploadProof?: (file: File, note?: string) => void;
   onUpdateProgress?: (newProgress: number) => void;
+  onConfirmPaymentReceived?: (expenseId: string, memberId: string) => void;
 }
 
 // Mock payment data for each member
 interface MemberPayment {
   memberId: string;
-  status: "pending" | "uploaded" | "confirmed";
+  status: "awaiting" | "submitted" | "received";
   receiptUrl?: string;
   uploadedAt?: string;
+  payerNote?: string;
 }
 
 export function ExpenseDetailsModal({
@@ -49,6 +52,7 @@ export function ExpenseDetailsModal({
   onMarkAsReceived,
   onUploadProof,
   onUpdateProgress,
+  onConfirmPaymentReceived,
 }: ExpenseDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [zoom, setZoom] = useState(1);
@@ -61,6 +65,13 @@ export function ExpenseDetailsModal({
   
   // Mock member payment statuses
   const [memberPayments, setMemberPayments] = useState<MemberPayment[]>([]);
+  
+  // Payment review modal state
+  const [reviewingPayment, setReviewingPayment] = useState<{
+    member: typeof mockMembers[0];
+    payment: MemberPayment;
+    amount: number;
+  } | null>(null);
 
   // Reset state when modal opens with new expense or initial tab
   const handleOpenChange = (newOpen: boolean) => {
@@ -71,15 +82,28 @@ export function ExpenseDetailsModal({
       setUploadNote("");
       setZoom(1);
       setShowFullReceipt(false);
+      setReviewingPayment(null);
       
-      // Initialize member payments based on expense data
+      // Initialize member payments from expense data if available
       const splitMembers = expense.splitWith || mockMembers.map(m => m.id);
       const payerMember = mockMembers.find(m => m.name === expense.paidBy);
       
-      setMemberPayments(splitMembers.map(memberId => ({
-        memberId,
-        status: memberId === payerMember?.id ? "confirmed" : "pending",
-      })));
+      if (expense.payments && expense.payments.length > 0) {
+        // Use existing payment data from expense
+        setMemberPayments(expense.payments.map(p => ({
+          memberId: p.memberId,
+          status: p.status,
+          receiptUrl: p.receiptUrl,
+          uploadedAt: p.uploadedAt,
+          payerNote: p.payerNote,
+        })));
+      } else {
+        // Create default payments
+        setMemberPayments(splitMembers.map(memberId => ({
+          memberId,
+          status: memberId === payerMember?.id ? "received" : "awaiting",
+        })));
+      }
     }
     onOpenChange(newOpen);
   };
@@ -174,14 +198,19 @@ export function ExpenseDetailsModal({
   // Handle marking a member's payment as received
   const handleMarkMemberReceived = (memberId: string) => {
     setMemberPayments(prev => 
-      prev.map(p => p.memberId === memberId ? { ...p, status: "confirmed" } : p)
+      prev.map(p => p.memberId === memberId ? { ...p, status: "received" as const } : p)
     );
     
     const member = getMemberById(memberId);
     
     // Calculate new progress
-    const confirmedCount = memberPayments.filter(p => p.status === "confirmed").length + 1;
-    const newProgress = Math.round((confirmedCount / memberCount) * 100);
+    const receivedCount = memberPayments.filter(p => p.status === "received").length + 1;
+    const newProgress = Math.round((receivedCount / memberCount) * 100);
+    
+    // Call the new confirmation handler if provided
+    if (onConfirmPaymentReceived && expense) {
+      onConfirmPaymentReceived(expense.id, memberId);
+    }
     
     onMarkAsReceived?.(memberId);
     onUpdateProgress?.(newProgress);
@@ -190,6 +219,18 @@ export function ExpenseDetailsModal({
       title: "Payment received",
       description: `${member?.name}'s payment has been marked as received.`,
     });
+  };
+
+  // Handle viewing a payment for review
+  const handleViewPayment = (member: typeof mockMembers[0], payment: MemberPayment, amount: number) => {
+    setReviewingPayment({ member, payment, amount });
+  };
+
+  // Handle confirming payment from review modal
+  const handleConfirmFromReview = () => {
+    if (!reviewingPayment) return;
+    handleMarkMemberReceived(reviewingPayment.member.id);
+    setReviewingPayment(null);
   };
 
   // Get current user's payment status
@@ -427,7 +468,7 @@ export function ExpenseDetailsModal({
 
                   const isThisMemberPayer = member.name === expense.paidBy;
                   const memberPayment = memberPayments.find(p => p.memberId === memberId);
-                  const isPaid = isThisMemberPayer || memberPayment?.status === "confirmed";
+                  const isPaid = isThisMemberPayer || memberPayment?.status === "received";
 
                   return (
                     <Card
@@ -449,10 +490,10 @@ export function ExpenseDetailsModal({
                             RM {amount.toFixed(2)}
                           </p>
                           <Badge 
-                            variant={isPaid ? "default" : "outline"} 
-                            className={`text-[10px] px-1.5 py-0 ${isPaid ? "bg-stat-green text-stat-green-foreground" : ""}`}
+                            variant={isPaid ? "default" : memberPayment?.status === "submitted" ? "secondary" : "outline"} 
+                            className={`text-[10px] px-1.5 py-0 ${isPaid ? "bg-stat-green text-stat-green-foreground" : memberPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600 border-blue-500/30" : ""}`}
                           >
-                            {isPaid ? "Paid" : "Pending"}
+                            {isPaid ? "Received" : memberPayment?.status === "submitted" ? "Payment Submitted" : "Awaiting Payment"}
                           </Badge>
                         </div>
                       </div>
@@ -500,7 +541,19 @@ export function ExpenseDetailsModal({
                       }
 
                       const memberPayment = memberPayments.find(p => p.memberId === memberId);
-                      const isPaid = memberPayment?.status === "confirmed";
+                      const isReceived = memberPayment?.status === "received";
+                      const isSubmitted = memberPayment?.status === "submitted";
+
+                      // Get status badge
+                      const getStatusBadge = () => {
+                        if (isReceived) {
+                          return <Badge className="text-[10px] px-1.5 py-0 bg-stat-green text-stat-green-foreground">Received</Badge>;
+                        }
+                        if (isSubmitted) {
+                          return <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-500/10 text-blue-600 border-blue-500/30">Payment Submitted</Badge>;
+                        }
+                        return <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-orange-600 border-orange-500/30">Awaiting Payment</Badge>;
+                      };
 
                       return (
                         <Card key={memberId} className="p-3 border-border/50">
@@ -516,23 +569,18 @@ export function ExpenseDetailsModal({
                                 <p className="font-medium text-foreground text-sm">{member.name}</p>
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-muted-foreground">RM {amount.toFixed(2)}</span>
-                                  <Badge 
-                                    variant={isPaid ? "default" : "outline"} 
-                                    className={`text-[10px] px-1.5 py-0 ${isPaid ? "bg-stat-green text-stat-green-foreground" : ""}`}
-                                  >
-                                    {isPaid ? "Paid" : "Pending"}
-                                  </Badge>
+                                  {getStatusBadge()}
                                 </div>
                               </div>
                             </div>
-                            {!isPaid && (
+                            {!isReceived && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleMarkMemberReceived(memberId)}
-                                className="h-8 text-xs bg-stat-green/10 border-stat-green/30 text-stat-green hover:bg-stat-green/20"
+                                onClick={() => handleViewPayment(member, memberPayment!, amount)}
+                                className="h-8 text-xs"
                               >
-                                Mark Received
+                                View Payment
                               </Button>
                             )}
                           </div>
@@ -557,17 +605,17 @@ export function ExpenseDetailsModal({
                       <p className="text-xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
                     </div>
                     <Badge 
-                      variant={currentUserPayment?.status === "confirmed" ? "default" : currentUserPayment?.status === "uploaded" ? "secondary" : "outline"}
-                      className={currentUserPayment?.status === "confirmed" ? "bg-stat-green text-stat-green-foreground" : ""}
+                      variant={currentUserPayment?.status === "received" ? "default" : currentUserPayment?.status === "submitted" ? "secondary" : "outline"}
+                      className={currentUserPayment?.status === "received" ? "bg-stat-green text-stat-green-foreground" : currentUserPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600" : ""}
                     >
-                      {currentUserPayment?.status === "confirmed" ? "Paid" : 
-                       currentUserPayment?.status === "uploaded" ? "Pending Confirmation" : "Pending"}
+                      {currentUserPayment?.status === "received" ? "Received" : 
+                       currentUserPayment?.status === "submitted" ? "Pending Verification" : "Awaiting Payment"}
                     </Badge>
                   </div>
                 </Card>
 
                 {/* Upload Payment Proof Section */}
-                {currentUserPayment?.status !== "confirmed" && (
+                {currentUserPayment?.status !== "received" && (
                   <div className="space-y-3">
                     <Separator />
                     
@@ -645,6 +693,16 @@ export function ExpenseDetailsModal({
           </TabsContent>
 
         </Tabs>
+
+        {/* Payment Review Modal */}
+        <PaymentReviewModal
+          open={!!reviewingPayment}
+          onOpenChange={(open) => !open && setReviewingPayment(null)}
+          member={reviewingPayment?.member || null}
+          amount={reviewingPayment?.amount || 0}
+          payment={reviewingPayment?.payment || null}
+          onConfirmReceived={handleConfirmFromReview}
+        />
       </DialogContent>
     </Dialog>
   );
