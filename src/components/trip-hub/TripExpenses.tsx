@@ -9,6 +9,7 @@ import { ViewQRModal } from "@/components/trip-hub/ViewQRModal";
 import { MarkAsPaidModal } from "@/components/trip-hub/MarkAsPaidModal";
 import { SendReminderModal } from "@/components/trip-hub/SendReminderModal";
 import { YourQRSection } from "@/components/trip-hub/YourQRSection";
+import { AddExpenseModal, NewExpense } from "@/components/trip-hub/AddExpenseModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -19,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockExpenses, mockMembers } from "@/data/mockData";
+import { mockExpenses as initialMockExpenses, mockMembers } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
 const categoryBreakdown = [
@@ -123,6 +124,7 @@ export function TripExpenses() {
   const [viewQROpen, setViewQROpen] = useState(false);
   const [markPaidOpen, setMarkPaidOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
+  const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const [selectedSettlement, setSelectedSettlement] = useState<Settlement | null>(null);
 
   // User's own QR
@@ -131,20 +133,23 @@ export function TripExpenses() {
   // Settlement data with local state for status updates
   const [settlements, setSettlements] = useState<Settlement[]>(mockSettlements);
 
-  const totalCost = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
+  // Expenses data with local state
+  const [expenses, setExpenses] = useState(initialMockExpenses);
+
+  const totalCost = expenses.reduce((sum, e) => sum + e.amount, 0);
   const yourTotalExpenses = 680;
   const youOwe = 120;
   const owedToYou = 85;
 
   // Get unique payers from expenses
   const uniquePayers = useMemo(() => {
-    const payers = [...new Set(mockExpenses.map(e => e.paidBy))];
+    const payers = [...new Set(expenses.map(e => e.paidBy))];
     return payers;
-  }, []);
+  }, [expenses]);
 
   // Filter and sort expenses
   const filteredExpenses = useMemo(() => {
-    let result = [...mockExpenses];
+    let result = [...expenses];
     
     // Filter by payer
     if (filterPayer !== "all") {
@@ -164,7 +169,7 @@ export function TripExpenses() {
     });
     
     return result;
-  }, [sortOrder, filterPayer, filterCategory]);
+  }, [expenses, sortOrder, filterPayer, filterCategory]);
 
   // Filter settlements based on direction and status filters
   const filteredSettlements = useMemo(() => {
@@ -259,11 +264,26 @@ export function TripExpenses() {
     });
   };
 
-  const handleAddExpense = () => {
+  const handleAddExpense = (newExpense: NewExpense) => {
+    const expense = {
+      id: `exp-${Date.now()}`,
+      title: newExpense.title,
+      amount: newExpense.amount,
+      paidBy: newExpense.paidBy,
+      date: newExpense.date,
+      hasReceipt: !!newExpense.receiptFile,
+      paymentProgress: 0,
+    };
+    
+    setExpenses(prev => [expense, ...prev]);
+    
     toast({
-      title: "Add Expense",
-      description: "Add expense form coming soon",
+      title: "Expense added",
+      description: `${newExpense.title} - RM ${newExpense.amount.toFixed(2)} added successfully`,
     });
+    
+    // Switch to expenses tab to show the new expense
+    setSubTab("expenses");
   };
 
   // Check if a settlement can show reminder (pending + others owe current user)
@@ -621,7 +641,7 @@ export function TripExpenses() {
           <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
             <Button 
               className="w-full h-12 rounded-xl text-sm font-medium shadow-lg"
-              onClick={handleAddExpense}
+              onClick={() => setAddExpenseOpen(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Shared Expense
@@ -629,6 +649,14 @@ export function TripExpenses() {
           </div>
         </div>
       )}
+
+      {/* Add Expense Modal */}
+      <AddExpenseModal
+        open={addExpenseOpen}
+        onOpenChange={setAddExpenseOpen}
+        onAddExpense={handleAddExpense}
+        currentUser="Ahmad Razak"
+      />
 
       {/* View QR Modal */}
       <ViewQRModal
