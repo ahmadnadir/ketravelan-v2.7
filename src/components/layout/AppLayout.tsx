@@ -18,7 +18,7 @@ export function AppLayout({ children, hideHeader = false, hideBottomNav = false 
         <Header onNotificationsClick={() => setNotificationsOpen(true)} />
       )}
       
-      <main className={`container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 ${!hideBottomNav ? 'pb-24' : 'pb-4'}`}>
+      <main className={`container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 ${!hideBottomNav ? 'pb-28' : 'pb-4'}`}>
         {children}
       </main>
 
