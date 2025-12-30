@@ -16,6 +16,7 @@ import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 import UserProfileView from "./pages/UserProfileView";
 import Favourites from "./pages/Favourites";
+import Approvals from "./pages/Approvals";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/user/:userId" element={<UserProfileView />} />
           <Route path="/favourites" element={<Favourites />} />
+          <Route path="/approvals" element={<Approvals />} />
           <Route path="/install" element={<Install />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
