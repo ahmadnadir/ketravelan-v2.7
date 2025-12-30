@@ -9,7 +9,8 @@ import { ViewQRModal } from "@/components/trip-hub/ViewQRModal";
 import { MarkAsPaidModal } from "@/components/trip-hub/MarkAsPaidModal";
 import { SendReminderModal } from "@/components/trip-hub/SendReminderModal";
 import { YourQRSection } from "@/components/trip-hub/YourQRSection";
-import { AddExpenseModal, NewExpense } from "@/components/trip-hub/AddExpenseModal";
+import { AddExpenseModal, NewExpense, ExpenseData } from "@/components/trip-hub/AddExpenseModal";
+import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -125,7 +126,10 @@ export function TripExpenses() {
   const [markPaidOpen, setMarkPaidOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
+  const [deleteExpenseOpen, setDeleteExpenseOpen] = useState(false);
   const [selectedSettlement, setSelectedSettlement] = useState<Settlement | null>(null);
+  const [editingExpense, setEditingExpense] = useState<ExpenseData | null>(null);
+  const [deletingExpense, setDeletingExpense] = useState<ExpenseData | null>(null);
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
@@ -134,7 +138,7 @@ export function TripExpenses() {
   const [settlements, setSettlements] = useState<Settlement[]>(mockSettlements);
 
   // Expenses data with local state
-  const [expenses, setExpenses] = useState(initialMockExpenses);
+  const [expenses, setExpenses] = useState<ExpenseData[]>(initialMockExpenses);
 
   const totalCost = expenses.reduce((sum, e) => sum + e.amount, 0);
   const yourTotalExpenses = 680;
@@ -265,7 +269,7 @@ export function TripExpenses() {
   };
 
   const handleAddExpense = (newExpense: NewExpense) => {
-    const expense = {
+    const expense: ExpenseData = {
       id: `exp-${Date.now()}`,
       title: newExpense.title,
       amount: newExpense.amount,
@@ -273,6 +277,11 @@ export function TripExpenses() {
       date: newExpense.date,
       hasReceipt: !!newExpense.receiptFile,
       paymentProgress: 0,
+      category: newExpense.category,
+      splitType: newExpense.splitType,
+      splitWith: newExpense.splitWith,
+      customSplitAmounts: newExpense.customSplitAmounts,
+      notes: newExpense.notes,
     };
     
     setExpenses(prev => [expense, ...prev]);
@@ -284,6 +293,58 @@ export function TripExpenses() {
     
     // Switch to expenses tab to show the new expense
     setSubTab("expenses");
+  };
+
+  const handleEditExpense = (id: string, updatedExpense: NewExpense) => {
+    setExpenses(prev => prev.map(expense => {
+      if (expense.id === id) {
+        return {
+          ...expense,
+          title: updatedExpense.title,
+          amount: updatedExpense.amount,
+          paidBy: updatedExpense.paidBy,
+          date: updatedExpense.date,
+          hasReceipt: expense.hasReceipt || !!updatedExpense.receiptFile,
+          category: updatedExpense.category,
+          splitType: updatedExpense.splitType,
+          splitWith: updatedExpense.splitWith,
+          customSplitAmounts: updatedExpense.customSplitAmounts,
+          notes: updatedExpense.notes,
+        };
+      }
+      return expense;
+    }));
+    
+    setEditingExpense(null);
+    
+    toast({
+      title: "Expense updated",
+      description: `${updatedExpense.title} has been updated`,
+    });
+  };
+
+  const handleDeleteExpense = () => {
+    if (!deletingExpense) return;
+    
+    setExpenses(prev => prev.filter(e => e.id !== deletingExpense.id));
+    
+    toast({
+      title: "Expense deleted",
+      description: `${deletingExpense.title} has been removed`,
+    });
+    
+    setDeletingExpense(null);
+    setDeleteExpenseOpen(false);
+  };
+
+  const openEditExpense = (expense: ExpenseData) => {
+    setEditingExpense(expense);
+    setAddExpenseOpen(true);
+  };
+
+  const openDeleteExpense = (expense: ExpenseData) => {
+    setDeletingExpense(expense);
+    setDeleteExpenseOpen(true);
   };
 
   // Check if a settlement can show reminder (pending + others owe current user)
@@ -484,8 +545,8 @@ export function TripExpenses() {
                   <ExpenseCard
                     key={expense.id}
                     {...expense}
-                    onEdit={() => console.log("Edit", expense.id)}
-                    onDelete={() => console.log("Delete", expense.id)}
+                    onEdit={() => openEditExpense(expense)}
+                    onDelete={() => openDeleteExpense(expense)}
                     onViewReceipt={() => console.log("View receipt", expense.id)}
                   />
                 ))
@@ -650,12 +711,26 @@ export function TripExpenses() {
         </div>
       )}
 
-      {/* Add Expense Modal */}
+      {/* Add/Edit Expense Modal */}
       <AddExpenseModal
         open={addExpenseOpen}
-        onOpenChange={setAddExpenseOpen}
+        onOpenChange={(open) => {
+          setAddExpenseOpen(open);
+          if (!open) setEditingExpense(null);
+        }}
         onAddExpense={handleAddExpense}
+        onEditExpense={handleEditExpense}
+        editingExpense={editingExpense}
         currentUser="Ahmad Razak"
+      />
+
+      {/* Delete Expense Dialog */}
+      <DeleteExpenseDialog
+        open={deleteExpenseOpen}
+        onOpenChange={setDeleteExpenseOpen}
+        expenseTitle={deletingExpense?.title || ""}
+        expenseAmount={deletingExpense?.amount || 0}
+        onConfirm={handleDeleteExpense}
       />
 
       {/* View QR Modal */}
