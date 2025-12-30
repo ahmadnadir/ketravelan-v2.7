@@ -82,9 +82,9 @@ export function PaymentReviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto scrollbar-hide w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0">
-        {/* Header */}
-        <DialogHeader className="p-4 pb-3 border-b border-border/50">
+      <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+        {/* Fixed Header */}
+        <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
           <DialogTitle className="sr-only">Payment Review for {member.name}</DialogTitle>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -101,8 +101,8 @@ export function PaymentReviewModal({
           </div>
         </DialogHeader>
 
-        {/* Content */}
-        <div className="p-4 space-y-4">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-4">
           {/* Received Banner */}
           {isReceived && (
             <Card className="p-4 bg-stat-green/10 border-stat-green/30">

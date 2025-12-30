@@ -269,39 +269,45 @@ export function ExpenseDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto scrollbar-hide w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0">
-        {/* Header */}
-        <DialogHeader className="p-4 pb-0">
-          <DialogTitle className="sr-only">{expense.title} Details</DialogTitle>
-          <div className="flex items-start gap-3">
-            <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${category.color.split(' ')[0]}`}>
-              <CategoryIcon className={`h-6 w-6 ${category.color.split(' ')[1]}`} />
+      <DialogContent className="max-w-md h-[90vh] sm:h-auto sm:max-h-[90vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+        {/* Fixed Header */}
+        <div className="flex-none">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="sr-only">{expense.title} Details</DialogTitle>
+            <div className="flex items-start gap-3">
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${category.color.split(' ')[0]}`}>
+                <CategoryIcon className={`h-6 w-6 ${category.color.split(' ')[1]}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-semibold text-foreground truncate">{expense.title}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-lg font-semibold text-foreground truncate">{expense.title}</p>
+            
+            {/* Progress bar with amount */}
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {expense.paymentProgress}% · RM {settledAmount.toFixed(0)}/{expense.amount} settled
+                </span>
+              </div>
+              <Progress value={expense.paymentProgress} className="h-2" />
             </div>
-          </div>
-          
-          {/* Progress bar with amount */}
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                {expense.paymentProgress}% · RM {settledAmount.toFixed(0)}/{expense.amount} settled
-              </span>
-            </div>
-            <Progress value={expense.paymentProgress} className="h-2" />
-          </div>
-        </DialogHeader>
+          </DialogHeader>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)} className="w-full">
-          <TabsList className="w-full grid grid-cols-2 mx-4 mt-4" style={{ width: "calc(100% - 2rem)" }}>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-          </TabsList>
+          {/* Fixed Tabs */}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)} className="w-full">
+            <TabsList className="w-full grid grid-cols-2 mx-4 mt-4" style={{ width: "calc(100% - 2rem)" }}>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="payments">Payments</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="p-4 space-y-4">
+        {/* Scrollable Content - ONLY this scrolls */}
+        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide">
+          <Tabs value={activeTab} className="w-full">
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="p-4 space-y-4 mt-0">
             {/* Total Amount with Status Badge */}
             <Card className="p-4 border-border/50">
               <div className="flex items-center justify-between">
@@ -512,7 +518,7 @@ export function ExpenseDetailsModal({
           </TabsContent>
 
           {/* Payments Tab */}
-          <TabsContent value="payments" className="p-4 space-y-4">
+          <TabsContent value="payments" className="p-4 space-y-4 mt-0">
             {isFullySettled ? (
               /* Fully Settled State */
               <Card className="p-6 text-center border-border/50">
@@ -734,8 +740,8 @@ export function ExpenseDetailsModal({
               </div>
             )}
           </TabsContent>
-
         </Tabs>
+      </div>
 
         {/* Payment Review Modal */}
         <PaymentReviewModal

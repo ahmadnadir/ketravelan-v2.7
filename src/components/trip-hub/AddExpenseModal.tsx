@@ -238,8 +238,9 @@ export function AddExpenseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto scrollbar-hide w-[calc(100%-2rem)] sm:w-full rounded-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-md h-[90vh] sm:h-auto sm:max-h-[90vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+        {/* Fixed Header */}
+        <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
           <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
             {isEditMode ? (
               <>
@@ -255,7 +256,8 @@ export function AddExpenseModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 pt-2">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-4">
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title">Expense Title *</Label>
@@ -509,8 +511,11 @@ export function AddExpenseModal({
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
+          {/* Actions - Fixed Footer */}
+        </div>
+        
+        <div className="flex-none p-4 pt-3 border-t border-border/50">
+          <div className="flex gap-3">
             <Button
               type="button"
               variant="outline"

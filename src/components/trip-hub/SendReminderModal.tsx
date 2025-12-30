@@ -45,12 +45,14 @@ export function SendReminderModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden max-h-[85vh]">
+        {/* Fixed Header */}
+        <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
           <DialogTitle className="text-lg font-semibold">Send Payment Reminder</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-4">
           <div className="p-4 bg-secondary/50 rounded-xl">
             <p className="text-sm text-muted-foreground">
               Remind <span className="font-medium text-foreground">{recipientName}</span> to pay{" "}
@@ -84,6 +86,10 @@ export function SendReminderModal({
             </p>
           )}
 
+        </div>
+
+        {/* Fixed Footer */}
+        <div className="flex-none p-4 pt-3 border-t border-border/50">
           <Button className="w-full h-12 rounded-xl" onClick={handleSend}>
             <Send className="h-4 w-4 mr-2" />
             Send Reminder
