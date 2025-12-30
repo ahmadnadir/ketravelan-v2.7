@@ -40,7 +40,7 @@ export function PaymentReviewModal({
 
   if (!member || !payment) return null;
 
-  const isReceived = payment.status === "received";
+  const isSettled = payment.status === "settled";
   const hasReceipt = !!payment.receiptUrl;
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
@@ -59,10 +59,10 @@ export function PaymentReviewModal({
 
   const getStatusBadge = () => {
     switch (payment.status) {
-      case "received":
+      case "settled":
         return (
           <Badge className="bg-stat-green text-stat-green-foreground">
-            Received
+            Settled
           </Badge>
         );
       case "submitted":
@@ -73,8 +73,8 @@ export function PaymentReviewModal({
         );
       default:
         return (
-          <Badge variant="outline" className="text-orange-600 border-orange-500/30">
-            Awaiting Payment
+          <Badge variant="outline" className="text-yellow-600 border-yellow-500/30 bg-yellow-500/10">
+            Pending
           </Badge>
         );
     }
@@ -103,13 +103,13 @@ export function PaymentReviewModal({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-4">
-          {/* Received Banner */}
-          {isReceived && (
+          {/* Settled Banner */}
+          {isSettled && (
             <Card className="p-4 bg-stat-green/10 border-stat-green/30">
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-6 w-6 text-stat-green" />
                 <div>
-                  <p className="font-medium text-foreground">Payment Received</p>
+                  <p className="font-medium text-foreground">Payment Settled</p>
                   <p className="text-sm text-muted-foreground">This payment has been confirmed.</p>
                 </div>
               </div>
@@ -192,8 +192,8 @@ export function PaymentReviewModal({
             )}
           </div>
 
-          {/* Send Reminder Button - Only show if awaiting payment */}
-          {!isReceived && !hasReceipt && (
+          {/* Send Reminder Button - Only show if pending payment */}
+          {!isSettled && !hasReceipt && (
             <Button
               variant="outline"
               className="w-full"
@@ -219,14 +219,14 @@ export function PaymentReviewModal({
             </div>
           )}
 
-          {/* Action Button - Only show if not received and has receipt */}
-          {!isReceived && hasReceipt && (
+          {/* Action Button - Only show if not settled and has receipt */}
+          {!isSettled && hasReceipt && (
             <Button
               className="w-full"
               onClick={onConfirmReceived}
             >
               <CheckCircle className="h-4 w-4 mr-2" />
-              Confirm & Mark as Received
+              Confirm & Mark as Settled
             </Button>
           )}
         </div>

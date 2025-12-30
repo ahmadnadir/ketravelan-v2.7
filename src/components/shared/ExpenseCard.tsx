@@ -123,7 +123,7 @@ export function ExpenseCard({
           {paymentProgress > 0 && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className={`text-xs ${isFullySettled ? "text-stat-green font-medium" : "text-muted-foreground"}`}>
+                <span className={`text-xs font-medium ${isFullySettled ? "text-stat-green" : "text-yellow-600"}`}>
                   {paymentProgress}% settled
                 </span>
               </div>
