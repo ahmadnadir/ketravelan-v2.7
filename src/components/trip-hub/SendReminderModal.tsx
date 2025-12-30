@@ -45,7 +45,7 @@ export function SendReminderModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md mx-4 rounded-2xl">
+      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">Send Payment Reminder</DialogTitle>
         </DialogHeader>

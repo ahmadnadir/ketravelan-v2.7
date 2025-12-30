@@ -44,7 +44,7 @@ export function ReceiptViewerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col mx-4 rounded-2xl">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col w-[calc(100%-2rem)] sm:w-full rounded-2xl">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center justify-between pr-6 text-lg font-semibold">
             <span className="truncate">Receipt: {expenseTitle}</span>
@@ -53,7 +53,7 @@ export function ReceiptViewerModal({
 
         <div className="flex-1 overflow-hidden relative rounded-xl bg-secondary/30">
           {receiptUrl ? (
-            <div className="h-full overflow-auto">
+            <div className="h-full overflow-auto scrollbar-hide">
               <div 
                 className="flex items-center justify-center min-h-[300px] p-4"
                 style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
