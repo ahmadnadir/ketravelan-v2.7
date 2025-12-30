@@ -14,6 +14,7 @@ import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
 import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
 import { ExpenseDetailsModal } from "@/components/trip-hub/ExpenseDetailsModal";
 import { SettlementBreakdownModal, SettlementExpense } from "@/components/trip-hub/SettlementBreakdownModal";
+import { SettlementConfirmDialog } from "@/components/trip-hub/SettlementConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -175,6 +176,10 @@ export function TripExpenses() {
   // Settlement breakdown modal state
   const [breakdownModalOpen, setBreakdownModalOpen] = useState(false);
   const [selectedSettlementForBreakdown, setSelectedSettlementForBreakdown] = useState<Settlement | null>(null);
+  
+  // Settlement confirmation dialog state
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingSettlement, setPendingSettlement] = useState<Settlement | null>(null);
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
@@ -399,17 +404,50 @@ export function TripExpenses() {
     }));
   };
 
+  // Get affected expenses for confirmation dialog display
+  const getAffectedExpensesForDisplay = (settlement: Settlement) => {
+    const expenseUpdates = getExpensePaymentsForSettlement(settlement);
+    const uniqueExpenseIds = [...new Set(expenseUpdates.map(u => u.expenseId))];
+    
+    return uniqueExpenseIds.map(expenseId => {
+      const expense = expenses.find(e => e.id === expenseId);
+      const update = expenseUpdates.find(u => u.expenseId === expenseId);
+      if (!expense || !update) return null;
+      
+      return {
+        id: expense.id,
+        title: expense.title,
+        shareAmount: calculateUserShare(expense, update.memberId),
+      };
+    }).filter(Boolean) as { id: string; title: string; shareAmount: number }[];
+  };
+
+  // Handler for initiating settlement confirmation (shows dialog)
+  const handleInitiateSettlement = (settlement: Settlement) => {
+    setPendingSettlement(settlement);
+    setConfirmDialogOpen(true);
+  };
+
+  // Handler for confirming settlement from dialog
+  const handleConfirmSettlement = () => {
+    if (pendingSettlement) {
+      cascadeSettlementToExpenses(pendingSettlement);
+      
+      toast({
+        title: "Settlement completed",
+        description: `All payments with ${pendingSettlement.toUser.name} have been marked as settled`,
+      });
+      
+      setPendingSettlement(null);
+    }
+  };
+
   // Handler for marking all as paid from breakdown modal
   const handleMarkAllPaidFromBreakdown = () => {
     if (selectedSettlementForBreakdown) {
-      // Cascade to all related expense payments
-      cascadeSettlementToExpenses(selectedSettlementForBreakdown);
-      
-      toast({
-        title: "All payments confirmed",
-        description: `Settlement with ${selectedSettlementForBreakdown.fromUser.name} marked as paid`,
-      });
+      setPendingSettlement(selectedSettlementForBreakdown);
       setBreakdownModalOpen(false);
+      setConfirmDialogOpen(true);
     }
   };
 
@@ -455,13 +493,10 @@ export function TripExpenses() {
 
   const handleConfirmPayment = (note?: string, receiptFile?: File) => {
     if (selectedSettlement) {
-      // Cascade to all related expense payments
-      cascadeSettlementToExpenses(selectedSettlement);
-      
-      toast({
-        title: "Settlement completed",
-        description: `All payments with ${selectedSettlement.toUser.name} have been marked as settled`,
-      });
+      // Show confirmation dialog before settling
+      setPendingSettlement(selectedSettlement);
+      setMarkPaidOpen(false);
+      setConfirmDialogOpen(true);
     }
   };
 
@@ -1203,6 +1238,21 @@ export function TripExpenses() {
           />
         );
       })()}
+
+      {/* Settlement Confirmation Dialog */}
+      {pendingSettlement && (
+        <SettlementConfirmDialog
+          open={confirmDialogOpen}
+          onOpenChange={(open) => {
+            setConfirmDialogOpen(open);
+            if (!open) setPendingSettlement(null);
+          }}
+          recipientName={pendingSettlement.toUser.name}
+          totalAmount={pendingSettlement.amount}
+          affectedExpenses={getAffectedExpensesForDisplay(pendingSettlement)}
+          onConfirm={handleConfirmSettlement}
+        />
+      )}
     </div>
   );
 }
