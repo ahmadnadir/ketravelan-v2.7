@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { mockMessages, mockMembers } from "@/data/mockData";
 import { ChatComposer } from "@/components/chat/ChatComposer";
-import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Create a map of member data for quick lookup
@@ -12,29 +10,6 @@ const memberMap = mockMembers.reduce((acc, member) => {
 }, {} as Record<string, typeof mockMembers[0]>);
 
 export function TripChat() {
-  const [isTyping, setIsTyping] = useState(false);
-  const [typingUser, setTypingUser] = useState({ name: "", imageUrl: "" });
-
-  // Simulate typing indicator for demo
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsTyping(true);
-      setTypingUser({ name: "Sarah", imageUrl: memberMap["2"]?.imageUrl || "" });
-      setTimeout(() => setIsTyping(false), 3000);
-    }, 10000);
-    
-    // Show initially after 2 seconds
-    const timeout = setTimeout(() => {
-      setIsTyping(true);
-      setTypingUser({ name: "Sarah", imageUrl: memberMap["2"]?.imageUrl || "" });
-      setTimeout(() => setIsTyping(false), 3000);
-    }, 2000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, []);
   const currentUserId = "1"; // Mock current user
 
   const handleSend = (message: string) => {
@@ -100,14 +75,6 @@ export function TripChat() {
             </div>
           );
         })}
-        
-        {/* Typing indicator */}
-        {isTyping && (
-          <TypingIndicator 
-            userName={typingUser.name} 
-            userImageUrl={typingUser.imageUrl}
-          />
-        )}
       </div>
 
       {/* ChatComposer is already fixed positioned */}
