@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, MapPin, Star, MessageCircle, Instagram, Youtube, Linkedin, Globe } from "lucide-react";
+import { ChevronLeft, MapPin, Star, MessageCircle, Instagram, Youtube, Linkedin, Globe, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,10 +19,18 @@ export default function UserProfileView() {
   const navigate = useNavigate();
   
   const profile = mockUserProfiles[userId || "1"] || mockUserProfiles["1"];
+  
+  // Mock: Check if this is the current user's profile (for demo, user "1" is the logged-in user)
+  const isOwnProfile = userId === "1" || !userId;
 
   const handleMessage = () => {
     // Navigate to direct chat with this user
     navigate(`/chat/dm-${userId}`);
+  };
+
+  const handleEditCover = () => {
+    // TODO: Implement cover photo upload
+    console.log("Edit cover photo clicked");
   };
 
   return (
@@ -42,7 +50,7 @@ export default function UserProfileView() {
       </header>
 
       {/* Cover Photo Banner */}
-      <div className="relative">
+      <div className="relative group">
         <div className="h-32 sm:h-40 w-full bg-muted overflow-hidden">
           {profile.coverPhotoUrl ? (
             <img
@@ -54,6 +62,18 @@ export default function UserProfileView() {
             <div className="h-full w-full bg-gradient-to-br from-primary/20 to-primary/5" />
           )}
         </div>
+        {/* Edit cover photo button - only visible on own profile */}
+        {isOwnProfile && (
+          <button
+            onClick={handleEditCover}
+            className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors cursor-pointer"
+          >
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 rounded-full bg-background/90 text-foreground text-sm font-medium shadow-lg">
+              <Camera className="h-4 w-4" />
+              <span>Edit Cover</span>
+            </div>
+          </button>
+        )}
         {/* Avatar overlapping cover */}
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
           <div className="flex flex-col items-center -mt-12">
