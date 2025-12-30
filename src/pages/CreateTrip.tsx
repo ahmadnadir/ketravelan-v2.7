@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -19,7 +19,6 @@ import {
   Wallet,
   Route,
   ClipboardList,
-  X,
 } from "lucide-react";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,7 @@ import { Card } from "@/components/ui/card";
 import { PillChip } from "@/components/shared/PillChip";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { useDraftTrip, getDefaultDraft, TripDraft } from "@/hooks/useDraftTrip";
+import { useDraftTrip, TripDraft } from "@/hooks/useDraftTrip";
 import { DestinationSearch } from "@/components/create-trip/DestinationSearch";
 import { RouteBuilder } from "@/components/create-trip/RouteBuilder";
 import { BudgetSection } from "@/components/create-trip/BudgetSection";
@@ -40,6 +39,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import { toast } from "@/hooks/use-toast";
 import { savePublishedTrip, PublishedTrip } from "@/lib/publishedTrips";
 
@@ -61,10 +68,11 @@ const travelStyles = [
 
 export default function CreateTrip() {
   const navigate = useNavigate();
-  const { draft, updateDraft, clearDraft, hasDraft, lastSaved, resetDraft } = useDraftTrip();
+  const { draft, updateDraft, clearDraft, lastSaved } = useDraftTrip();
   const [currentStep, setCurrentStep] = useState(1);
   const [showShareModal, setShowShareModal] = useState(false);
   const [publishedTripId, setPublishedTripId] = useState<string | null>(null);
+  const [showExitModal, setShowExitModal] = useState(false);
   // Store draft snapshot for share modal (since we clear draft before showing modal)
   const draftSnapshotRef = useRef<TripDraft | null>(null);
 
@@ -136,10 +144,6 @@ export default function CreateTrip() {
     setShowShareModal(true);
   };
 
-  const handleStartFresh = () => {
-    resetDraft();
-    setCurrentStep(1);
-  };
 
   const getCompletionStats = () => {
     const essentials = draft.title && draft.primaryDestination && draft.travelStyles.length > 0;
@@ -157,15 +161,9 @@ export default function CreateTrip() {
   const headerContent = (
     <div className="bg-background border-b border-border/50 px-4 py-3 safe-top">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
-        {/* Top navigation row with back arrow */}
-        <div className="flex items-center gap-3 mb-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors"
-          >
-            <ChevronLeft className="h-5 w-5 text-foreground" />
-          </button>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex-1">
+        {/* Top navigation row */}
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             Create a Trip
           </h1>
           {lastSaved && (
@@ -226,7 +224,7 @@ export default function CreateTrip() {
           {/* Back button - always visible */}
           <Button
             variant="outline"
-            onClick={currentStep === 1 ? () => navigate(-1) : prevStep}
+            onClick={currentStep === 1 ? () => setShowExitModal(true) : prevStep}
             className="rounded-xl h-12"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -519,25 +517,23 @@ export default function CreateTrip() {
                 />
               </div>
               {draft.groupSizeType === "set" && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center gap-6 py-2">
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
                     onClick={() => updateDraft("groupSize", Math.max(2, draft.groupSize - 1))}
-                    className="rounded-xl h-10 w-10 p-0"
+                    className="rounded-full h-12 w-12 p-0 text-lg font-bold"
                   >
-                    -
+                    −
                   </Button>
-                  <span className="text-2xl font-bold text-foreground min-w-[3ch] text-center">
+                  <span className="text-3xl font-bold text-foreground min-w-[3ch] text-center">
                     {draft.groupSize}
                   </span>
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
                     onClick={() => updateDraft("groupSize", Math.min(50, draft.groupSize + 1))}
-                    className="rounded-xl h-10 w-10 p-0"
+                    className="rounded-full h-12 w-12 p-0 text-lg font-bold"
                   >
                     +
                   </Button>
@@ -884,6 +880,47 @@ export default function CreateTrip() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Exit Confirmation Drawer */}
+      <Drawer open={showExitModal} onOpenChange={setShowExitModal}>
+        <DrawerContent>
+          <DrawerHeader className="text-center">
+            <DrawerTitle>Leave trip creation?</DrawerTitle>
+            <DrawerDescription>
+              Your progress can be saved as a draft, or you can discard this trip.
+            </DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter className="gap-3 pb-8">
+            <Button
+              onClick={() => {
+                setShowExitModal(false);
+                navigate('/my-trips?tab=draft');
+              }}
+              className="rounded-xl h-12"
+            >
+              Save as Draft
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                clearDraft();
+                setShowExitModal(false);
+                navigate('/explore');
+              }}
+              className="rounded-xl h-12"
+            >
+              Discard Trip
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setShowExitModal(false)}
+              className="rounded-xl h-12"
+            >
+              Cancel
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </FocusedFlowLayout>
   );
 }

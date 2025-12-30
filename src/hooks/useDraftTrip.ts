@@ -45,7 +45,7 @@ export const getDefaultDraft = (): TripDraft => ({
   endDate: '',
   travelStyles: [],
   groupSizeType: 'later',
-  groupSize: 8,
+  groupSize: 3,
   coverImage: '',
   budgetType: 'skip',
   roughBudgetTotal: 0,
