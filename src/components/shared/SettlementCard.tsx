@@ -35,11 +35,11 @@ export function SettlementCard({
       onClick={onCardClick}
     >
       {/* Top Section: From → To (Compact Context) */}
-      <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="flex items-center justify-between gap-2 mb-3">
         {/* From User */}
         <Link 
           to={`/user/${fromUser.id}`}
-          className="flex items-start gap-2 hover:opacity-80 transition-opacity min-w-0"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
@@ -57,12 +57,12 @@ export function SettlementCard({
         </Link>
 
         {/* Arrow */}
-        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
+        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
 
         {/* To User */}
         <Link 
           to={`/user/${toUser.id}`}
-          className="flex items-start gap-2 hover:opacity-80 transition-opacity min-w-0"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
           onClick={(e) => e.stopPropagation()}
         >
           <span className="text-xs font-medium text-foreground line-clamp-2 max-w-[90px] leading-tight text-right">
