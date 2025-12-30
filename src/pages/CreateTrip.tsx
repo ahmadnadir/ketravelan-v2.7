@@ -94,7 +94,7 @@ export default function CreateTrip() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
-      if (base64 && draft.galleryImages.length < 3) {
+      if (base64 && draft.galleryImages.length < 5) {
         updateDraft("galleryImages", [...draft.galleryImages, base64]);
       }
     };
@@ -592,7 +592,7 @@ export default function CreateTrip() {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center gap-1">
                 <Image className="h-4 w-4 text-muted-foreground" />
-                Trip Gallery (up to 3 photos)
+                Trip Gallery (up to 5 photos)
               </label>
               
               {/* Hidden file input */}
@@ -604,8 +604,8 @@ export default function CreateTrip() {
                 className="hidden"
               />
               
-              <div className="grid grid-cols-3 gap-2">
-                {[0, 1, 2].map((index) => (
+              <div className="grid grid-cols-5 gap-2">
+                {[0, 1, 2, 3, 4].map((index) => (
                   <div key={index} className="relative">
                     {draft.galleryImages[index] ? (
                       <div className="relative aspect-square rounded-xl overflow-hidden border border-border">
@@ -634,11 +634,11 @@ export default function CreateTrip() {
                       <button
                         type="button"
                         onClick={() => {
-                          if (draft.galleryImages.length < 3) {
+                          if (draft.galleryImages.length < 5) {
                             galleryInputRef.current?.click();
                           }
                         }}
-                        disabled={draft.galleryImages.length >= 3}
+                        disabled={draft.galleryImages.length >= 5}
                         className="w-full"
                       >
                         <Card className="aspect-square border-dashed border-2 border-border/50 hover:border-primary/30 transition-colors cursor-pointer flex items-center justify-center">
