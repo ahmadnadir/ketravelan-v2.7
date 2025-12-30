@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, Pin, Trash2, Check, Square, CheckSquare, List, ListOrdered } from "lucide-react";
+import { ChevronLeft, Pin, Trash2, Check, List, ListOrdered, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TripNote, saveNote, deleteNote } from "@/lib/tripNotes";
 import {
@@ -167,6 +167,101 @@ export function NoteEditor({
     }
   };
 
+  // Handle title Enter key - move focus to body
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      contentRef.current?.focus();
+      // Place cursor at the beginning of content
+      contentRef.current?.setSelectionRange(0, 0);
+    }
+  };
+
+  // Handle content Enter key - smart list continuation
+  const handleContentKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter") {
+      const textarea = contentRef.current;
+      if (!textarea) return;
+      
+      const cursorPos = textarea.selectionStart;
+      const beforeCursor = content.slice(0, cursorPos);
+      const afterCursor = content.slice(cursorPos);
+      
+      // Get the current line
+      const lines = beforeCursor.split("\n");
+      const currentLine = lines[lines.length - 1];
+      
+      // Check for list patterns
+      const bulletMatch = currentLine.match(/^(\s*)-\s+(.*)$/);
+      const numberMatch = currentLine.match(/^(\s*)(\d+)\.\s+(.*)$/);
+      const checklistMatch = currentLine.match(/^(\s*)\[[\sx]?\]\s*(.*)$/);
+      
+      // If current list item is empty, end the list
+      if (bulletMatch && !bulletMatch[2].trim()) {
+        e.preventDefault();
+        const newLines = [...lines];
+        newLines[newLines.length - 1] = "";
+        const newContent = newLines.join("\n") + afterCursor;
+        setContent(newContent);
+        setTimeout(() => {
+          const newPos = newContent.length - afterCursor.length;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+        return;
+      }
+      
+      if (numberMatch && !numberMatch[3].trim()) {
+        e.preventDefault();
+        const newLines = [...lines];
+        newLines[newLines.length - 1] = "";
+        const newContent = newLines.join("\n") + afterCursor;
+        setContent(newContent);
+        setTimeout(() => {
+          const newPos = newContent.length - afterCursor.length;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+        return;
+      }
+      
+      if (checklistMatch && !checklistMatch[2].trim()) {
+        e.preventDefault();
+        const newLines = [...lines];
+        newLines[newLines.length - 1] = "";
+        const newContent = newLines.join("\n") + afterCursor;
+        setContent(newContent);
+        setTimeout(() => {
+          const newPos = newContent.length - afterCursor.length;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+        return;
+      }
+      
+      // Auto-continue lists
+      let prefix = "";
+      
+      if (bulletMatch && bulletMatch[2].trim()) {
+        prefix = `${bulletMatch[1]}- `;
+      } else if (numberMatch && numberMatch[3].trim()) {
+        const nextNum = parseInt(numberMatch[2]) + 1;
+        prefix = `${numberMatch[1]}${nextNum}. `;
+      } else if (checklistMatch && checklistMatch[2].trim()) {
+        prefix = `${checklistMatch[1]}[ ] `;
+      }
+      
+      if (prefix) {
+        e.preventDefault();
+        const newContent = beforeCursor + "\n" + prefix + afterCursor;
+        setContent(newContent);
+        
+        // Set cursor after the prefix
+        setTimeout(() => {
+          const newPos = cursorPos + 1 + prefix.length;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+      }
+    }
+  };
+
   // Insert formatting and focus textarea
   const insertFormat = (type: "bullet" | "number" | "checklist") => {
     const prefix = type === "bullet" ? "- " : type === "number" ? "1. " : "[ ] ";
@@ -189,85 +284,6 @@ export function NoteEditor({
       }
     }, 10);
   };
-
-  const toggleChecklistItem = (lineIndex: number, check: boolean) => {
-    const lines = content.split("\n");
-    if (check) {
-      lines[lineIndex] = lines[lineIndex].replace(/\[\s*\]/, "[x]");
-    } else {
-      lines[lineIndex] = lines[lineIndex].replace(/\[x\]/i, "[ ]");
-    }
-    setContent(lines.join("\n"));
-  };
-
-  // Parse content for formatted items (bullets, numbers, checklists) - for preview only
-  const renderFormattedPreview = (text: string) => {
-    const lines = text.split("\n");
-    
-    return lines.map((line, index) => {
-      // Checklist - unchecked
-      const uncheckedMatch = line.match(/^(\s*)-?\s*\[\s*\]\s*(.*)$/);
-      if (uncheckedMatch) {
-        return (
-          <div key={index} className="flex items-start gap-2 py-0.5">
-            <button
-              type="button"
-              onClick={() => toggleChecklistItem(index, true)}
-              className="mt-0.5 text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Square className="h-4 w-4" />
-            </button>
-            <span className="flex-1">{uncheckedMatch[2]}</span>
-          </div>
-        );
-      }
-      
-      // Checklist - checked
-      const checkedMatch = line.match(/^(\s*)-?\s*\[x\]\s*(.*)$/i);
-      if (checkedMatch) {
-        return (
-          <div key={index} className="flex items-start gap-2 py-0.5">
-            <button
-              type="button"
-              onClick={() => toggleChecklistItem(index, false)}
-              className="mt-0.5 text-primary"
-            >
-              <CheckSquare className="h-4 w-4" />
-            </button>
-            <span className="flex-1 line-through text-muted-foreground">{checkedMatch[2]}</span>
-          </div>
-        );
-      }
-      
-      // Bullet point
-      const bulletMatch = line.match(/^(\s*)-\s+(.*)$/);
-      if (bulletMatch && !line.match(/\[[\sx]?\]/i)) {
-        return (
-          <div key={index} className="flex items-start gap-2 py-0.5">
-            <span className="text-muted-foreground mt-0.5">•</span>
-            <span className="flex-1">{bulletMatch[2]}</span>
-          </div>
-        );
-      }
-      
-      // Numbered list
-      const numberMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
-      if (numberMatch) {
-        return (
-          <div key={index} className="flex items-start gap-2 py-0.5">
-            <span className="text-muted-foreground min-w-[1.5rem] text-right">{numberMatch[2]}.</span>
-            <span className="flex-1">{numberMatch[3]}</span>
-          </div>
-        );
-      }
-      
-      // Regular line
-      return <div key={index}>{line || "\u00A0"}</div>;
-    });
-  };
-
-  // Check if content has any formatting
-  const hasFormatting = /(\[[\sx]?\]|^\s*-\s+|^\s*\d+\.\s+)/im.test(content);
 
   return (
     <>
@@ -360,45 +376,26 @@ export function NoteEditor({
             </div>
 
             <div className="flex-1 p-4 sm:p-6 space-y-4">
-              {/* Title */}
+              {/* Title - single line, Enter moves to body */}
               <input
                 ref={titleRef}
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={handleTitleKeyDown}
                 placeholder="Title"
                 className="w-full text-2xl sm:text-3xl font-semibold bg-transparent border-none outline-none placeholder:text-muted-foreground/50"
               />
               
-              {/* Content - Always editable textarea */}
-              {hasFormatting ? (
-                <div className="space-y-4">
-                  {/* Interactive formatted preview */}
-                  <div className="text-base sm:text-lg leading-relaxed">
-                    {renderFormattedPreview(content)}
-                  </div>
-                  
-                  {/* Editable raw content area - tap to edit */}
-                  <div className="border-t border-border/30 pt-4">
-                    <p className="text-xs text-muted-foreground mb-2">Edit raw content:</p>
-                    <textarea
-                      ref={contentRef}
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      placeholder="Start typing..."
-                      className="w-full min-h-[30vh] text-sm bg-muted/30 rounded-lg p-3 border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed font-mono"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <textarea
-                  ref={contentRef}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Start typing..."
-                  className="w-full min-h-[50vh] text-base sm:text-lg bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
-                />
-              )}
+              {/* Unified single-surface content editor */}
+              <textarea
+                ref={contentRef}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onKeyDown={handleContentKeyDown}
+                placeholder="Start typing..."
+                className="w-full min-h-[50vh] text-base sm:text-lg bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
+              />
             </div>
           </div>
         </DrawerContent>
