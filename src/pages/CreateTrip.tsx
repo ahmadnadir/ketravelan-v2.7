@@ -242,37 +242,42 @@ export default function CreateTrip() {
 
   // Footer content with CTA buttons
   const footerContent = (
-    <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4 safe-bottom">
-      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto flex gap-3">
-        {currentStep > 1 && (
-          <Button
-            variant="outline"
-            onClick={prevStep}
-            className="rounded-xl"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-        )}
-        {currentStep < 4 ? (
-          <Button
-            onClick={nextStep}
-            disabled={currentStep === 2 && !canProceedStep2()}
-            className="flex-1 rounded-xl"
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        ) : (
-          <Button
-            onClick={handlePublish}
-            disabled={!essentials}
-            className="flex-1 rounded-xl"
-          >
-            <Sparkles className="h-4 w-4 mr-2" />
-            Publish Trip
-          </Button>
-        )}
+    <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
+        <p className="text-xs text-muted-foreground text-center mb-2">
+          Step {currentStep} of {steps.length}
+        </p>
+        <div className="flex gap-3">
+          {currentStep > 1 && (
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              className="rounded-xl"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+          )}
+          {currentStep < 4 ? (
+            <Button
+              onClick={nextStep}
+              disabled={(currentStep === 1 && !draft.visibility) || (currentStep === 2 && !canProceedStep2())}
+              className="flex-1 rounded-xl"
+            >
+              Continue
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handlePublish}
+              disabled={!essentials}
+              className="flex-1 rounded-xl"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Publish Trip
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

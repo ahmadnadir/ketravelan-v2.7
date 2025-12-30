@@ -52,7 +52,7 @@ export function FocusedFlowLayout({
       {/* Bottom nav - truly anchored */}
       {showBottomNav && (
         <div className="flex-none">
-          <BottomNav />
+          <BottomNav inline />
         </div>
       )}
     </div>
