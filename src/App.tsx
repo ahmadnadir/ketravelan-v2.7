@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 import UserProfileView from "./pages/UserProfileView";
+import Favourites from "./pages/Favourites";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/chat/:id" element={<DirectChat />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/user/:userId" element={<UserProfileView />} />
+          <Route path="/favourites" element={<Favourites />} />
           <Route path="/install" element={<Install />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
