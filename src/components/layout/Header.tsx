@@ -2,12 +2,12 @@ import { Bell, User, FileText, Settings, LogOut, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -57,9 +57,9 @@ export function Header({ onNotificationsClick }: HeaderProps) {
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
           </Button>
           
-          {/* Profile Modal */}
-          <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
-            <DialogTrigger asChild>
+          {/* Profile Sheet */}
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10">
                 <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden">
                   <img 
@@ -69,13 +69,16 @@ export function Header({ onNotificationsClick }: HeaderProps) {
                   />
                 </div>
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] max-w-sm left-1/2 -translate-x-1/2 rounded-2xl">
-              <DialogHeader className="pb-2">
-                <DialogTitle className="text-center">Account</DialogTitle>
-              </DialogHeader>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md px-4 sm:px-6">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Account
+                </SheetTitle>
+              </SheetHeader>
               
-              <div className="space-y-1">
+              <div className="mt-4 sm:mt-6 space-y-1">
                 {/* Profile */}
                 <button
                   onClick={() => handleNavigation("/profile")}
@@ -85,7 +88,7 @@ export function Header({ onNotificationsClick }: HeaderProps) {
                   <span className="text-sm font-medium">Profile</span>
                 </button>
                 
-                {/* Favourites (NEW) */}
+                {/* Favourites */}
                 <button
                   onClick={() => handleNavigation("/favourites")}
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary transition-colors text-left"
@@ -133,8 +136,8 @@ export function Header({ onNotificationsClick }: HeaderProps) {
                   <span className="text-sm font-medium">Log Out</span>
                 </button>
               </div>
-            </DialogContent>
-          </Dialog>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
