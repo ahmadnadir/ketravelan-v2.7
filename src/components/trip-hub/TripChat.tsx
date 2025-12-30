@@ -45,7 +45,7 @@ export function TripChat() {
   return (
     <div className="flex flex-col h-full">
       {/* Messages - scrolls within parent FocusedFlowLayout */}
-      <div className="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4 scrollbar-hide">
         {mockMessages.map((msg) => {
           const isOwn = msg.senderId === currentUserId;
           const isSystem = msg.type === "system";
