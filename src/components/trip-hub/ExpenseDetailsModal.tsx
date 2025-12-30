@@ -19,6 +19,7 @@ import { getCategoryById } from "@/lib/expenseCategories";
 import { mockMembers, ExpensePayment } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import { PaymentReviewModal } from "./PaymentReviewModal";
+import { ReceiptsFromOthersModal } from "./ReceiptsFromOthersModal";
 
 type TabType = "overview" | "payments";
 
@@ -72,6 +73,9 @@ export function ExpenseDetailsModal({
     payment: MemberPayment;
     amount: number;
   } | null>(null);
+
+  // Receipts from others modal state
+  const [showReceiptsModal, setShowReceiptsModal] = useState(false);
 
   // Reset state when modal opens with new expense or initial tab
   const handleOpenChange = (newOpen: boolean) => {
@@ -587,59 +591,41 @@ export function ExpenseDetailsModal({
 
                       return (
                         <Card key={memberId} className="p-4 border-border/50">
-                          <div className="flex flex-col sm:flex-row gap-4">
-                            {/* LEFT COLUMN - Actions (fixed width) */}
-                            <div className="flex flex-col gap-2 shrink-0 sm:w-32 order-2 sm:order-1">
-                              {!isReceived && (
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  onClick={() => handleViewPayment(member, memberPayment!, amount)}
-                                  className="w-full text-xs"
-                                >
-                                  View Payment
-                                </Button>
-                              )}
-                              {!isReceived && memberPayment?.status === "awaiting" && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    toast({
-                                      title: "Reminder sent",
-                                      description: `${member.name} has been notified about their pending payment.`,
-                                    });
-                                  }}
-                                  className="w-full text-xs"
-                                >
-                                  Send Reminder
-                                </Button>
-                              )}
+                          {/* Vertical Layout */}
+                          <div className="space-y-3">
+                            {/* Top Row: Avatar + Name + Amount */}
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10 shrink-0">
+                                <AvatarImage src={member.imageUrl} alt={member.name} />
+                                <AvatarFallback className="text-xs">
+                                  {member.name.split(" ").map(n => n[0]).join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
+                              </div>
+                              <p className="text-base font-bold text-foreground whitespace-nowrap">
+                                RM {amount.toFixed(2)}
+                              </p>
                             </div>
                             
-                            {/* RIGHT COLUMN - Information (flexible) */}
-                            <div className="flex-1 min-w-0 order-1 sm:order-2">
-                              {/* Top Row: Avatar + Name + Amount */}
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-10 w-10 shrink-0">
-                                  <AvatarImage src={member.imageUrl} alt={member.name} />
-                                  <AvatarFallback className="text-xs">
-                                    {member.name.split(" ").map(n => n[0]).join("")}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
-                                </div>
-                                <p className="text-base font-bold text-foreground whitespace-nowrap">
-                                  RM {amount.toFixed(2)}
-                                </p>
-                              </div>
-                              
-                              {/* Bottom Row: Status Badge */}
-                              <div className="mt-2 ml-13">
-                                {getStatusBadge()}
-                              </div>
+                            {/* Status Badge Row */}
+                            <div className="ml-13">
+                              {getStatusBadge()}
                             </div>
+
+                            {/* Button Row - Full Width */}
+                            {!isReceived && (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => setShowReceiptsModal(true)}
+                                className="w-full text-xs"
+                              >
+                                <Eye className="h-3.5 w-3.5 mr-1.5" />
+                                View Payment Receipts
+                              </Button>
+                            )}
                           </div>
                         </Card>
                       );
@@ -759,6 +745,34 @@ export function ExpenseDetailsModal({
           amount={reviewingPayment?.amount || 0}
           payment={reviewingPayment?.payment || null}
           onConfirmReceived={handleConfirmFromReview}
+        />
+
+        {/* Receipts From Others Modal */}
+        <ReceiptsFromOthersModal
+          open={showReceiptsModal}
+          onOpenChange={setShowReceiptsModal}
+          pendingMembers={splitMembers
+            .filter(memberId => {
+              const member = getMemberById(memberId);
+              return member && member.name !== expense.paidBy;
+            })
+            .map(memberId => {
+              const member = getMemberById(memberId)!;
+              let amount = equalSplitAmount;
+              if (expense.splitType === "custom" && expense.customSplitAmounts) {
+                const customAmount = expense.customSplitAmounts.find(c => c.memberId === memberId);
+                amount = customAmount?.amount || 0;
+              }
+              const payment = memberPayments.find(p => p.memberId === memberId);
+              return { member, amount, payment };
+            })}
+          onMarkAsReceived={handleMarkMemberReceived}
+          onSendReminder={(memberId, memberName) => {
+            toast({
+              title: "Reminder sent",
+              description: `${memberName} has been notified about their pending payment.`,
+            });
+          }}
         />
       </DialogContent>
     </Dialog>
