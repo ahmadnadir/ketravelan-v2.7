@@ -12,7 +12,6 @@ import { YourQRSection } from "@/components/trip-hub/YourQRSection";
 import { AddExpenseModal, NewExpense, ExpenseData } from "@/components/trip-hub/AddExpenseModal";
 import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
 import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
-import { BalanceSummary } from "@/components/trip-hub/BalanceSummary";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -504,9 +503,6 @@ export function TripExpenses() {
                 })}
               </div>
             </Card>
-
-            {/* Balance Summary */}
-            <BalanceSummary expenses={expenses} currentUser={CURRENT_USER} />
           </div>
         )}
 
