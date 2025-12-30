@@ -177,9 +177,9 @@ function MockExpensesContent() {
   const totalCost = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
 
   const subTabs: { label: string; value: ExpenseSubTab }[] = [
-    { label: "Breakdown", value: "breakdown" },
+    { label: "Summary", value: "breakdown" },
     { label: "All Expenses", value: "expenses" },
-    { label: "Settle", value: "settle" },
+    { label: "Settlement", value: "settle" },
     { label: "QR", value: "qr" },
   ];
 

@@ -645,9 +645,9 @@ export function TripExpenses() {
         {/* Sub Tabs - Below Stat Cards */}
         <SegmentedControl
           options={[
-            { label: "Breakdown", value: "breakdown" },
+            { label: "Summary", value: "breakdown" },
             { label: "All Expenses", value: "expenses" },
-            { label: "Settle", value: "settle" },
+            { label: "Settlement", value: "settle" },
             { label: "QR Codes", value: "qrcodes" },
           ]}
           value={subTab}
