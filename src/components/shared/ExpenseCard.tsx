@@ -76,7 +76,7 @@ export function ExpenseCard({
 
   return (
     <Card 
-      className="p-3 sm:p-4 border-border/50 cursor-pointer hover:bg-secondary/30 transition-colors"
+      className="group p-3 sm:p-4 border-border/50 cursor-pointer hover:bg-secondary/20 hover:shadow-md transition-all duration-150"
       onClick={handleCardClick}
     >
       <div className="flex items-start gap-3">
@@ -133,17 +133,17 @@ export function ExpenseCard({
 
           {/* Primary Action Button (Role-Aware) - Only show if not fully settled */}
           {role !== "settled" && (
-            <div className="pt-2">
+            <div className="pt-2 flex justify-end">
               <Button
-                variant="secondary"
+                variant="outline"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onPrimaryAction();
                 }}
-                className="w-full h-9 text-xs font-medium"
+                className="h-8 px-4 text-xs font-medium border-border/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-150"
               >
-                {role === "payer" ? "Mark as Received" : "Mark as Paid"}
+                {role === "payer" ? "View Payment" : "Mark as Paid"}
               </Button>
             </div>
           )}
