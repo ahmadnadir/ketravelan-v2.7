@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Receipt, Users, User, Calendar, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon } from "lucide-react";
+import { Receipt, Users, User, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import { getCategoryById } from "@/lib/expenseCategories";
 import { mockMembers } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
-type TabType = "overview" | "payments" | "receipts";
+type TabType = "overview" | "payments";
 
 interface ExpenseDetailsModalProps {
   open: boolean;
@@ -244,10 +244,9 @@ export function ExpenseDetailsModal({
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)} className="w-full">
-          <TabsList className="w-full grid grid-cols-3 mx-4 mt-4" style={{ width: "calc(100% - 2rem)" }}>
+          <TabsList className="w-full grid grid-cols-2 mx-4 mt-4" style={{ width: "calc(100% - 2rem)" }}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="receipts">Receipts</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -345,6 +344,125 @@ export function ExpenseDetailsModal({
                   );
                 })}
               </div>
+            </div>
+
+            {/* Receipts Section (merged from Receipts tab) */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Receipt className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-sm font-semibold text-foreground">Receipts</h3>
+              </div>
+
+              {uploadedReceipts.length > 0 ? (
+                <div className="space-y-3">
+                  {uploadedReceipts.map((receipt) => (
+                    <Card key={receipt.id} className="overflow-hidden border-border/50">
+                      {showFullReceipt ? (
+                        <>
+                          {/* Full Receipt View with Zoom */}
+                          <div className="flex items-center justify-between px-3 py-2 border-b border-border/50">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleZoomOut}
+                                className="h-7 w-7"
+                                disabled={zoom <= 0.5}
+                              >
+                                <ZoomOut className="h-3.5 w-3.5" />
+                              </Button>
+                              <span className="text-xs text-muted-foreground w-10 text-center">
+                                {Math.round(zoom * 100)}%
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleZoomIn}
+                                className="h-7 w-7"
+                                disabled={zoom >= 3}
+                              >
+                                <ZoomIn className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleDownload}
+                                className="h-7 w-7"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowFullReceipt(false)}
+                                className="h-7 text-xs"
+                              >
+                                Collapse
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="max-h-[200px] overflow-auto scrollbar-hide">
+                            <div
+                              className="flex items-center justify-center p-2"
+                              style={{ transform: `scale(${zoom})`, transformOrigin: "center top" }}
+                            >
+                              <img
+                                src={receipt.url}
+                                alt="Receipt"
+                                className="rounded-lg max-w-full"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        /* Thumbnail View */
+                        <div className="relative">
+                          <img
+                            src={receipt.url}
+                            alt="Receipt thumbnail"
+                            className="w-full h-28 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <p className="text-xs text-foreground/80">Uploaded by {receipt.uploadedBy}</p>
+                                <p className="text-xs text-muted-foreground">{receipt.uploadedAt}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setShowFullReceipt(true)}
+                                className="h-7 text-xs gap-1.5 flex-1"
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                                View
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="icon"
+                                onClick={handleDownload}
+                                className="h-7 w-7"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="p-4 text-center border-border/50">
+                  <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">No receipts uploaded yet</p>
+                </Card>
+              )}
             </div>
           </TabsContent>
 
@@ -528,119 +646,6 @@ export function ExpenseDetailsModal({
             )}
           </TabsContent>
 
-          {/* Receipts Tab */}
-          <TabsContent value="receipts" className="p-4 space-y-4">
-            {uploadedReceipts.length > 0 ? (
-              <div className="space-y-3">
-                {uploadedReceipts.map((receipt) => (
-                  <Card key={receipt.id} className="overflow-hidden border-border/50">
-                    {showFullReceipt ? (
-                      <>
-                        {/* Full Receipt View with Zoom */}
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-border/50">
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={handleZoomOut}
-                              className="h-7 w-7"
-                              disabled={zoom <= 0.5}
-                            >
-                              <ZoomOut className="h-3.5 w-3.5" />
-                            </Button>
-                            <span className="text-xs text-muted-foreground w-10 text-center">
-                              {Math.round(zoom * 100)}%
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={handleZoomIn}
-                              className="h-7 w-7"
-                              disabled={zoom >= 3}
-                            >
-                              <ZoomIn className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={handleDownload}
-                              className="h-7 w-7"
-                            >
-                              <Download className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setShowFullReceipt(false)}
-                              className="h-7 text-xs"
-                            >
-                              Collapse
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="max-h-[300px] overflow-auto scrollbar-hide">
-                          <div
-                            className="flex items-center justify-center p-2"
-                            style={{ transform: `scale(${zoom})`, transformOrigin: "center top" }}
-                          >
-                            <img
-                              src={receipt.url}
-                              alt="Receipt"
-                              className="rounded-lg max-w-full"
-                            />
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      /* Thumbnail View */
-                      <div className="relative">
-                        <img
-                          src={receipt.url}
-                          alt="Receipt thumbnail"
-                          className="w-full h-32 object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <div>
-                              <p className="text-xs text-foreground/80">Uploaded by {receipt.uploadedBy}</p>
-                              <p className="text-xs text-muted-foreground">{receipt.uploadedAt}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => setShowFullReceipt(true)}
-                              className="h-8 text-xs gap-1.5 flex-1"
-                            >
-                              <Eye className="h-3.5 w-3.5" />
-                              View
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              onClick={handleDownload}
-                              className="h-8 w-8"
-                            >
-                              <Download className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-6 text-center border-border/50">
-                <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                <p className="text-sm text-muted-foreground">No receipts uploaded yet</p>
-              </Card>
-            )}
-          </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>

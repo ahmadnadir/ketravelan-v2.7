@@ -109,7 +109,7 @@ export function TripExpenses() {
   const [viewingReceipt, setViewingReceipt] = useState<{ title: string; url?: string } | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [viewingExpenseDetails, setViewingExpenseDetails] = useState<ExpenseData | null>(null);
-  const [initialModalTab, setInitialModalTab] = useState<"overview" | "payments" | "receipts">("overview");
+  const [initialModalTab, setInitialModalTab] = useState<"overview" | "payments">("overview");
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
