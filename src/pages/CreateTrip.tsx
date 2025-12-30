@@ -65,16 +65,8 @@ export default function CreateTrip() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showShareModal, setShowShareModal] = useState(false);
   const [publishedTripId, setPublishedTripId] = useState<string | null>(null);
-  const [showDraftBanner, setShowDraftBanner] = useState(false);
   // Store draft snapshot for share modal (since we clear draft before showing modal)
   const draftSnapshotRef = useRef<TripDraft | null>(null);
-
-  // Check for existing draft on mount
-  useEffect(() => {
-    if (hasDraft && draft.title) {
-      setShowDraftBanner(true);
-    }
-  }, [hasDraft, draft.title]);
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
@@ -146,7 +138,6 @@ export default function CreateTrip() {
 
   const handleStartFresh = () => {
     resetDraft();
-    setShowDraftBanner(false);
     setCurrentStep(1);
   };
 
@@ -166,37 +157,17 @@ export default function CreateTrip() {
   const headerContent = (
     <div className="bg-background border-b border-border/50 px-4 py-3 safe-top">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
-        {/* Draft Banner */}
-        {showDraftBanner && (
-          <div className="mb-3 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm text-foreground">
-                Resume your draft: <strong>{draft.title}</strong>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleStartFresh}
-                className="text-xs h-7"
-              >
-                Start Fresh
-              </Button>
-              <button
-                onClick={() => setShowDraftBanner(false)}
-                className="p-1 hover:bg-secondary rounded"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Header with draft indicator */}
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Create a Trip</h1>
+        {/* Top navigation row with back arrow */}
+        <div className="flex items-center gap-3 mb-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5 text-foreground" />
+          </button>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex-1">
+            Create a Trip
+          </h1>
           {lastSaved && (
             <span className="text-xs text-muted-foreground">
               Draft saved
@@ -249,27 +220,25 @@ export default function CreateTrip() {
 
   // Footer content with CTA buttons
   const footerContent = (
-    <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4">
+    <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4 safe-bottom">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
-        <p className="text-xs text-muted-foreground text-center mb-2">
-          Step {currentStep} of {steps.length}
-        </p>
-        <div className="flex gap-3">
-          {currentStep > 1 && (
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              className="rounded-xl"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back
-            </Button>
-          )}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Back button - always visible */}
+          <Button
+            variant="outline"
+            onClick={currentStep === 1 ? () => navigate(-1) : prevStep}
+            className="rounded-xl h-12"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
+
+          {/* Continue/Publish button */}
           {currentStep < 4 ? (
             <Button
               onClick={nextStep}
               disabled={(currentStep === 1 && !draft.visibility) || (currentStep === 2 && !canProceedStep2())}
-              className="flex-1 rounded-xl"
+              className="rounded-xl h-12"
             >
               Continue
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -278,10 +247,10 @@ export default function CreateTrip() {
             <Button
               onClick={handlePublish}
               disabled={!essentials}
-              className="flex-1 rounded-xl"
+              className="rounded-xl h-12"
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              Publish Trip
+              Publish
             </Button>
           )}
         </div>
