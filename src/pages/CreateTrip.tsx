@@ -159,10 +159,10 @@ export default function CreateTrip() {
 
   // Header content with step indicator
   const headerContent = (
-    <div className="bg-background border-b border-border/50 px-4 pt-6 pb-3 safe-top">
+    <div className="bg-background border-b border-border/50 px-4 pt-8 pb-4 safe-top">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
         {/* Top navigation row */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             Create a Trip
           </h1>
@@ -174,7 +174,7 @@ export default function CreateTrip() {
         </div>
 
         {/* Progress bar */}
-        <div className="relative h-1 bg-secondary rounded-full overflow-hidden mb-4">
+        <div className="relative h-1 bg-secondary rounded-full overflow-hidden mb-5">
           <div 
             className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500 ease-out"
             style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
@@ -184,7 +184,7 @@ export default function CreateTrip() {
         {/* Progress steps */}
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
-            <div key={step.id} className="flex flex-col items-center gap-1">
+            <div key={step.id} className="flex flex-col items-center gap-1.5">
               <button
                 onClick={() => step.id < currentStep && setCurrentStep(step.id)}
                 disabled={step.id > currentStep}
@@ -216,41 +216,43 @@ export default function CreateTrip() {
     </div>
   );
 
-  // Footer content with CTA buttons
+  // Footer content with CTA buttons - positioned above bottom nav with proper clearance
   const footerContent = (
-    <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4 pb-6 safe-bottom">
-      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
-        <div className="grid grid-cols-2 gap-3">
-          {/* Back button - always visible */}
-          <Button
-            variant="outline"
-            onClick={currentStep === 1 ? () => setShowExitModal(true) : prevStep}
-            className="rounded-xl h-10"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
+    <div className="bg-background/98 backdrop-blur-md border-t border-border/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="px-4 pt-3 pb-5">
+        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Back button - always visible */}
+            <Button
+              variant="outline"
+              onClick={currentStep === 1 ? () => setShowExitModal(true) : prevStep}
+              className="rounded-lg h-11 text-sm font-medium"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
 
-          {/* Continue/Publish button */}
-          {currentStep < 4 ? (
-            <Button
-              onClick={nextStep}
-              disabled={(currentStep === 1 && !draft.visibility) || (currentStep === 2 && !canProceedStep2())}
-              className="rounded-xl h-10"
-            >
-              Continue
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handlePublish}
-              disabled={!essentials}
-              className="rounded-xl h-10"
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Publish
-            </Button>
-          )}
+            {/* Continue/Publish button */}
+            {currentStep < 4 ? (
+              <Button
+                onClick={nextStep}
+                disabled={(currentStep === 1 && !draft.visibility) || (currentStep === 2 && !canProceedStep2())}
+                className="rounded-lg h-11 text-sm font-medium"
+              >
+                Continue
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handlePublish}
+                disabled={!essentials}
+                className="rounded-lg h-11 text-sm font-medium"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Publish
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
