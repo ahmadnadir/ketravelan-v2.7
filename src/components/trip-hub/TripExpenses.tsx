@@ -581,14 +581,25 @@ export function TripExpenses() {
               </Card>
             </div>
 
-            {/* Per Person Contribution */}
-            <Card className="p-3 sm:p-4 border-border/50">
-              <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Upfront Payment per Person</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-2">Average per person</p>
-              <p className="text-xl sm:text-2xl font-bold text-primary mb-3 sm:mb-4">
-                RM {Math.round(totalCost / mockMembers.length).toLocaleString()}
+            {/* Paid on Behalf of the Group */}
+            <Card className="p-3 sm:p-4 bg-muted/30 border-border/30">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                Paid on Behalf of the Group
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">
+                Shows how much each member has paid upfront for shared expenses. Others can help balance upcoming costs.
               </p>
-              <div className="space-y-2 sm:space-y-3">
+              
+              {/* Average per person - muted, informational */}
+              <div className="flex items-center justify-between py-2 border-b border-border/30 mb-3">
+                <span className="text-xs text-muted-foreground">Average per person</span>
+                <span className="text-sm text-muted-foreground font-medium">
+                  RM {Math.round(totalCost / mockMembers.length).toLocaleString()}
+                </span>
+              </div>
+              
+              {/* Member contributions - horizontal layout */}
+              <div className="space-y-2">
                 {(() => {
                   // Calculate actual contributions from expenses
                   const contributions: Record<string, number> = {};
@@ -601,21 +612,31 @@ export function TripExpenses() {
                     }
                   });
                   
-                  // Sort by contribution amount (highest first)
+                  // Sort by contribution amount (highest first) - intentional ordering
                   const sortedContributions = Object.entries(contributions)
                     .sort(([, a], [, b]) => b - a);
                   
                   return sortedContributions.map(([name, contribution]) => {
                     const percentage = totalCost > 0 ? Math.round((contribution / totalCost) * 100) : 0;
                     return (
-                      <div key={name} className="space-y-1 sm:space-y-1.5">
-                        <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                          <span className="text-foreground truncate">{name}</span>
-                          <span className="text-muted-foreground shrink-0">
-                            RM {contribution.toLocaleString()} ({percentage}%)
-                          </span>
+                      <div key={name} className="flex items-center gap-3 py-1.5">
+                        {/* Member Name - Left */}
+                        <span className="text-xs sm:text-sm text-foreground min-w-[80px] sm:min-w-[100px] truncate">
+                          {name}
+                        </span>
+                        
+                        {/* Progress Bar - Center (flexible width, neutral colors) */}
+                        <div className="flex-1 h-2 bg-secondary/60 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-foreground/40 rounded-full transition-all"
+                            style={{ width: `${percentage}%` }}
+                          />
                         </div>
-                        <Progress value={percentage} className="h-1.5 sm:h-2" />
+                        
+                        {/* Amount + Percentage - Right */}
+                        <span className="text-xs sm:text-sm text-muted-foreground shrink-0 min-w-[90px] sm:min-w-[110px] text-right">
+                          RM {contribution.toLocaleString()} ({percentage}%)
+                        </span>
                       </div>
                     );
                   });
