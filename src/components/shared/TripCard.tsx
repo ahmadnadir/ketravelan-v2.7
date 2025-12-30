@@ -62,9 +62,27 @@ export function TripCard({
     setTimeout(() => setIsAnimating(false), 300);
   };
 
-  const handleShare = (e: React.MouseEvent) => {
+  const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
-    setShareModalOpen(true);
+    
+    // Check if Web Share API is supported
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          text: shareText,
+          url: tripUrl,
+        });
+      } catch (err) {
+        // User cancelled or share failed - fall back to modal
+        if ((err as Error).name !== 'AbortError') {
+          setShareModalOpen(true);
+        }
+      }
+    } else {
+      // Fallback to custom modal
+      setShareModalOpen(true);
+    }
   };
 
   const handleCopyLink = async () => {
