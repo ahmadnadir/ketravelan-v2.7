@@ -414,12 +414,17 @@ export function TripExpenses() {
       const update = expenseUpdates.find(u => u.expenseId === expenseId);
       if (!expense || !update) return null;
       
+      // Find receipt URL from the member's payment if available
+      const memberPayment = expense.payments?.find(p => p.memberId === update.memberId);
+      const receiptUrl = memberPayment?.receiptUrl;
+      
       return {
         id: expense.id,
         title: expense.title,
         shareAmount: calculateUserShare(expense, update.memberId),
+        receiptUrl: receiptUrl,
       };
-    }).filter(Boolean) as { id: string; title: string; shareAmount: number }[];
+    }).filter(Boolean) as { id: string; title: string; shareAmount: number; receiptUrl?: string }[];
   };
 
   // Handler for initiating settlement confirmation (shows dialog)
