@@ -13,6 +13,12 @@ import { cn } from "@/lib/utils";
 
 // User role types for expense actions
 type ExpenseRole = "payer" | "owes" | "settled";
+type PaymentStatus = "pending" | "submitted" | "settled";
+
+interface Payment {
+  memberId: string;
+  status: PaymentStatus;
+}
 
 interface ExpenseCardProps {
   id: string;
@@ -24,7 +30,11 @@ interface ExpenseCardProps {
   category?: string;
   paymentProgress?: number;
   currentUser?: string;
+  currentUserId?: string;
   splitWith?: string[];
+  splitType?: "equal" | "custom";
+  customSplitAmounts?: { memberId: string; amount: number }[];
+  payments?: Payment[];
   // Interaction callbacks
   onCardClick: () => void;
   onPrimaryAction: () => void;
@@ -32,6 +42,11 @@ interface ExpenseCardProps {
   onEdit?: () => void;
   onDelete?: () => void;
 }
+
+// Format currency helper
+const formatCurrency = (value: number, curr: string = "RM"): string => {
+  return `${curr}${value.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 
 export function ExpenseCard({
   title,
@@ -42,6 +57,11 @@ export function ExpenseCard({
   category,
   paymentProgress = 0,
   currentUser = "Ahmad",
+  currentUserId = "1",
+  splitWith,
+  splitType = "equal",
+  customSplitAmounts,
+  payments,
   onCardClick,
   onPrimaryAction,
   onEdit,
@@ -62,6 +82,48 @@ export function ExpenseCard({
   };
 
   const role = getExpenseRole();
+
+  // Calculate user's personal share
+  const calculatePersonalShare = (): { amount: number; status: "pending" | "paid" | "settled" } => {
+    const memberCount = splitWith?.length || 1;
+    
+    // Calculate amount
+    let shareAmount: number;
+    if (splitType === "custom" && customSplitAmounts) {
+      const customAmount = customSplitAmounts.find(c => c.memberId === currentUserId);
+      shareAmount = customAmount?.amount || (amount / memberCount);
+    } else {
+      shareAmount = amount / memberCount;
+    }
+    
+    // If user is the payer, their share is automatically settled
+    if (isPayer) {
+      return { amount: shareAmount, status: "settled" };
+    }
+    
+    // Determine status from payments array
+    const userPayment = payments?.find(p => p.memberId === currentUserId);
+    let status: "pending" | "paid" | "settled" = "pending";
+    
+    if (userPayment?.status === "settled") {
+      status = "settled";
+    } else if (userPayment?.status === "submitted") {
+      status = "paid";
+    }
+    
+    return { amount: shareAmount, status };
+  };
+
+  const personalShare = calculatePersonalShare();
+
+  // Dynamic button label based on personal status
+  const getButtonLabel = (): string => {
+    if (role === "settled") return "View Details";
+    if (role === "payer") return "View Payments";
+    if (personalShare.status === "pending") return "View & Settle";
+    if (personalShare.status === "paid") return "View Details";
+    return "View Details";
+  };
 
   // Handle card click (not on button or dropdown)
   const handleCardClick = (e: React.MouseEvent) => {
@@ -130,8 +192,25 @@ export function ExpenseCard({
             <Progress value={paymentProgress} className="h-1.5" />
           </div>
 
+          {/* Personal Share Row */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+            <span>Your share:</span>
+            <span className="font-medium">
+              {formatCurrency(personalShare.amount, currency)} · {" "}
+              <span className={cn(
+                personalShare.status === "settled" && "text-stat-green",
+                personalShare.status === "paid" && "text-yellow-600",
+                personalShare.status === "pending" && "text-foreground"
+              )}>
+                {personalShare.status === "settled" ? "Settled" : 
+                 personalShare.status === "paid" ? "Paid" : 
+                 "Pending"}
+              </span>
+            </span>
+          </div>
+
           {/* Primary Action Button - Always visible */}
-          <div className="pt-3">
+          <div className="pt-2">
             <Button
               variant="outline"
               size="sm"
@@ -144,7 +223,7 @@ export function ExpenseCard({
                 "border-border/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
               )}
             >
-              {role === "payer" ? "View Payments" : role === "owes" ? "Mark as Paid" : "View Details"}
+              {getButtonLabel()}
             </Button>
           </div>
         </div>
