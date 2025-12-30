@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, Pin, Trash2, Check, List, ListOrdered, CheckSquare, Square } from "lucide-react";
+import { ChevronLeft, Pin, Trash2, Check, List, ListOrdered, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TripNote, saveNote, deleteNote } from "@/lib/tripNotes";
 import {
@@ -51,13 +51,26 @@ export function NoteEditor({
   const isInitialMount = useRef(true);
   const lastSavedContent = useRef({ title: "", content: "", isPinned: false });
 
+
+  const normalizeContent = (text: string) => {
+    const withBullets = text.replace(/^(\s*)-\s+/gm, "$1• ");
+
+    // Normalize legacy checkbox syntax ([ ] / [x]) to consumer-friendly glyphs
+    return withBullets.replace(
+      /^(\s*)\[( |x|X)\]\s*/gm,
+      (_m, indent: string, state: string) =>
+        `${indent}${state.trim().toLowerCase() === "x" ? "☑" : "☐"} `
+    );
+  };
+
   // Initialize state when note changes
   useEffect(() => {
     if (note) {
+      const normalized = normalizeContent(note.content);
       setTitle(note.title);
-      setContent(note.content);
+      setContent(normalized);
       setIsPinned(note.pinned);
-      lastSavedContent.current = { title: note.title, content: note.content, isPinned: note.pinned };
+      lastSavedContent.current = { title: note.title, content: normalized, isPinned: note.pinned };
       setSaveState("idle");
       isInitialMount.current = true;
     }
@@ -178,18 +191,77 @@ export function NoteEditor({
   };
 
   // Toggle checkbox at specific line
-  const toggleCheckbox = (lineIndex: number) => {
+  const toggleCheckbox = (lineIndex: number, cursorPos?: number) => {
     const lines = content.split("\n");
-    const line = lines[lineIndex];
-    
-    // Toggle between [ ] and [x]
-    if (line.match(/^\s*\[ \]/)) {
-      lines[lineIndex] = line.replace(/\[ \]/, "[x]");
-    } else if (line.match(/^\s*\[x\]/i)) {
-      lines[lineIndex] = line.replace(/\[x\]/i, "[ ]");
+    const line = lines[lineIndex] ?? "";
+
+    const toggleLine = (from: RegExp, to: string) => {
+      lines[lineIndex] = line.replace(from, to);
+    };
+
+    // Prefer consumer-friendly glyphs
+    if (/^\s*☐/.test(line)) {
+      toggleLine(/☐/, "☑");
+    } else if (/^\s*☑/.test(line)) {
+      toggleLine(/☑/, "☐");
+    } else if (/^\s*\[ \]/.test(line)) {
+      toggleLine(/\[ \]/, "☑");
+    } else if (/^\s*\[x\]/i.test(line)) {
+      toggleLine(/\[x\]/i, "☐");
+    } else {
+      return;
     }
-    
-    setContent(lines.join("\n"));
+
+    const next = normalizeContent(lines.join("\n"));
+    setContent(next);
+
+    if (typeof cursorPos === "number") {
+      setTimeout(() => {
+        contentRef.current?.focus();
+        contentRef.current?.setSelectionRange(cursorPos, cursorPos);
+      }, 0);
+    }
+  };
+
+
+  const handleContentClick = () => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+
+    const pos = textarea.selectionStart;
+    const value = textarea.value;
+
+    const lineStart = value.lastIndexOf("\n", pos - 1) + 1;
+    const lineEndIdx = value.indexOf("\n", pos);
+    const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
+    const line = value.slice(lineStart, lineEnd);
+
+    const match = line.match(/^(\s*)(?:\[( |x|X)\]|(☐|☑))/);
+    if (!match) return;
+
+    const tokenStart = lineStart + match[1].length;
+    const tokenLen = match[2] ? 3 : 1;
+    const tokenEnd = tokenStart + tokenLen;
+
+    // Only toggle when clicking the checkbox token itself
+    if (pos >= tokenStart && pos <= tokenEnd) {
+      const lineIndex = value.slice(0, lineStart).split("\n").length - 1;
+      toggleCheckbox(lineIndex, pos);
+    }
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.currentTarget;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    const next = normalizeContent(textarea.value);
+    setContent(next);
+
+    // Restore cursor/selection (same-length transform)
+    setTimeout(() => {
+      contentRef.current?.setSelectionRange(start, end);
+    }, 0);
   };
 
   // Handle content Enter key - smart list continuation
@@ -210,7 +282,7 @@ export function NoteEditor({
       const bulletMatch = currentLine.match(/^(\s*)•\s+(.*)$/);
       const dashBulletMatch = currentLine.match(/^(\s*)-\s+(.*)$/);
       const numberMatch = currentLine.match(/^(\s*)(\d+)\.\s+(.*)$/);
-      const checklistMatch = currentLine.match(/^(\s*)\[[\sx]?\]\s*(.*)$/);
+      const checklistMatch = currentLine.match(/^(\s*)(?:\[( |x|X)\]|(☐|☑))\s*(.*)$/);
       
       // If current list item is empty, end the list
       if ((bulletMatch && !bulletMatch[2].trim()) || (dashBulletMatch && !dashBulletMatch[2].trim())) {
@@ -239,7 +311,7 @@ export function NoteEditor({
         return;
       }
       
-      if (checklistMatch && !checklistMatch[2].trim()) {
+      if (checklistMatch && !checklistMatch[4].trim()) {
         e.preventDefault();
         const newLines = [...lines];
         newLines[newLines.length - 1] = "";
@@ -262,8 +334,8 @@ export function NoteEditor({
       } else if (numberMatch && numberMatch[3].trim()) {
         const nextNum = parseInt(numberMatch[2]) + 1;
         prefix = `${numberMatch[1]}${nextNum}. `;
-      } else if (checklistMatch && checklistMatch[2].trim()) {
-        prefix = `${checklistMatch[1]}[ ] `;
+      } else if (checklistMatch && checklistMatch[4].trim()) {
+        prefix = `${checklistMatch[1]}☐ `;
       }
       
       if (prefix) {
@@ -282,7 +354,7 @@ export function NoteEditor({
 
   // Insert formatting and focus textarea
   const insertFormat = (type: "bullet" | "number" | "checklist") => {
-    const prefix = type === "bullet" ? "• " : type === "number" ? "1. " : "[ ] ";
+    const prefix = type === "bullet" ? "• " : type === "number" ? "1. " : "☐ ";
     
     let newContent: string;
     if (!content.trim()) {
@@ -303,88 +375,8 @@ export function NoteEditor({
     }, 10);
   };
 
-  // Render content with interactive checkboxes and proper bullets
-  const renderFormattedContent = () => {
-    if (!content) return null;
-    
-    const lines = content.split("\n");
-    
-    return (
-      <div className="space-y-1">
-        {lines.map((line, index) => {
-          // Check for checkbox pattern
-          const uncheckedMatch = line.match(/^(\s*)\[ \]\s*(.*)$/);
-          const checkedMatch = line.match(/^(\s*)\[x\]\s*(.*)$/i);
-          
-          // Check for bullet pattern (- or •)
-          const bulletMatch = line.match(/^(\s*)[-•]\s+(.*)$/);
-          
-          // Check for numbered list
-          const numberMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
-          
-          if (uncheckedMatch) {
-            const [, indent, text] = uncheckedMatch;
-            return (
-              <div key={index} className="flex items-start gap-2" style={{ paddingLeft: indent.length * 8 }}>
-                <button
-                  type="button"
-                  onClick={() => toggleCheckbox(index)}
-                  className="mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 border-muted-foreground/50 hover:border-primary transition-colors"
-                />
-                <span className="text-base sm:text-lg leading-relaxed">{text}</span>
-              </div>
-            );
-          }
-          
-          if (checkedMatch) {
-            const [, indent, text] = checkedMatch;
-            return (
-              <div key={index} className="flex items-start gap-2" style={{ paddingLeft: indent.length * 8 }}>
-                <button
-                  type="button"
-                  onClick={() => toggleCheckbox(index)}
-                  className="mt-0.5 flex-shrink-0 w-5 h-5 rounded bg-primary border-2 border-primary flex items-center justify-center transition-colors"
-                >
-                  <Check className="h-3 w-3 text-primary-foreground" />
-                </button>
-                <span className="text-base sm:text-lg leading-relaxed line-through text-muted-foreground">{text}</span>
-              </div>
-            );
-          }
-          
-          if (bulletMatch) {
-            const [, indent, text] = bulletMatch;
-            return (
-              <div key={index} className="flex items-start gap-2" style={{ paddingLeft: indent.length * 8 }}>
-                <span className="text-base sm:text-lg leading-relaxed text-muted-foreground">•</span>
-                <span className="text-base sm:text-lg leading-relaxed">{text}</span>
-              </div>
-            );
-          }
-          
-          if (numberMatch) {
-            const [, indent, num, text] = numberMatch;
-            return (
-              <div key={index} className="flex items-start gap-2" style={{ paddingLeft: indent.length * 8 }}>
-                <span className="text-base sm:text-lg leading-relaxed text-muted-foreground min-w-[1.5rem]">{num}.</span>
-                <span className="text-base sm:text-lg leading-relaxed">{text}</span>
-              </div>
-            );
-          }
-          
-          // Plain text line
-          return (
-            <div key={index} className="text-base sm:text-lg leading-relaxed min-h-[1.75rem]">
-              {line || "\u00A0"}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
 
-  // Check if content has any formatted elements (checkboxes, bullets, numbers)
-  const hasFormattedContent = content && /^(\s*)([-•]|\d+\.|\[[\sx]?\])\s/m.test(content);
+  // Intentionally no preview layer: the textarea is the single editing surface.
 
   return (
     <>
@@ -488,35 +480,15 @@ export function NoteEditor({
                 className="w-full text-2xl sm:text-3xl font-semibold bg-transparent border-none outline-none placeholder:text-muted-foreground/50"
               />
               
-              {/* Rich formatted view with interactive checkboxes */}
-              {hasFormattedContent ? (
-                <div className="space-y-4">
-                  {/* Rendered formatted content with clickable checkboxes */}
-                  {renderFormattedContent()}
-                  
-                  {/* Hidden textarea for editing - shown on focus of formatted area */}
-                  <div className="pt-4 border-t border-border/30">
-                    <textarea
-                      ref={contentRef}
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      onKeyDown={handleContentKeyDown}
-                      placeholder="Continue typing..."
-                      className="w-full min-h-[20vh] text-base sm:text-lg bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
-                    />
-                  </div>
-                </div>
-              ) : (
-                /* Plain textarea for simple content */
-                <textarea
-                  ref={contentRef}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  onKeyDown={handleContentKeyDown}
-                  placeholder="Start typing..."
-                  className="w-full min-h-[50vh] text-base sm:text-lg bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
-                />
-              )}
+              <textarea
+                ref={contentRef}
+                value={content}
+                onChange={handleContentChange}
+                onClick={handleContentClick}
+                onKeyDown={handleContentKeyDown}
+                placeholder="Start typing..."
+                className="w-full min-h-[50vh] text-base sm:text-lg bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
+              />
             </div>
           </div>
         </DrawerContent>
