@@ -70,7 +70,7 @@ export function Header({ onNotificationsClick }: HeaderProps) {
                 </div>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-sm mx-4 rounded-2xl">
+            <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] max-w-sm left-1/2 -translate-x-1/2 rounded-2xl">
               <DialogHeader className="pb-2">
                 <DialogTitle className="text-center">Account</DialogTitle>
               </DialogHeader>
