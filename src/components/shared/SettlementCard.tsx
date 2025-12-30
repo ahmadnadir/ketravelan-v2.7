@@ -34,111 +34,110 @@ export function SettlementCard({
       className="p-4 border-border/50 cursor-pointer hover:bg-muted/30 transition-colors active:scale-[0.99]"
       onClick={onCardClick}
     >
-      <div className="flex items-center gap-3">
-        {/* From User - Clickable */}
+      {/* Top Section: From → To (Compact Context) */}
+      <div className="flex items-center justify-between gap-2 mb-4">
+        {/* From User */}
         <Link 
           to={`/user/${fromUser.id}`}
-          className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
             {fromUser.imageUrl ? (
               <img src={fromUser.imageUrl} alt={fromUser.name} className="h-full w-full object-cover" />
             ) : (
-              <span className="font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-muted-foreground">
                 {fromUser.name.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
-          <span className="text-xs text-muted-foreground truncate max-w-[60px]">
+          <span className="text-xs font-medium text-foreground truncate max-w-[70px]">
             {fromUser.name}
           </span>
         </Link>
 
-        {/* Arrow & Amount */}
-        <div className="flex-1 flex flex-col items-center gap-1">
-          <div className="flex items-center gap-2 w-full">
-            <div className="flex-1 h-px bg-border" />
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            <div className="flex-1 h-px bg-border" />
-          </div>
-          <span className="text-lg font-bold text-foreground">
-            {currency} {amount.toLocaleString()}
-          </span>
-        </div>
+        {/* Arrow */}
+        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
 
-        {/* To User - Clickable */}
+        {/* To User */}
         <Link 
           to={`/user/${toUser.id}`}
-          className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+          <span className="text-xs font-medium text-foreground truncate max-w-[70px]">
+            {toUser.name}
+          </span>
+          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
             {toUser.imageUrl ? (
               <img src={toUser.imageUrl} alt={toUser.name} className="h-full w-full object-cover" />
             ) : (
-              <span className="font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-muted-foreground">
                 {toUser.name.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
-          <span className="text-xs text-muted-foreground truncate max-w-[60px]">
-            {toUser.name}
-          </span>
         </Link>
       </div>
 
-      {/* Status & Actions */}
-      <div className="mt-4 pt-3 border-t border-border/50 space-y-3">
-        {/* Status Badge */}
+      {/* Middle Section: Net Amount (Primary Focus) */}
+      <div className="text-center py-3">
+        <p className="text-2xl font-bold text-foreground">
+          {currency} {amount.toLocaleString()}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">Net amount owed</p>
+      </div>
+
+      {/* Status Badge - Centered */}
+      <div className="flex justify-center mb-4">
         <span
           className={cn(
-            "text-xs font-medium px-2 py-1 rounded-full w-fit block",
+            "text-xs font-medium px-3 py-1 rounded-full",
             status === "paid"
-              ? "bg-success/10 text-success"
-              : "bg-warning/10 text-warning-foreground"
+              ? "bg-stat-green/10 text-stat-green"
+              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
           )}
         >
-          {status === "paid" ? "PAID" : "PENDING"}
+          {status === "paid" ? "Paid" : "Pending"}
         </span>
+      </div>
+
+      {/* Actions - Stacked at bottom */}
+      <div className="flex flex-col gap-2 pt-3 border-t border-border/50">
+        {/* View QR - Always visible */}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full h-10 text-sm"
+          onClick={(e) => { e.stopPropagation(); onViewPayment?.(); }}
+        >
+          <QrCode className="h-4 w-4 mr-2" />
+          View QR
+        </Button>
         
-        {/* Stacked Buttons */}
-        <div className="flex flex-col gap-2">
-          {/* View QR - Secondary */}
+        {/* Send Reminder - Ghost style, only when pending and showReminder */}
+        {showReminder && status === "pending" && (
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm" 
             className="w-full h-10 text-sm"
-            onClick={(e) => { e.stopPropagation(); onViewPayment?.(); }}
+            onClick={(e) => { e.stopPropagation(); onSendReminder?.(); }}
           >
-            <QrCode className="h-4 w-4 mr-2" />
-            View QR
+            <Bell className="h-4 w-4 mr-2" />
+            Send Reminder
           </Button>
-          
-          {/* Send Reminder - Secondary (only when showReminder is true) */}
-          {showReminder && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full h-10 text-sm"
-              onClick={(e) => { e.stopPropagation(); onSendReminder?.(); }}
-            >
-              <Bell className="h-4 w-4 mr-2" />
-              Send Reminder
-            </Button>
-          )}
-          
-          {/* Mark as Paid - Primary (only when pending) */}
-          {status === "pending" && (
-            <Button 
-              size="sm" 
-              className="w-full h-10 text-sm bg-foreground text-background hover:bg-foreground/90"
-              onClick={(e) => { e.stopPropagation(); onMarkPaid?.(); }}
-            >
-              Mark as Paid
-            </Button>
-          )}
-        </div>
+        )}
+        
+        {/* Mark as Paid - Primary, only when pending */}
+        {status === "pending" && (
+          <Button 
+            size="sm" 
+            className="w-full h-10 text-sm bg-foreground text-background hover:bg-foreground/90"
+            onClick={(e) => { e.stopPropagation(); onMarkPaid?.(); }}
+          >
+            Mark as Paid
+          </Button>
+        )}
       </div>
     </Card>
   );
