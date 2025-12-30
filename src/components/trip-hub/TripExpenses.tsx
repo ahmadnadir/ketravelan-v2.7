@@ -82,6 +82,24 @@ const mockSettlements: Settlement[] = [
 
 // Current user is Ahmad Razak
 const CURRENT_USER = "Ahmad Razak";
+const CURRENT_USER_ID = "1";
+
+// Calculate a user's share for a single expense
+const calculateUserShare = (expense: ExpenseData, userId: string): number => {
+  // Check if user is part of this expense's split
+  if (!expense.splitWith.includes(userId)) {
+    return 0;
+  }
+  
+  // Custom split: look up the user's specific amount
+  if (expense.splitType === "custom" && expense.customSplitAmounts) {
+    const customAmount = expense.customSplitAmounts.find(c => c.memberId === userId);
+    return customAmount?.amount || 0;
+  }
+  
+  // Equal split: divide total by number of people
+  return expense.amount / expense.splitWith.length;
+};
 
 export function TripExpenses() {
   const [subTab, setSubTab] = useState("breakdown");
@@ -131,9 +149,47 @@ export function TripExpenses() {
   const [expenses, setExpenses] = useState<ExpenseData[]>(initialMockExpenses);
 
   const totalCost = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const yourTotalExpenses = 680;
-  const youOwe = 120;
-  const owedToYou = 85;
+
+  // Calculate current user's total share across all expenses
+  const yourTotalExpenses = useMemo(() => {
+    return expenses.reduce((sum, expense) => {
+      return sum + calculateUserShare(expense, CURRENT_USER_ID);
+    }, 0);
+  }, [expenses]);
+
+  // Calculate what current user still owes (unpaid shares to others)
+  const youOwe = useMemo(() => {
+    return expenses
+      .filter(expense => expense.paidBy !== CURRENT_USER) // Expenses paid by others
+      .reduce((sum, expense) => {
+        const userPayment = expense.payments?.find(p => p.memberId === CURRENT_USER_ID);
+        // Only count if user hasn't settled yet
+        if (!userPayment || userPayment.status === "pending") {
+          return sum + calculateUserShare(expense, CURRENT_USER_ID);
+        }
+        return sum;
+      }, 0);
+  }, [expenses]);
+
+  // Calculate what others owe current user (for expenses current user paid)
+  const owedToYou = useMemo(() => {
+    return expenses
+      .filter(expense => expense.paidBy === CURRENT_USER) // Expenses paid by current user
+      .reduce((sum, expense) => {
+        // Sum up unsettled amounts from other members
+        const unsettledFromOthers = expense.splitWith
+          .filter(memberId => memberId !== CURRENT_USER_ID)
+          .reduce((memberSum, memberId) => {
+            const memberPayment = expense.payments?.find(p => p.memberId === memberId);
+            // Only count if member hasn't settled yet
+            if (!memberPayment || memberPayment.status !== "settled") {
+              return memberSum + calculateUserShare(expense, memberId);
+            }
+            return memberSum;
+          }, 0);
+        return sum + unsettledFromOthers;
+      }, 0);
+  }, [expenses]);
 
   // Get unique payers from expenses
   const uniquePayers = useMemo(() => {
