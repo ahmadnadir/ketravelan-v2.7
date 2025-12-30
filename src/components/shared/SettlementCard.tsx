@@ -118,7 +118,7 @@ export function SettlementCard({
         {/* Send Reminder - Ghost style, only when pending and showReminder */}
         {showReminder && status === "pending" && (
           <Button 
-            variant="ghost" 
+            variant="outline" 
             size="sm" 
             className="w-full h-10 text-sm"
             onClick={(e) => { e.stopPropagation(); onSendReminder?.(); }}
