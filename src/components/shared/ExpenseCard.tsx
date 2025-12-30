@@ -199,8 +199,8 @@ export function ExpenseCard({
               {formatCurrency(personalShare.amount, currency)} · {" "}
               <span className={cn(
                 personalShare.status === "settled" && "text-stat-green",
-                personalShare.status === "paid" && "text-yellow-600",
-                personalShare.status === "pending" && "text-foreground"
+                personalShare.status === "paid" && "text-foreground",
+                personalShare.status === "pending" && "text-yellow-600"
               )}>
                 {personalShare.status === "settled" ? "Settled" : 
                  personalShare.status === "paid" ? "Paid" : 
