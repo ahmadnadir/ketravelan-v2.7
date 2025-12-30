@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User, Bell, QrCode, Layers } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User, QrCode, Layers } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StatCard } from "@/components/shared/StatCard";
@@ -13,7 +13,6 @@ import { AddExpenseModal, NewExpense, ExpenseData } from "@/components/trip-hub/
 import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
 import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
 import { ExpenseDetailsModal } from "@/components/trip-hub/ExpenseDetailsModal";
-import { UploadPaymentProofModal } from "@/components/trip-hub/UploadPaymentProofModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -110,12 +109,7 @@ export function TripExpenses() {
   const [viewingReceipt, setViewingReceipt] = useState<{ title: string; url?: string } | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [viewingExpenseDetails, setViewingExpenseDetails] = useState<ExpenseData | null>(null);
-  
-  // New states for role-aware actions
-  const [uploadProofOpen, setUploadProofOpen] = useState(false);
-  const [uploadProofExpense, setUploadProofExpense] = useState<ExpenseData | null>(null);
-  const [expenseReminderOpen, setExpenseReminderOpen] = useState(false);
-  const [reminderExpense, setReminderExpense] = useState<ExpenseData | null>(null);
+  const [initialModalTab, setInitialModalTab] = useState<"overview" | "payments" | "receipts">("overview");
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
@@ -342,48 +336,36 @@ export function TripExpenses() {
     setReceiptViewerOpen(true);
   };
 
-  const openExpenseDetails = (expense: ExpenseData) => {
+  // Card click → opens Overview tab
+  const handleCardClick = (expense: ExpenseData) => {
     setViewingExpenseDetails(expense);
+    setInitialModalTab("overview");
     setDetailsModalOpen(true);
   };
 
-  // Role-aware expense handlers
-  const handleExpenseReminder = (expense: ExpenseData) => {
-    setReminderExpense(expense);
-    setExpenseReminderOpen(true);
+  // Primary action button click → opens Payments tab
+  const handlePrimaryAction = (expense: ExpenseData) => {
+    setViewingExpenseDetails(expense);
+    setInitialModalTab("payments");
+    setDetailsModalOpen(true);
   };
 
-  const handleExpenseReminderSend = (message: string) => {
-    console.log("Expense reminder sent:", message);
-    // Would send notification/chat message here
+  // Handle marking member payment as received from modal
+  const handleMarkAsReceived = (memberId: string) => {
+    // This will be called from the modal
+    console.log("Mark as received for member:", memberId);
   };
 
-  const handleMarkAsReceived = (expense: ExpenseData) => {
-    setExpenses(prev => prev.map(e => {
-      if (e.id === expense.id) {
-        return { ...e, paymentProgress: 100 };
-      }
-      return e;
-    }));
-    toast({
-      title: "Payment received",
-      description: `${expense.title} has been marked as fully settled`,
-    });
-  };
-
-  const handleUploadProof = (expense: ExpenseData) => {
-    setUploadProofExpense(expense);
-    setUploadProofOpen(true);
-  };
-
-  const handleProofUpload = (file: File, note?: string) => {
-    if (!uploadProofExpense) return;
-    // In a real app, this would upload the file and notify the payer
+  // Handle uploading proof from modal
+  const handleUploadProof = (file: File, note?: string) => {
     console.log("Proof uploaded:", file, note);
-    // Optionally update payment progress
+  };
+
+  // Handle progress update from modal
+  const handleUpdateProgress = (expenseId: string, newProgress: number) => {
     setExpenses(prev => prev.map(e => {
-      if (e.id === uploadProofExpense.id) {
-        return { ...e, paymentProgress: Math.min((e.paymentProgress || 0) + 25, 100) };
+      if (e.id === expenseId) {
+        return { ...e, paymentProgress: newProgress };
       }
       return e;
     }));
@@ -595,10 +577,8 @@ export function TripExpenses() {
                     paymentProgress={expense.paymentProgress}
                     currentUser={CURRENT_USER}
                     splitWith={expense.splitWith}
-                    onViewDetails={() => openExpenseDetails(expense)}
-                    onSendReminder={() => handleExpenseReminder(expense)}
-                    onMarkAsReceived={() => handleMarkAsReceived(expense)}
-                    onUploadProof={() => handleUploadProof(expense)}
+                    onCardClick={() => handleCardClick(expense)}
+                    onPrimaryAction={() => handlePrimaryAction(expense)}
                     onEdit={() => openEditExpense(expense)}
                     onDelete={() => openDeleteExpense(expense)}
                   />
@@ -839,32 +819,15 @@ export function TripExpenses() {
           if (!open) setViewingExpenseDetails(null);
         }}
         expense={viewingExpenseDetails}
-      />
-
-      {/* Upload Payment Proof Modal */}
-      <UploadPaymentProofModal
-        open={uploadProofOpen}
-        onOpenChange={(open) => {
-          setUploadProofOpen(open);
-          if (!open) setUploadProofExpense(null);
+        currentUser="Ahmad Razak"
+        initialTab={initialModalTab}
+        onMarkAsReceived={handleMarkAsReceived}
+        onUploadProof={handleUploadProof}
+        onUpdateProgress={(newProgress) => {
+          if (viewingExpenseDetails) {
+            handleUpdateProgress(viewingExpenseDetails.id, newProgress);
+          }
         }}
-        expenseTitle={uploadProofExpense?.title || ""}
-        amount={uploadProofExpense?.amount || 0}
-        payerName={uploadProofExpense?.paidBy || ""}
-        onUpload={handleProofUpload}
-      />
-
-      {/* Expense-based Reminder Modal */}
-      <SendReminderModal
-        open={expenseReminderOpen}
-        onOpenChange={(open) => {
-          setExpenseReminderOpen(open);
-          if (!open) setReminderExpense(null);
-        }}
-        recipientName="Group Members"
-        amount={reminderExpense?.amount || 0}
-        tripName="Cameron Highlands"
-        onSend={handleExpenseReminderSend}
       />
     </div>
   );

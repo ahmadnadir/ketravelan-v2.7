@@ -193,12 +193,125 @@ export const mockMembers = [
   { id: "5", name: "Priya Kumar", role: "Member", descriptor: "Adventure seeker" },
 ];
 
-export const mockExpenses = [
-  { id: "1", title: "Accommodation - 3 nights", amount: 1200, paidBy: "Ahmad Razak", date: "Jan 15, 2025", hasReceipt: true, paymentProgress: 75, category: "Accommodation", splitType: "equal" as const, splitWith: ["1", "2", "3", "4"] },
-  { id: "2", title: "Ferry tickets", amount: 320, paidBy: "Sarah Tan", date: "Jan 15, 2025", hasReceipt: true, paymentProgress: 100, category: "Transport", splitType: "equal" as const, splitWith: ["1", "2", "3", "4", "5"] },
-  { id: "3", title: "Rental car", amount: 450, paidBy: "Ahmad Razak", date: "Jan 15, 2025", hasReceipt: false, paymentProgress: 50, category: "Transport", splitType: "custom" as const, splitWith: ["1", "2", "3"], customSplitAmounts: [{ memberId: "1", amount: 150 }, { memberId: "2", amount: 150 }, { memberId: "3", amount: 150 }] },
-  { id: "4", title: "Group dinner", amount: 280, paidBy: "Lisa Wong", date: "Jan 16, 2025", hasReceipt: true, paymentProgress: 25, category: "Food & Drinks", splitType: "equal" as const, splitWith: ["1", "2", "3", "4", "5"], notes: "Seafood dinner at the beach restaurant" },
-  { id: "5", title: "Sky Bridge tickets", amount: 180, paidBy: "John Lee", date: "Jan 17, 2025", hasReceipt: true, paymentProgress: 0, category: "Activities", splitType: "equal" as const, splitWith: ["1", "2", "3", "4"] },
+// Payment tracking for each expense member
+export interface ExpensePayment {
+  memberId: string;
+  status: "pending" | "uploaded" | "confirmed";
+  receiptUrl?: string;
+  uploadedAt?: string;
+}
+
+// Enhanced expense data with payments tracking
+export interface ExpenseData {
+  id: string;
+  title: string;
+  amount: number;
+  paidBy: string;
+  date: string;
+  hasReceipt: boolean;
+  paymentProgress: number;
+  category: string;
+  splitType: "equal" | "custom";
+  splitWith: string[];
+  customSplitAmounts?: { memberId: string; amount: number }[];
+  notes?: string;
+  payments?: ExpensePayment[];
+}
+
+export const mockExpenses: ExpenseData[] = [
+  { 
+    id: "1", 
+    title: "Accommodation - 3 nights", 
+    amount: 1200, 
+    paidBy: "Ahmad Razak", 
+    date: "Jan 15, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 75, 
+    category: "Accommodation", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "2", "3", "4"],
+    payments: [
+      { memberId: "1", status: "confirmed" },
+      { memberId: "2", status: "confirmed" },
+      { memberId: "3", status: "confirmed" },
+      { memberId: "4", status: "pending" },
+    ]
+  },
+  { 
+    id: "2", 
+    title: "Ferry tickets", 
+    amount: 320, 
+    paidBy: "Sarah Tan", 
+    date: "Jan 15, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 100, 
+    category: "Transport", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "2", "3", "4", "5"],
+    payments: [
+      { memberId: "1", status: "confirmed" },
+      { memberId: "2", status: "confirmed" },
+      { memberId: "3", status: "confirmed" },
+      { memberId: "4", status: "confirmed" },
+      { memberId: "5", status: "confirmed" },
+    ]
+  },
+  { 
+    id: "3", 
+    title: "Rental car", 
+    amount: 450, 
+    paidBy: "Ahmad Razak", 
+    date: "Jan 15, 2025", 
+    hasReceipt: false, 
+    paymentProgress: 50, 
+    category: "Transport", 
+    splitType: "custom" as const, 
+    splitWith: ["1", "2", "3"], 
+    customSplitAmounts: [{ memberId: "1", amount: 150 }, { memberId: "2", amount: 150 }, { memberId: "3", amount: 150 }],
+    payments: [
+      { memberId: "1", status: "confirmed" },
+      { memberId: "2", status: "uploaded", receiptUrl: "https://example.com/receipt.jpg", uploadedAt: "Jan 16, 2025" },
+      { memberId: "3", status: "pending" },
+    ]
+  },
+  { 
+    id: "4", 
+    title: "Group dinner", 
+    amount: 280, 
+    paidBy: "Lisa Wong", 
+    date: "Jan 16, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 25, 
+    category: "Food & Drinks", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "2", "3", "4", "5"], 
+    notes: "Seafood dinner at the beach restaurant",
+    payments: [
+      { memberId: "1", status: "pending" },
+      { memberId: "2", status: "pending" },
+      { memberId: "3", status: "confirmed" },
+      { memberId: "4", status: "pending" },
+      { memberId: "5", status: "pending" },
+    ]
+  },
+  { 
+    id: "5", 
+    title: "Sky Bridge tickets", 
+    amount: 180, 
+    paidBy: "John Lee", 
+    date: "Jan 17, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 0, 
+    category: "Activities", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "2", "3", "4"],
+    payments: [
+      { memberId: "1", status: "pending" },
+      { memberId: "2", status: "pending" },
+      { memberId: "3", status: "pending" },
+      { memberId: "4", status: "confirmed" },
+    ]
+  },
 ];
 
 export const mockMessages = [
