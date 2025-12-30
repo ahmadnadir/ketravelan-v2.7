@@ -582,7 +582,7 @@ export function TripExpenses() {
             </div>
 
             {/* Paid on Behalf of the Group */}
-            <Card className="p-3 sm:p-4 bg-muted/30 border-border/30">
+            <Card className="p-3 sm:p-4 border-border/50">
               <h3 className="font-semibold text-foreground text-sm sm:text-base">
                 Paid on Behalf of the Group
               </h3>
@@ -590,8 +590,16 @@ export function TripExpenses() {
                 Shows how much each member has paid upfront for shared expenses. Others can help balance upcoming costs.
               </p>
               
-              {/* Average per person - muted, informational */}
-              <div className="flex items-center justify-between py-2 border-b border-border/30 mb-3">
+              {/* Total Group Expense */}
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-xs text-muted-foreground">Total group expense</span>
+                <span className="text-sm text-foreground font-medium">
+                  RM {totalCost.toLocaleString()}
+                </span>
+              </div>
+              
+              {/* Average per person */}
+              <div className="flex items-center justify-between py-1.5 border-b border-border/30 mb-3">
                 <span className="text-xs text-muted-foreground">Average per person</span>
                 <span className="text-sm text-muted-foreground font-medium">
                   RM {Math.round(totalCost / mockMembers.length).toLocaleString()}
@@ -633,10 +641,10 @@ export function TripExpenses() {
                           </span>
                         </div>
                         
-                        {/* Progress Bar - Center (flexible width, neutral colors) */}
-                        <div className="flex-1 h-2 bg-secondary/60 rounded-full overflow-hidden">
+                        {/* Progress Bar - Center (neutral dark) */}
+                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-foreground/40 rounded-full transition-all"
+                            className="h-full bg-foreground/70 rounded-full transition-all"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
