@@ -195,254 +195,247 @@ export default function EditProfile() {
   };
 
   return (
-    <AppLayout hideHeader>
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <header className="sticky top-0 z-50 glass border-b border-border/50">
-          <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
-            <div className="flex items-center justify-between h-14">
-              <div className="flex items-center gap-3">
-                <button onClick={() => navigate(-1)}>
-                  <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center">
-                    <ChevronLeft className="h-5 w-5 text-foreground" />
-                  </div>
-                </button>
-                <h1 className="font-semibold text-foreground">Edit Profile</h1>
+    <AppLayout>
+      {/* Custom Header */}
+      <header className="sticky top-0 z-50 glass border-b border-border/50 -mx-4 sm:-mx-6 px-4 sm:px-6">
+        <div className="flex items-center justify-between h-14">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button onClick={() => navigate(-1)}>
+              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-secondary flex items-center justify-center">
+                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
               </div>
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                size="sm"
-                className="rounded-full"
-              >
-                {isSaving ? (
-                  "Saving..."
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-1" />
-                    Save
-                  </>
-                )}
-              </Button>
-            </div>
+            </button>
+            <h1 className="font-semibold text-foreground text-sm sm:text-base">Edit Profile</h1>
           </div>
-        </header>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            size="sm"
+            className="rounded-full text-xs sm:text-sm"
+          >
+            {isSaving ? (
+              "Saving..."
+            ) : (
+              <>
+                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                Save
+              </>
+            )}
+          </Button>
+        </div>
+      </header>
 
-        {/* Content */}
-        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4 py-6 space-y-6">
-          {/* Profile Photo */}
-          <div className="flex flex-col items-center">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            <div className="relative">
-              <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                <AvatarImage src={profileImage} alt="Profile" />
-                <AvatarFallback className="text-2xl font-semibold">
-                  {formData.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <button
-                onClick={handleImageChange}
-                className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg"
-              >
-                <Camera className="h-4 w-4" />
-              </button>
-            </div>
+      {/* Content */}
+      <div className="py-4 sm:py-6 space-y-4 sm:space-y-6">
+        {/* Profile Photo */}
+        <div className="flex flex-col items-center">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <div className="relative">
+            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-background shadow-lg">
+              <AvatarImage src={profileImage} alt="Profile" />
+              <AvatarFallback className="text-xl sm:text-2xl font-semibold">
+                {formData.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
             <button
               onClick={handleImageChange}
-              className="mt-3 text-sm text-primary font-medium"
+              className="absolute bottom-0 right-0 h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg"
             >
-              Change Photo
+              <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
           </div>
-
-          {/* Basic Info */}
-          <Card className="p-4 border-border/50 space-y-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              Basic Information
-            </h3>
-
-            <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                placeholder="Your name"
-                className="h-12 rounded-xl"
-                maxLength={50}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange("location", e.target.value)}
-                  placeholder="City, Country"
-                  className="h-12 rounded-xl pl-10"
-                  maxLength={100}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio">About Me</Label>
-              <Textarea
-                id="bio"
-                value={formData.bio}
-                onChange={(e) => handleInputChange("bio", e.target.value)}
-                placeholder="Tell others about yourself..."
-                className="rounded-xl min-h-[100px] resize-none"
-                maxLength={500}
-              />
-              <p className="text-xs text-muted-foreground text-right">
-                {formData.bio.length}/500
-              </p>
-            </div>
-          </Card>
-
-          {/* Travel Styles */}
-          <Card className="p-4 border-border/50 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">Travel Style</h3>
-              <span className="text-xs text-muted-foreground">
-                {selectedStyles.length} selected
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Select styles that match your travel preferences
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {availableTravelStyles.map((style) => {
-                const isSelected = selectedStyles.includes(style);
-                return (
-                  <button
-                    key={style}
-                    onClick={() => toggleTravelStyle(style)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                      isSelected
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-muted-foreground hover:bg-secondary/80"
-                    }`}
-                  >
-                    {style}
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* Budget Range */}
-          <Card className="p-4 border-border/50 space-y-4">
-            <h3 className="font-semibold text-foreground">Budget Range</h3>
-            <p className="text-sm text-muted-foreground">
-              Your typical budget per trip (RM)
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="budgetMin" className="text-xs">
-                  Minimum
-                </Label>
-                <Input
-                  id="budgetMin"
-                  type="number"
-                  value={formData.budgetMin}
-                  onChange={(e) => handleInputChange("budgetMin", e.target.value)}
-                  placeholder="500"
-                  className="h-11 rounded-xl"
-                  min="0"
-                />
-              </div>
-              <span className="text-muted-foreground mt-5">—</span>
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="budgetMax" className="text-xs">
-                  Maximum
-                </Label>
-                <Input
-                  id="budgetMax"
-                  type="number"
-                  value={formData.budgetMax}
-                  onChange={(e) => handleInputChange("budgetMax", e.target.value)}
-                  placeholder="2000"
-                  className="h-11 rounded-xl"
-                  min="0"
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* Social Links */}
-          <Card className="p-4 border-border/50 space-y-4">
-            <h3 className="font-semibold text-foreground">Social Links</h3>
-            <p className="text-sm text-muted-foreground">
-              Connect your social profiles
-            </p>
-
-            {/* Existing links */}
-            <div className="space-y-3">
-              {Object.entries(socialLinks).map(([platform, url]) => {
-                const platformInfo = socialPlatforms.find((p) => p.id === platform);
-                if (!platformInfo) return null;
-                const Icon = platformInfo.icon;
-                return (
-                  <div key={platform} className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                      <Icon className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <Input
-                      value={url}
-                      onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
-                      placeholder={platformInfo.placeholder}
-                      className="h-10 rounded-xl flex-1"
-                    />
-                    <button
-                      onClick={() => removeSocialLink(platform)}
-                      className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0 hover:bg-destructive/20 transition-colors"
-                    >
-                      <X className="h-4 w-4 text-destructive" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Add new link */}
-            {availablePlatformsToAdd.length > 0 && (
-              <div className="pt-2">
-                <p className="text-xs text-muted-foreground mb-2">Add more:</p>
-                <div className="flex flex-wrap gap-2">
-                  {availablePlatformsToAdd.map((platform) => {
-                    const Icon = platform.icon;
-                    return (
-                      <button
-                        key={platform.id}
-                        onClick={() => addSocialLink(platform.id)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80 transition-colors text-sm"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        <Icon className="h-3.5 w-3.5" />
-                        <span>{platform.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </Card>
-
-          {/* Bottom spacer for fixed elements */}
-          <div className="h-4" />
+          <button
+            onClick={handleImageChange}
+            className="mt-2 sm:mt-3 text-xs sm:text-sm text-primary font-medium"
+          >
+            Change Photo
+          </button>
         </div>
+
+        {/* Basic Info */}
+        <Card className="p-3 sm:p-4 border-border/50 space-y-3 sm:space-y-4">
+          <h3 className="font-semibold text-foreground text-sm sm:text-base flex items-center gap-2">
+            <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+            Basic Information
+          </h3>
+
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="name" className="text-xs sm:text-sm">Name *</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              placeholder="Your name"
+              className="h-10 sm:h-11 rounded-xl text-sm"
+              maxLength={50}
+            />
+          </div>
+
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="location" className="text-xs sm:text-sm">Location</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => handleInputChange("location", e.target.value)}
+                placeholder="City, Country"
+                className="h-10 sm:h-11 rounded-xl pl-9 sm:pl-10 text-sm"
+                maxLength={100}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="bio" className="text-xs sm:text-sm">About Me</Label>
+            <Textarea
+              id="bio"
+              value={formData.bio}
+              onChange={(e) => handleInputChange("bio", e.target.value)}
+              placeholder="Tell others about yourself..."
+              className="rounded-xl min-h-[80px] sm:min-h-[100px] resize-none text-sm"
+              maxLength={500}
+            />
+            <p className="text-xs text-muted-foreground text-right">
+              {formData.bio.length}/500
+            </p>
+          </div>
+        </Card>
+
+        {/* Travel Styles */}
+        <Card className="p-3 sm:p-4 border-border/50 space-y-2 sm:space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-foreground text-sm sm:text-base">Travel Style</h3>
+            <span className="text-xs text-muted-foreground">
+              {selectedStyles.length} selected
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Select styles that match your travel preferences
+          </p>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+            {availableTravelStyles.map((style) => {
+              const isSelected = selectedStyles.includes(style);
+              return (
+                <button
+                  key={style}
+                  onClick={() => toggleTravelStyle(style)}
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  {style}
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Budget Range */}
+        <Card className="p-3 sm:p-4 border-border/50 space-y-2 sm:space-y-3">
+          <h3 className="font-semibold text-foreground text-sm sm:text-base">Budget Range</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Your typical budget per trip (RM)
+          </p>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex-1 space-y-1">
+              <Label htmlFor="budgetMin" className="text-xs">
+                Minimum
+              </Label>
+              <Input
+                id="budgetMin"
+                type="number"
+                value={formData.budgetMin}
+                onChange={(e) => handleInputChange("budgetMin", e.target.value)}
+                placeholder="500"
+                className="h-9 sm:h-10 rounded-xl text-sm"
+                min="0"
+              />
+            </div>
+            <span className="text-muted-foreground mt-5 text-sm">—</span>
+            <div className="flex-1 space-y-1">
+              <Label htmlFor="budgetMax" className="text-xs">
+                Maximum
+              </Label>
+              <Input
+                id="budgetMax"
+                type="number"
+                value={formData.budgetMax}
+                onChange={(e) => handleInputChange("budgetMax", e.target.value)}
+                placeholder="2000"
+                className="h-9 sm:h-10 rounded-xl text-sm"
+                min="0"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Social Links */}
+        <Card className="p-3 sm:p-4 border-border/50 space-y-3 sm:space-y-4">
+          <h3 className="font-semibold text-foreground text-sm sm:text-base">Social Links</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Connect your social profiles
+          </p>
+
+          {/* Existing links */}
+          <div className="space-y-2 sm:space-y-3">
+            {Object.entries(socialLinks).map(([platform, url]) => {
+              const platformInfo = socialPlatforms.find((p) => p.id === platform);
+              if (!platformInfo) return null;
+              const Icon = platformInfo.icon;
+              return (
+                <div key={platform} className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                  </div>
+                  <Input
+                    value={url}
+                    onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
+                    placeholder={platformInfo.placeholder}
+                    className="h-8 sm:h-10 rounded-lg sm:rounded-xl flex-1 text-xs sm:text-sm"
+                  />
+                  <button
+                    onClick={() => removeSocialLink(platform)}
+                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-destructive/10 flex items-center justify-center shrink-0 hover:bg-destructive/20 transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Add new link */}
+          {availablePlatformsToAdd.length > 0 && (
+            <div className="pt-1 sm:pt-2">
+              <p className="text-xs text-muted-foreground mb-1.5 sm:mb-2">Add more:</p>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                {availablePlatformsToAdd.map((platform) => {
+                  const Icon = platform.icon;
+                  return (
+                    <button
+                      key={platform.id}
+                      onClick={() => addSocialLink(platform.id)}
+                      className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80 transition-colors text-xs sm:text-sm"
+                    >
+                      <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      <span>{platform.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </Card>
       </div>
     </AppLayout>
   );
