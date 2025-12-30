@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 import { ChevronLeft, MapPin, Users, Shield, MessageCircle, ExternalLink, Search, Plus, Pin, DollarSign, TrendingUp, TrendingDown, Wallet, Paperclip, Send } from "lucide-react";
 import { mockMessages, mockMembers, mockExpenses } from "@/data/mockData";
 
-type TabType = "chat" | "expenses" | "notes" | "members";
+type TabType = "chat" | "expenses" | "notes";
+type ExpenseSubTab = "breakdown" | "expenses" | "settle" | "qr";
 
 const categoryBreakdown = [
   { category: "Transport", amount: 770, percentage: 30, color: "bg-blue-500" },
@@ -25,7 +26,6 @@ export function InteractivePhoneMockup() {
     { label: "Chat", value: "chat" },
     { label: "Expenses", value: "expenses" },
     { label: "Notes", value: "notes" },
-    { label: "Members", value: "members" },
   ];
 
   return (
@@ -74,7 +74,6 @@ export function InteractivePhoneMockup() {
           {activeTab === "chat" && <MockChatContent />}
           {activeTab === "expenses" && <MockExpensesContent />}
           {activeTab === "notes" && <MockNotesContent />}
-          {activeTab === "members" && <MockMembersContent />}
         </div>
       </div>
     </div>
@@ -174,7 +173,15 @@ function MockChatContent() {
 }
 
 function MockExpensesContent() {
+  const [subTab, setSubTab] = useState<ExpenseSubTab>("breakdown");
   const totalCost = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  const subTabs: { label: string; value: ExpenseSubTab }[] = [
+    { label: "Breakdown", value: "breakdown" },
+    { label: "Expenses", value: "expenses" },
+    { label: "Settle", value: "settle" },
+    { label: "QR", value: "qr" },
+  ];
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -195,55 +202,177 @@ function MockExpensesContent() {
 
         {/* Sub Tabs */}
         <div className="flex gap-0.5 bg-secondary rounded-md p-0.5">
-          {["Breakdown", "Expenses", "Settle", "QR"].map((tab, i) => (
+          {subTabs.map((tab) => (
             <button
-              key={tab}
+              key={tab.value}
+              onClick={() => setSubTab(tab.value)}
               className={cn(
                 "flex-1 py-0.5 px-1 text-[8px] font-medium rounded transition-all",
-                i === 0 ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                subTab === tab.value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {tab}
+              {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Category Breakdown */}
-        <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
-          <h3 className="text-[9px] font-semibold text-foreground">Spending by Category</h3>
-          {categoryBreakdown.map((item) => (
-            <div key={item.category} className="space-y-0.5">
+        {/* Sub Tab Content */}
+        {subTab === "breakdown" && <BreakdownContent totalCost={totalCost} />}
+        {subTab === "expenses" && <ExpensesListContent />}
+        {subTab === "settle" && <SettleContent />}
+        {subTab === "qr" && <QRContent />}
+      </div>
+    </div>
+  );
+}
+
+function BreakdownContent({ totalCost }: { totalCost: number }) {
+  return (
+    <>
+      {/* Category Breakdown */}
+      <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
+        <h3 className="text-[9px] font-semibold text-foreground">Spending by Category</h3>
+        {categoryBreakdown.map((item) => (
+          <div key={item.category} className="space-y-0.5">
+            <div className="flex items-center justify-between text-[8px]">
+              <span className="text-foreground">{item.category}</span>
+              <span className="text-muted-foreground">RM {item.amount} ({item.percentage}%)</span>
+            </div>
+            <div className="h-1 bg-secondary rounded-full overflow-hidden">
+              <div className={`h-full ${item.color} rounded-full`} style={{ width: `${item.percentage}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Per Person */}
+      <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1">
+        <h3 className="text-[9px] font-semibold text-foreground">Upfront Payment per Person</h3>
+        <p className="text-sm font-bold text-primary">RM {Math.round(totalCost / mockMembers.length).toLocaleString()}</p>
+        {mockMembers.slice(0, 3).map((member, index) => {
+          const contribution = [850, 680, 450][index] || 500;
+          const percentage = Math.round((contribution / totalCost) * 100);
+          return (
+            <div key={member.id} className="space-y-0.5">
               <div className="flex items-center justify-between text-[8px]">
-                <span className="text-foreground">{item.category}</span>
-                <span className="text-muted-foreground">RM {item.amount} ({item.percentage}%)</span>
+                <span className="text-foreground">{member.name}</span>
+                <span className="text-muted-foreground">RM {contribution} ({percentage}%)</span>
               </div>
               <div className="h-1 bg-secondary rounded-full overflow-hidden">
-                <div className={`h-full ${item.color} rounded-full`} style={{ width: `${item.percentage}%` }} />
+                <div className="h-full bg-primary rounded-full" style={{ width: `${percentage}%` }} />
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
 
-        {/* Per Person */}
-        <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1">
-          <h3 className="text-[9px] font-semibold text-foreground">Upfront Payment per Person</h3>
-          <p className="text-sm font-bold text-primary">RM {Math.round(totalCost / mockMembers.length).toLocaleString()}</p>
-          {mockMembers.slice(0, 3).map((member, index) => {
-            const contribution = [850, 680, 450][index] || 500;
-            const percentage = Math.round((contribution / totalCost) * 100);
-            return (
-              <div key={member.id} className="space-y-0.5">
-                <div className="flex items-center justify-between text-[8px]">
-                  <span className="text-foreground">{member.name}</span>
-                  <span className="text-muted-foreground">RM {contribution} ({percentage}%)</span>
-                </div>
-                <div className="h-1 bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full" style={{ width: `${percentage}%` }} />
-                </div>
-              </div>
-            );
-          })}
+function ExpensesListContent() {
+  return (
+    <div className="space-y-1.5">
+      {mockExpenses.slice(0, 4).map((expense) => {
+        return (
+          <div key={expense.id} className="bg-card border border-border/50 rounded-xl p-2 flex items-center gap-2">
+            <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <DollarSign className="h-3 w-3 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-[9px] font-medium text-foreground truncate">{expense.title}</h4>
+              <p className="text-[7px] text-muted-foreground">Paid by {expense.paidBy}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-semibold text-foreground">RM {expense.amount}</p>
+              <p className="text-[7px] text-muted-foreground">{expense.category}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SettleContent() {
+  const settlements = [
+    { from: mockMembers[1], to: mockMembers[0], amount: 120, status: "pending" },
+    { from: mockMembers[0], to: mockMembers[2], amount: 85, status: "paid" },
+    { from: mockMembers[3], to: mockMembers[0], amount: 45, status: "pending" },
+  ];
+
+  return (
+    <div className="space-y-1.5">
+      {settlements.map((s, i) => (
+        <div key={i} className="bg-card border border-border/50 rounded-xl p-2 flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <div className="h-5 w-5 rounded-full bg-muted overflow-hidden">
+              {s.from.imageUrl ? (
+                <img src={s.from.imageUrl} alt={s.from.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{s.from.name.charAt(0)}</div>
+              )}
+            </div>
+            <span className="text-[8px] text-muted-foreground">→</span>
+            <div className="h-5 w-5 rounded-full bg-muted overflow-hidden">
+              {s.to.imageUrl ? (
+                <img src={s.to.imageUrl} alt={s.to.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{s.to.name.charAt(0)}</div>
+              )}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[8px] text-foreground truncate">{s.from.name} → {s.to.name}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-semibold text-foreground">RM {s.amount}</p>
+            <span className={cn(
+              "text-[7px] px-1 py-0.5 rounded-full",
+              s.status === "paid" ? "bg-green-500/10 text-green-600" : "bg-orange-500/10 text-orange-600"
+            )}>
+              {s.status === "paid" ? "Paid" : "Pending"}
+            </span>
+          </div>
         </div>
+      ))}
+    </div>
+  );
+}
+
+function QRContent() {
+  return (
+    <div className="space-y-2">
+      {/* Your QR */}
+      <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
+        <h3 className="text-[9px] font-semibold text-foreground">Your Payment QR</h3>
+        <div className="h-20 bg-secondary rounded-lg flex items-center justify-center">
+          <div className="text-center">
+            <div className="h-12 w-12 mx-auto bg-muted rounded-lg flex items-center justify-center mb-1">
+              <span className="text-[8px] text-muted-foreground">QR Code</span>
+            </div>
+            <button className="text-[8px] text-primary font-medium">Upload QR</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Members QR */}
+      <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
+        <h3 className="text-[9px] font-semibold text-foreground">Members' QR Codes</h3>
+        {mockMembers.slice(0, 3).map((member) => (
+          <div key={member.id} className="flex items-center gap-2 py-1 border-b border-border/30 last:border-0">
+            <div className="h-5 w-5 rounded-full bg-muted overflow-hidden">
+              {member.imageUrl ? (
+                <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{member.name.charAt(0)}</div>
+              )}
+            </div>
+            <span className="flex-1 text-[8px] text-foreground truncate">{member.name}</span>
+            <button className="text-[7px] text-primary font-medium">View</button>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -297,59 +426,6 @@ function NoteCardMini({ note }: { note: { id: string; title: string; content: st
       </div>
       <p className="text-[8px] text-muted-foreground line-clamp-1">{note.content}</p>
       <p className="text-[7px] text-muted-foreground/70">{note.time}</p>
-    </div>
-  );
-}
-
-function MockMembersContent() {
-  return (
-    <div className="flex flex-col h-full overflow-y-auto px-2 py-2 space-y-2">
-      {/* Safety Notice */}
-      <div className="bg-accent/30 border border-border/50 rounded-xl p-2 flex items-start gap-1.5">
-        <div className="p-1 rounded-lg bg-primary/10 shrink-0">
-          <Shield className="h-3 w-3 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-[9px] font-semibold text-foreground">Safety & Security</h3>
-          <p className="text-[8px] text-muted-foreground">All members have verified their identity.</p>
-        </div>
-      </div>
-
-      {/* Members List */}
-      <div className="space-y-1.5">
-        {mockMembers.slice(0, 4).map((member) => (
-          <div key={member.id} className="bg-card border border-border/50 rounded-xl p-2 flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-muted overflow-hidden shrink-0">
-              {member.imageUrl ? (
-                <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center text-muted-foreground font-semibold text-[10px]">
-                  {member.name.charAt(0)}
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1">
-                <h4 className="text-[10px] font-medium text-foreground truncate">{member.name}</h4>
-                {member.role === "Organizer" && (
-                  <span className="text-[7px] bg-primary/10 text-primary px-1 py-0.5 rounded-full font-medium">
-                    Organizer
-                  </span>
-                )}
-              </div>
-              <span className="text-[8px] text-muted-foreground">5 trips completed</span>
-            </div>
-            <div className="flex gap-1">
-              <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
-                <ExternalLink className="h-2 w-2 text-muted-foreground" />
-              </div>
-              <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
-                <MessageCircle className="h-2.5 w-2.5 text-muted-foreground" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
