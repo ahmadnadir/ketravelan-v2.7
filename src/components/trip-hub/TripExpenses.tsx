@@ -29,11 +29,16 @@ import { toast } from "@/hooks/use-toast";
 import { getCategoryFromTitle } from "@/lib/expenseCategories";
 
 const categoryBreakdown = [
-  { category: "Transport", amount: 770, percentage: 30, color: "bg-stat-blue" },
-  { category: "Food & Drinks", amount: 560, percentage: 22, color: "bg-stat-orange" },
-  { category: "Accommodation", amount: 1200, percentage: 47, color: "bg-purple-500" },
-  { category: "Activities", amount: 180, percentage: 7, color: "bg-stat-green" },
+  { category: "Transport", amount: 770, percentage: 30, color: "bg-stat-blue", emoji: "🚗" },
+  { category: "Food & Drinks", amount: 560, percentage: 22, color: "bg-stat-orange", emoji: "🍴" },
+  { category: "Accommodation", amount: 1200, percentage: 47, color: "bg-purple-500", emoji: "🏨" },
+  { category: "Activities", amount: 180, percentage: 7, color: "bg-stat-green", emoji: "🎫" },
 ];
+
+// Helper function for consistent currency formatting
+const formatCurrency = (amount: number): string => {
+  return `RM${amount.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 
 
 interface Settlement {
@@ -556,17 +561,20 @@ export function TripExpenses() {
         {/* Breakdown Tab */}
         {subTab === "breakdown" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6">
-            {/* Category Breakdown */}
+            {/* Category Breakdown - Sorted by amount (highest first) */}
             <div ref={categoryBreakdownRef}>
               <Card className="p-3 sm:p-4 border-border/50">
                 <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Spending by Category</h3>
                 <div className="space-y-2 sm:space-y-3">
-                  {categoryBreakdown.map((item) => (
+                  {[...categoryBreakdown].sort((a, b) => b.amount - a.amount).map((item) => (
                     <div key={item.category} className="space-y-1 sm:space-y-1.5">
                       <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                        <span className="text-foreground truncate">{item.category}</span>
-                        <span className="text-muted-foreground shrink-0">
-                          RM {item.amount} ({item.percentage}%)
+                        <span className="text-foreground truncate flex items-center gap-1.5">
+                          <span>{item.emoji}</span>
+                          {item.category}
+                        </span>
+                        <span className="text-foreground shrink-0">
+                          {formatCurrency(item.amount)} ({item.percentage}%)
                         </span>
                       </div>
                       <div className="h-1.5 sm:h-2 bg-secondary rounded-full overflow-hidden">
@@ -594,15 +602,15 @@ export function TripExpenses() {
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-xs text-muted-foreground">Total group expense</span>
                 <span className="text-sm text-foreground font-medium">
-                  RM {totalCost.toLocaleString()}
+                  {formatCurrency(totalCost)}
                 </span>
               </div>
               
               {/* Average per person */}
               <div className="flex items-center justify-between py-1.5 border-b border-border/30 mb-3">
                 <span className="text-xs text-muted-foreground">Average per person</span>
-                <span className="text-sm text-muted-foreground font-medium">
-                  RM {Math.round(totalCost / mockMembers.length).toLocaleString()}
+                <span className="text-sm text-foreground font-medium">
+                  {formatCurrency(totalCost / mockMembers.length)}
                 </span>
               </div>
               
@@ -650,8 +658,8 @@ export function TripExpenses() {
                         </div>
                         
                         {/* Amount + Percentage - Right */}
-                        <span className="text-xs sm:text-sm text-muted-foreground shrink-0 min-w-[90px] sm:min-w-[110px] text-right">
-                          RM {contribution.toLocaleString()} ({percentage}%)
+                        <span className="text-xs sm:text-sm text-foreground shrink-0 min-w-[90px] sm:min-w-[110px] text-right">
+                          {formatCurrency(contribution)} ({percentage}%)
                         </span>
                       </div>
                     );
