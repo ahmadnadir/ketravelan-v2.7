@@ -294,17 +294,14 @@ export function AddExpenseModal({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
-                {expenseCategories.map((cat) => {
-                  const IconComponent = cat.icon;
-                  return (
-                    <SelectItem key={cat.id} value={cat.id} className="rounded-lg">
-                      <span className="flex items-center gap-2">
-                        <IconComponent className={`h-4 w-4 ${cat.color.split(' ')[1]}`} />
-                        <span>{cat.label}</span>
-                      </span>
-                    </SelectItem>
-                  );
-                })}
+                {expenseCategories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id} className="rounded-lg">
+                    <span className="flex items-center gap-2">
+                      <span className="text-base">{cat.emoji}</span>
+                      <span>{cat.label}</span>
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
