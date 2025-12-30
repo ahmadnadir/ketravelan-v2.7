@@ -208,12 +208,13 @@ export default function Explore() {
               <PopoverTrigger asChild>
                 <button
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors",
+                    "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-secondary rounded-xl text-sm hover:bg-secondary/80 transition-colors min-w-0",
                     pendingDates?.from && "bg-primary/10 text-primary"
                   )}
                 >
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 shrink-0" />
                   <span className={cn(
+                    "truncate",
                     pendingDates?.from ? "text-foreground" : "text-muted-foreground"
                   )}>
                     {formatDateRange(pendingDates)}
@@ -237,16 +238,16 @@ export default function Explore() {
             <button
               onClick={() => setShowBudgetSlider(!showBudgetSlider)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors",
+                "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-secondary rounded-xl text-sm hover:bg-secondary/80 transition-colors min-w-0",
                 pendingBudgetRange[1] < 5000 && "bg-primary/10 text-primary"
               )}
             >
-              <Wallet className="h-4 w-4" />
-              <span>{budgetSummary}</span>
+              <Wallet className="h-4 w-4 shrink-0" />
+              <span className="truncate">{budgetSummary}</span>
               {showBudgetSlider ? (
-                <ChevronUp className="h-3.5 w-3.5" />
+                <ChevronUp className="h-3.5 w-3.5 shrink-0" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5" />
+                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
               )}
             </button>
           </div>
