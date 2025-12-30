@@ -225,9 +225,6 @@ export function ExpenseDetailsModal({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-lg font-semibold text-foreground truncate">{expense.title}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-muted-foreground">{category.label}</span>
-              </div>
             </div>
           </div>
           
@@ -269,9 +266,9 @@ export function ExpenseDetailsModal({
 
             {/* Paid By Section */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold text-foreground">Paid by</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <User className="h-3.5 w-3.5 text-muted-foreground" />
+                <h3 className="text-xs font-medium text-muted-foreground">Paid by</h3>
               </div>
               <Card className="p-3 border-border/50">
                 <div className="flex items-center gap-3">
@@ -288,69 +285,11 @@ export function ExpenseDetailsModal({
               </Card>
             </div>
 
-            {/* Split Breakdown */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold text-foreground">Split breakdown</h3>
-                <Badge variant="secondary" className="text-xs">
-                  {expense.splitType === "equal" ? "Equal split" : "Custom split"}
-                </Badge>
-              </div>
-
-              <div className="space-y-2">
-                {splitMembers.map((memberId) => {
-                  const member = getMemberById(memberId);
-                  if (!member) return null;
-
-                  let amount = equalSplitAmount;
-                  if (expense.splitType === "custom" && expense.customSplitAmounts) {
-                    const customAmount = expense.customSplitAmounts.find(c => c.memberId === memberId);
-                    amount = customAmount?.amount || 0;
-                  }
-
-                  const isThisMemberPayer = member.name === expense.paidBy;
-                  const memberPayment = memberPayments.find(p => p.memberId === memberId);
-                  const isPaid = isThisMemberPayer || memberPayment?.status === "confirmed";
-
-                  return (
-                    <Card
-                      key={memberId}
-                      className="p-2.5 border-border/50"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={member.imageUrl} alt={member.name} />
-                            <AvatarFallback className="text-xs">
-                              {member.name.split(" ").map(n => n[0]).join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <p className="text-sm font-medium text-foreground">{member.name}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-foreground">
-                            RM {amount.toFixed(2)}
-                          </p>
-                          <Badge 
-                            variant={isPaid ? "default" : "outline"} 
-                            className={`text-[10px] px-1.5 py-0 ${isPaid ? "bg-stat-green text-stat-green-foreground" : ""}`}
-                          >
-                            {isPaid ? "Paid" : "Pending"}
-                          </Badge>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Receipts Section (merged from Receipts tab) */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Receipt className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold text-foreground">Receipts</h3>
+            {/* Receipts Section (elevated priority) */}
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+                <h3 className="text-xs font-medium text-muted-foreground">Receipts</h3>
               </div>
 
               {uploadedReceipts.length > 0 ? (
@@ -403,7 +342,7 @@ export function ExpenseDetailsModal({
                               </Button>
                             </div>
                           </div>
-                          <div className="max-h-[200px] overflow-auto scrollbar-hide">
+                          <div className="max-h-[280px] overflow-auto scrollbar-hide">
                             <div
                               className="flex items-center justify-center p-2"
                               style={{ transform: `scale(${zoom})`, transformOrigin: "center top" }}
@@ -422,14 +361,14 @@ export function ExpenseDetailsModal({
                           <img
                             src={receipt.url}
                             alt="Receipt thumbnail"
-                            className="w-full h-28 object-cover"
+                            className="w-full h-40 object-cover"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                           <div className="absolute bottom-0 left-0 right-0 p-3">
                             <div className="flex items-center justify-between mb-2">
                               <div>
-                                <p className="text-xs text-foreground/80">Uploaded by {receipt.uploadedBy}</p>
-                                <p className="text-xs text-muted-foreground">{receipt.uploadedAt}</p>
+                                <p className="text-[11px] text-foreground/80">{receipt.uploadedBy}</p>
+                                <p className="text-[11px] text-muted-foreground">{receipt.uploadedAt}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -464,6 +403,65 @@ export function ExpenseDetailsModal({
                 </Card>
               )}
             </div>
+
+            {/* Split Breakdown */}
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                <h3 className="text-xs font-medium text-muted-foreground">Split breakdown</h3>
+                <Badge variant="secondary" className="text-[10px] px-1.5">
+                  {expense.splitType === "equal" ? "Equal" : "Custom"}
+                </Badge>
+              </div>
+
+              <div className="space-y-2">
+                {splitMembers.map((memberId) => {
+                  const member = getMemberById(memberId);
+                  if (!member) return null;
+
+                  let amount = equalSplitAmount;
+                  if (expense.splitType === "custom" && expense.customSplitAmounts) {
+                    const customAmount = expense.customSplitAmounts.find(c => c.memberId === memberId);
+                    amount = customAmount?.amount || 0;
+                  }
+
+                  const isThisMemberPayer = member.name === expense.paidBy;
+                  const memberPayment = memberPayments.find(p => p.memberId === memberId);
+                  const isPaid = isThisMemberPayer || memberPayment?.status === "confirmed";
+
+                  return (
+                    <Card
+                      key={memberId}
+                      className="p-2.5 border-border/50"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={member.imageUrl} alt={member.name} />
+                            <AvatarFallback className="text-xs">
+                              {member.name.split(" ").map(n => n[0]).join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="text-sm font-medium text-foreground">{member.name}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-foreground">
+                            RM {amount.toFixed(2)}
+                          </p>
+                          <Badge 
+                            variant={isPaid ? "default" : "outline"} 
+                            className={`text-[10px] px-1.5 py-0 ${isPaid ? "bg-stat-green text-stat-green-foreground" : ""}`}
+                          >
+                            {isPaid ? "Paid" : "Pending"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+
           </TabsContent>
 
           {/* Payments Tab */}
