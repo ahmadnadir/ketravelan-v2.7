@@ -159,7 +159,7 @@ export default function CreateTrip() {
 
   // Header content with step indicator
   const headerContent = (
-    <div className="bg-background border-b border-border/50 px-4 py-3 safe-top">
+    <div className="bg-background border-b border-border/50 px-4 pt-6 pb-3 safe-top">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
         {/* Top navigation row */}
         <div className="flex items-center justify-between mb-3">
@@ -218,14 +218,14 @@ export default function CreateTrip() {
 
   // Footer content with CTA buttons
   const footerContent = (
-    <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4 safe-bottom">
+    <div className="bg-background/95 backdrop-blur-sm border-t border-border p-4 pb-6 safe-bottom">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
         <div className="grid grid-cols-2 gap-3">
           {/* Back button - always visible */}
           <Button
             variant="outline"
             onClick={currentStep === 1 ? () => setShowExitModal(true) : prevStep}
-            className="rounded-xl h-12"
+            className="rounded-xl h-10"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             Back
@@ -236,7 +236,7 @@ export default function CreateTrip() {
             <Button
               onClick={nextStep}
               disabled={(currentStep === 1 && !draft.visibility) || (currentStep === 2 && !canProceedStep2())}
-              className="rounded-xl h-12"
+              className="rounded-xl h-10"
             >
               Continue
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -245,7 +245,7 @@ export default function CreateTrip() {
             <Button
               onClick={handlePublish}
               disabled={!essentials}
-              className="rounded-xl h-12"
+              className="rounded-xl h-10"
             >
               <Sparkles className="h-4 w-4 mr-2" />
               Publish
