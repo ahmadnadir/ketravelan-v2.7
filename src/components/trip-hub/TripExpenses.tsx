@@ -335,14 +335,76 @@ export function TripExpenses() {
     setSelectedSettlementForBreakdown(settlement);
     setBreakdownModalOpen(true);
   };
+  // Helper: Get all expense payments contributing to a settlement
+  const getExpensePaymentsForSettlement = (settlement: Settlement): { expenseId: string; memberId: string }[] => {
+    const result: { expenseId: string; memberId: string }[] = [];
+    
+    expenses.forEach(expense => {
+      const payer = mockMembers.find(m => m.name === expense.paidBy);
+      if (!payer) return;
+      
+      // Case 1: toUser paid, fromUser owes (fromUser is the debtor)
+      if (payer.id === settlement.toUser.id && expense.splitWith?.includes(settlement.fromUser.id)) {
+        const memberPayment = expense.payments?.find(p => p.memberId === settlement.fromUser.id);
+        if (!memberPayment || memberPayment.status !== "settled") {
+          result.push({ expenseId: expense.id, memberId: settlement.fromUser.id });
+        }
+      }
+      
+      // Case 2: fromUser paid, toUser owes (reverse direction for net calculation)
+      if (payer.id === settlement.fromUser.id && expense.splitWith?.includes(settlement.toUser.id)) {
+        const memberPayment = expense.payments?.find(p => p.memberId === settlement.toUser.id);
+        if (!memberPayment || memberPayment.status !== "settled") {
+          result.push({ expenseId: expense.id, memberId: settlement.toUser.id });
+        }
+      }
+    });
+    
+    return result;
+  };
+
+  // Helper: Cascade settlement to update all related expense payments
+  const cascadeSettlementToExpenses = (settlement: Settlement) => {
+    const expenseUpdates = getExpensePaymentsForSettlement(settlement);
+    
+    setExpenses(prev => prev.map(expense => {
+      const updatesForThisExpense = expenseUpdates.filter(u => u.expenseId === expense.id);
+      
+      if (updatesForThisExpense.length > 0) {
+        // Create or update payments array
+        const existingPayments = expense.payments || [];
+        const updatedPayments = expense.splitWith.map(memberId => {
+          const existing = existingPayments.find(p => p.memberId === memberId);
+          const shouldSettle = updatesForThisExpense.some(u => u.memberId === memberId);
+          
+          if (shouldSettle) {
+            return { 
+              memberId, 
+              status: "settled" as const,
+              receiptUrl: existing?.receiptUrl,
+              uploadedAt: existing?.uploadedAt,
+              payerNote: existing?.payerNote
+            };
+          }
+          return existing || { memberId, status: "pending" as const };
+        });
+        
+        // Recalculate payment progress
+        const settledCount = updatedPayments.filter(p => p.status === "settled").length;
+        const newProgress = Math.round((settledCount / updatedPayments.length) * 100);
+        
+        return { ...expense, payments: updatedPayments, paymentProgress: newProgress };
+      }
+      return expense;
+    }));
+  };
 
   // Handler for marking all as paid from breakdown modal
   const handleMarkAllPaidFromBreakdown = () => {
     if (selectedSettlementForBreakdown) {
-      setSettlementStatuses(prev => ({
-        ...prev,
-        [selectedSettlementForBreakdown.id]: "paid"
-      }));
+      // Cascade to all related expense payments
+      cascadeSettlementToExpenses(selectedSettlementForBreakdown);
+      
       toast({
         title: "All payments confirmed",
         description: `Settlement with ${selectedSettlementForBreakdown.fromUser.name} marked as paid`,
@@ -393,13 +455,12 @@ export function TripExpenses() {
 
   const handleConfirmPayment = (note?: string, receiptFile?: File) => {
     if (selectedSettlement) {
-      setSettlementStatuses(prev => ({
-        ...prev,
-        [selectedSettlement.id]: "paid"
-      }));
+      // Cascade to all related expense payments
+      cascadeSettlementToExpenses(selectedSettlement);
+      
       toast({
-        title: "Payment confirmed",
-        description: `Payment to ${selectedSettlement.toUser.name} marked as paid${note ? `: ${note}` : ""}`,
+        title: "Settlement completed",
+        description: `All payments with ${selectedSettlement.toUser.name} have been marked as settled`,
       });
     }
   };
