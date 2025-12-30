@@ -178,7 +178,7 @@ function MockExpensesContent() {
 
   const subTabs: { label: string; value: ExpenseSubTab }[] = [
     { label: "Breakdown", value: "breakdown" },
-    { label: "Expenses", value: "expenses" },
+    { label: "All Expenses", value: "expenses" },
     { label: "Settle", value: "settle" },
     { label: "QR", value: "qr" },
   ];
