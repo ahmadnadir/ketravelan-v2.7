@@ -576,18 +576,16 @@ export function ExpenseDetailsModal({
                       return (
                         <Card key={memberId} className="p-3 border-border/50">
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 shrink-0">
+                            <Avatar className="h-9 w-9 shrink-0">
                               <AvatarImage src={member.imageUrl} alt={member.name} />
                               <AvatarFallback className="text-xs">
                                 {member.name.split(" ").map(n => n[0]).join("")}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">RM {amount.toFixed(2)}</span>
-                                {getStatusBadge()}
-                              </div>
+                            <p className="font-medium text-foreground text-sm truncate flex-1 min-w-0">{member.name}</p>
+                            <p className="text-sm font-semibold text-foreground whitespace-nowrap">RM {amount.toFixed(2)}</p>
+                            <div className="shrink-0">
+                              {getStatusBadge()}
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
                               {!isReceived && memberPayment?.status === "awaiting" && (
