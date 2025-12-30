@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
-  Expand,
   MapPin,
   Users,
   Share2,
@@ -26,6 +25,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { mockTrips, mockMembers } from "@/data/mockData";
 import { getPublishedTripById, PublishedTrip } from "@/lib/publishedTrips";
+import { useToast } from "@/hooks/use-toast";
+import SafetyNotice from "@/components/trip-details/SafetyNotice";
 
 const iconMap: Record<string, any> = {
   car: Car,
@@ -103,6 +104,9 @@ export default function TripDetails() {
   const { id } = useParams();
   const [currentImage, setCurrentImage] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isFavourited, setIsFavourited] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const { toast } = useToast();
 
   // Try to load from published trips first, then fall back to mock data
   const publishedTrip = useMemo(() => id ? getPublishedTripById(id) : null, [id]);
@@ -188,6 +192,47 @@ export default function TripDetails() {
   const nextImage = () => setCurrentImage((prev) => (prev + 1) % images.length);
   const prevImage = () => setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
 
+  const tripUrl = `${window.location.origin}/trip/${id}`;
+  const shareText = `Check out this trip: ${tripData.title} to ${tripData.destination}`;
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: tripData.title,
+          text: shareText,
+          url: tripUrl,
+        });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          await navigator.clipboard.writeText(tripUrl);
+          toast({
+            title: "Trip link copied",
+            description: "Link has been copied to your clipboard",
+          });
+        }
+      }
+    } else {
+      await navigator.clipboard.writeText(tripUrl);
+      toast({
+        title: "Trip link copied",
+        description: "Link has been copied to your clipboard",
+      });
+    }
+  };
+
+  const handleFavourite = () => {
+    setIsFavourited(!isFavourited);
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 300);
+    toast({
+      title: isFavourited ? "Removed from favourites" : "Added to favourites",
+      description: isFavourited 
+        ? "Trip has been removed from your saved list" 
+        : "Trip has been saved to your favourites",
+    });
+  };
+
   return (
     <AppLayout hideHeader>
       <div className="pb-36">
@@ -211,14 +256,23 @@ export default function TripDetails() {
 
           {/* Actions */}
           <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex gap-1.5 sm:gap-2">
-            <button className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center">
+            <button 
+              onClick={handleShare}
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-transform active:scale-95"
+            >
               <Share2 className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </button>
-            <button className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center">
-              <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-            </button>
-            <button className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center">
-              <Expand className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+            <button 
+              onClick={handleFavourite}
+              className={`h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ${isAnimating ? 'scale-125' : ''}`}
+            >
+              <Heart 
+                className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300 ${
+                  isFavourited 
+                    ? 'fill-destructive text-destructive scale-110' 
+                    : 'fill-transparent text-foreground'
+                }`} 
+              />
             </button>
           </div>
 
@@ -320,22 +374,6 @@ export default function TripDetails() {
               {tripData.tags.map((tag) => (
                 <PillChip key={tag} label={tag} />
               ))}
-            </div>
-
-            {/* Organizer Trust Signal */}
-            <div className="flex items-center gap-2 pt-1">
-              <div className="h-6 w-6 rounded-full bg-muted overflow-hidden shrink-0">
-                {organizer.imageUrl ? (
-                  <img src={organizer.imageUrl} alt={organizer.name} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs font-medium">
-                    {organizer.name.charAt(0)}
-                  </div>
-                )}
-              </div>
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                Organized by <span className="text-foreground font-medium">{organizer.name}</span>
-              </span>
             </div>
           </div>
 
@@ -537,6 +575,9 @@ export default function TripDetails() {
               ))}
             </div>
           )}
+
+          {/* Safety Notice - Appears across all tabs */}
+          <SafetyNotice />
         </div>
       </div>
 
