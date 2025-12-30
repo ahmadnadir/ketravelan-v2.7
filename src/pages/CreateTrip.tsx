@@ -204,19 +204,28 @@ export default function CreateTrip() {
           )}
         </div>
 
+        {/* Progress bar */}
+        <div className="relative h-1 bg-secondary rounded-full overflow-hidden mb-4">
+          <div 
+            className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+          />
+        </div>
+
         {/* Progress steps */}
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
+            <div key={step.id} className="flex flex-col items-center gap-1">
               <button
                 onClick={() => step.id < currentStep && setCurrentStep(step.id)}
                 disabled={step.id > currentStep}
                 className={cn(
-                  "h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-colors",
+                  "h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-all duration-300",
                   currentStep >= step.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-muted-foreground",
-                  step.id < currentStep && "cursor-pointer hover:bg-primary/80"
+                    ? "bg-primary text-primary-foreground scale-100"
+                    : "bg-secondary text-muted-foreground scale-90",
+                  step.id < currentStep && "cursor-pointer hover:bg-primary/80",
+                  currentStep === step.id && "ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
                 )}
               >
                 {currentStep > step.id ? (
@@ -225,14 +234,12 @@ export default function CreateTrip() {
                   step.id
                 )}
               </button>
-              {index < steps.length - 1 && (
-                <div
-                  className={cn(
-                    "h-0.5 w-6 sm:w-8 md:w-12 mx-0.5 sm:mx-1",
-                    currentStep > step.id ? "bg-primary" : "bg-secondary"
-                  )}
-                />
-              )}
+              <span className={cn(
+                "text-[10px] sm:text-xs font-medium transition-colors duration-300",
+                currentStep >= step.id ? "text-primary" : "text-muted-foreground"
+              )}>
+                {step.title}
+              </span>
             </div>
           ))}
         </div>
