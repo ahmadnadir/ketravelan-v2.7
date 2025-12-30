@@ -321,6 +321,7 @@ export const mockMessages = [
   { id: "3", senderId: "system", senderName: "System", content: "Lisa Wong joined the trip", timestamp: "10:10 AM", type: "system" as const },
   { id: "4", senderId: "3", senderName: "Lisa Wong", content: "Hey everyone! Happy to be here 😊", timestamp: "10:12 AM", type: "text" as const },
   { id: "5", senderId: "1", senderName: "Ahmad Razak", content: "Yes, KL Sentral at 7am works. I'll share the exact meeting point later.", timestamp: "10:15 AM", type: "text" as const },
+  { id: "6", senderId: "system", senderName: "System", content: "Ahmad added expense: Ferry tickets - RM 320", timestamp: "10:30 AM", type: "system" as const },
 ];
 
 export const mockNotes = [
