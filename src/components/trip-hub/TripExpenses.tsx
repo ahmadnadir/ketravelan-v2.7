@@ -49,36 +49,73 @@ interface Settlement {
   status: "pending" | "paid";
 }
 
-const mockSettlements: Settlement[] = [
-  {
-    id: "s1",
-    fromUser: { id: "2", name: "Sarah Tan", imageUrl: mockMembers[1]?.imageUrl },
-    toUser: { id: "1", name: "Ahmad Razak", imageUrl: mockMembers[0]?.imageUrl },
-    amount: 330, // Sarah's share of Ahmad's expenses (Accommodation + Rental car)
-    status: "pending",
-  },
-  {
-    id: "s2",
-    fromUser: { id: "3", name: "Lisa Wong", imageUrl: mockMembers[2]?.imageUrl },
-    toUser: { id: "1", name: "Ahmad Razak", imageUrl: mockMembers[0]?.imageUrl },
-    amount: 450, // Lisa's share of Ahmad's expenses
-    status: "paid",
-  },
-  {
-    id: "s3",
-    fromUser: { id: "4", name: "John Lee", imageUrl: mockMembers[3]?.imageUrl },
-    toUser: { id: "2", name: "Sarah Tan", imageUrl: mockMembers[1]?.imageUrl },
-    amount: 64, // John's share of Sarah's Ferry expense
-    status: "pending",
-  },
-  {
-    id: "s4",
-    fromUser: { id: "1", name: "Ahmad Razak", imageUrl: mockMembers[0]?.imageUrl },
-    toUser: { id: "3", name: "Lisa Wong", imageUrl: mockMembers[2]?.imageUrl },
-    amount: 56, // Ahmad's share of Lisa's Group dinner
-    status: "pending",
-  },
-];
+// Calculate net settlements between all members based on expense data
+const calculateNetSettlements = (
+  expenses: ExpenseData[], 
+  members: typeof mockMembers,
+  currentUserId: string
+): Settlement[] => {
+  // Track debts: debtMatrix[fromId][toId] = amount owed
+  const debtMatrix: Record<string, Record<string, number>> = {};
+  
+  expenses.forEach(expense => {
+    // Find payer's member ID
+    const payer = members.find(m => m.name === expense.paidBy);
+    if (!payer) return;
+    
+    // For each person who split this expense (except the payer)
+    expense.splitWith.forEach(memberId => {
+      if (memberId === payer.id) return; // Payer doesn't owe themselves
+      
+      const memberPayment = expense.payments?.find(p => p.memberId === memberId);
+      // Only count unsettled amounts (pending or submitted, not settled)
+      if (!memberPayment || memberPayment.status !== "settled") {
+        const shareAmount = calculateUserShare(expense, memberId);
+        
+        // Initialize if needed
+        if (!debtMatrix[memberId]) debtMatrix[memberId] = {};
+        if (!debtMatrix[memberId][payer.id]) debtMatrix[memberId][payer.id] = 0;
+        
+        debtMatrix[memberId][payer.id] += shareAmount;
+      }
+    });
+  });
+  
+  // Convert to net settlements (simplify mutual debts)
+  const settlements: Settlement[] = [];
+  const processedPairs = new Set<string>();
+  
+  Object.keys(debtMatrix).forEach(fromId => {
+    Object.keys(debtMatrix[fromId]).forEach(toId => {
+      const pairKey = [fromId, toId].sort().join("-");
+      if (processedPairs.has(pairKey)) return;
+      processedPairs.add(pairKey);
+      
+      const aOwesB = debtMatrix[fromId]?.[toId] || 0;
+      const bOwesA = debtMatrix[toId]?.[fromId] || 0;
+      const netAmount = aOwesB - bOwesA;
+      
+      if (Math.abs(netAmount) > 0.01) {
+        const netFromId = netAmount > 0 ? fromId : toId;
+        const netToId = netAmount > 0 ? toId : fromId;
+        const fromMember = members.find(m => m.id === netFromId);
+        const toMember = members.find(m => m.id === netToId);
+        
+        if (fromMember && toMember) {
+          settlements.push({
+            id: `settlement-${fromMember.id}-${toMember.id}`,
+            fromUser: { id: fromMember.id, name: fromMember.name, imageUrl: fromMember.imageUrl },
+            toUser: { id: toMember.id, name: toMember.name, imageUrl: toMember.imageUrl },
+            amount: Math.abs(netAmount),
+            status: "pending"
+          });
+        }
+      }
+    });
+  });
+  
+  return settlements;
+};
 
 // Current user is Ahmad Razak
 const CURRENT_USER = "Ahmad Razak";
@@ -142,11 +179,24 @@ export function TripExpenses() {
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
 
-  // Settlement data with local state for status updates
-  const [settlements, setSettlements] = useState<Settlement[]>(mockSettlements);
-
-  // Expenses data with local state
+  // Expenses data with local state (must be declared before settlements calculation)
   const [expenses, setExpenses] = useState<ExpenseData[]>(initialMockExpenses);
+
+  // Track settlement status overrides (when user marks as paid)
+  const [settlementStatuses, setSettlementStatuses] = useState<Record<string, "pending" | "paid">>({});
+
+  // Generate settlements dynamically from expense data
+  const calculatedSettlements = useMemo(() => {
+    return calculateNetSettlements(expenses, mockMembers, CURRENT_USER_ID);
+  }, [expenses]);
+
+  // Merge calculated settlements with local status overrides
+  const settlements = useMemo(() => {
+    return calculatedSettlements.map(s => ({
+      ...s,
+      status: settlementStatuses[s.id] || s.status
+    }));
+  }, [calculatedSettlements, settlementStatuses]);
 
   const totalCost = expenses.reduce((sum, e) => sum + e.amount, 0);
 
@@ -282,11 +332,10 @@ export function TripExpenses() {
   // Handler for marking all as paid from breakdown modal
   const handleMarkAllPaidFromBreakdown = () => {
     if (selectedSettlementForBreakdown) {
-      setSettlements(prev =>
-        prev.map(s =>
-          s.id === selectedSettlementForBreakdown.id ? { ...s, status: "paid" as const } : s
-        )
-      );
+      setSettlementStatuses(prev => ({
+        ...prev,
+        [selectedSettlementForBreakdown.id]: "paid"
+      }));
       toast({
         title: "All payments confirmed",
         description: `Settlement with ${selectedSettlementForBreakdown.fromUser.name} marked as paid`,
@@ -337,11 +386,10 @@ export function TripExpenses() {
 
   const handleConfirmPayment = (note?: string, receiptFile?: File) => {
     if (selectedSettlement) {
-      setSettlements((prev) =>
-        prev.map((s) =>
-          s.id === selectedSettlement.id ? { ...s, status: "paid" as const } : s
-        )
-      );
+      setSettlementStatuses(prev => ({
+        ...prev,
+        [selectedSettlement.id]: "paid"
+      }));
       toast({
         title: "Payment confirmed",
         description: `Payment to ${selectedSettlement.toUser.name} marked as paid${note ? `: ${note}` : ""}`,
