@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -79,11 +79,12 @@ export default function EditProfile() {
     linkedin: "https://linkedin.com/in/ahmadrazak",
   });
 
-  const [profileImage, setProfileImage] = useState<string>(
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200"
-  );
+  const [profileImage, setProfileImage] = useState<string>(() => {
+    return localStorage.getItem("userProfileImage") || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200";
+  });
 
   const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -113,11 +114,47 @@ export default function EditProfile() {
   };
 
   const handleImageChange = () => {
-    // In a real app, this would open a file picker
-    toast({
-      title: "Coming soon",
-      description: "Profile photo upload will be available soon.",
-    });
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file",
+        description: "Please select an image file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image under 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setProfileImage(result);
+      localStorage.setItem("userProfileImage", result);
+      toast({
+        title: "Photo updated",
+        description: "Your profile photo has been changed.",
+      });
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input so the same file can be selected again
+    e.target.value = "";
   };
 
   const handleSave = async () => {
@@ -195,6 +232,13 @@ export default function EditProfile() {
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4 py-6 space-y-6">
           {/* Profile Photo */}
           <div className="flex flex-col items-center">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
             <div className="relative">
               <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
                 <AvatarImage src={profileImage} alt="Profile" />
