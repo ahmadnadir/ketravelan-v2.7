@@ -47,36 +47,36 @@ interface Settlement {
 const mockSettlements: Settlement[] = [
   {
     id: "s1",
-    fromUser: { id: "2", name: "Sarah", imageUrl: mockMembers[1]?.imageUrl },
-    toUser: { id: "1", name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
-    amount: 120,
+    fromUser: { id: "2", name: "Sarah Tan", imageUrl: mockMembers[1]?.imageUrl },
+    toUser: { id: "1", name: "Ahmad Razak", imageUrl: mockMembers[0]?.imageUrl },
+    amount: 330, // Sarah's share of Ahmad's expenses (Accommodation + Rental car)
     status: "pending",
   },
   {
     id: "s2",
-    fromUser: { id: "3", name: "Lisa", imageUrl: mockMembers[2]?.imageUrl },
-    toUser: { id: "1", name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
-    amount: 85,
+    fromUser: { id: "3", name: "Lisa Wong", imageUrl: mockMembers[2]?.imageUrl },
+    toUser: { id: "1", name: "Ahmad Razak", imageUrl: mockMembers[0]?.imageUrl },
+    amount: 450, // Lisa's share of Ahmad's expenses
     status: "paid",
   },
   {
     id: "s3",
-    fromUser: { id: "4", name: "John", imageUrl: mockMembers[3]?.imageUrl },
-    toUser: { id: "2", name: "Sarah", imageUrl: mockMembers[1]?.imageUrl },
-    amount: 45,
+    fromUser: { id: "4", name: "John Lee", imageUrl: mockMembers[3]?.imageUrl },
+    toUser: { id: "2", name: "Sarah Tan", imageUrl: mockMembers[1]?.imageUrl },
+    amount: 64, // John's share of Sarah's Ferry expense
     status: "pending",
   },
   {
     id: "s4",
-    fromUser: { id: "1", name: "Ahmad", imageUrl: mockMembers[0]?.imageUrl },
-    toUser: { id: "3", name: "Lisa", imageUrl: mockMembers[2]?.imageUrl },
-    amount: 60,
+    fromUser: { id: "1", name: "Ahmad Razak", imageUrl: mockMembers[0]?.imageUrl },
+    toUser: { id: "3", name: "Lisa Wong", imageUrl: mockMembers[2]?.imageUrl },
+    amount: 56, // Ahmad's share of Lisa's Group dinner
     status: "pending",
   },
 ];
 
-// Current user is Ahmad
-const CURRENT_USER = "Ahmad";
+// Current user is Ahmad Razak
+const CURRENT_USER = "Ahmad Razak";
 
 export function TripExpenses() {
   const [subTab, setSubTab] = useState("breakdown");
@@ -584,25 +584,42 @@ export function TripExpenses() {
             {/* Per Person Contribution */}
             <Card className="p-3 sm:p-4 border-border/50">
               <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Upfront Payment per Person</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">Average per person</p>
               <p className="text-xl sm:text-2xl font-bold text-primary mb-3 sm:mb-4">
                 RM {Math.round(totalCost / mockMembers.length).toLocaleString()}
               </p>
               <div className="space-y-2 sm:space-y-3">
-                {mockMembers.slice(0, 4).map((member, index) => {
-                  const contribution = [850, 680, 450, 730][index] || 500;
-                  const percentage = Math.round((contribution / totalCost) * 100);
-                  return (
-                    <div key={member.id} className="space-y-1 sm:space-y-1.5">
-                      <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                        <span className="text-foreground truncate">{member.name}</span>
-                        <span className="text-muted-foreground shrink-0">
-                          RM {contribution} ({percentage}%)
-                        </span>
+                {(() => {
+                  // Calculate actual contributions from expenses
+                  const contributions: Record<string, number> = {};
+                  mockMembers.forEach(member => {
+                    contributions[member.name] = 0;
+                  });
+                  expenses.forEach(expense => {
+                    if (contributions[expense.paidBy] !== undefined) {
+                      contributions[expense.paidBy] += expense.amount;
+                    }
+                  });
+                  
+                  // Sort by contribution amount (highest first)
+                  const sortedContributions = Object.entries(contributions)
+                    .sort(([, a], [, b]) => b - a);
+                  
+                  return sortedContributions.map(([name, contribution]) => {
+                    const percentage = totalCost > 0 ? Math.round((contribution / totalCost) * 100) : 0;
+                    return (
+                      <div key={name} className="space-y-1 sm:space-y-1.5">
+                        <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                          <span className="text-foreground truncate">{name}</span>
+                          <span className="text-muted-foreground shrink-0">
+                            RM {contribution.toLocaleString()} ({percentage}%)
+                          </span>
+                        </div>
+                        <Progress value={percentage} className="h-1.5 sm:h-2" />
                       </div>
-                      <Progress value={percentage} className="h-1.5 sm:h-2" />
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
             </Card>
           </div>
