@@ -9,6 +9,7 @@ export interface TripDraft {
   
   // Step 2 - Basics
   title: string;
+  description: string;
   primaryDestination: string;
   additionalStops: string[];
   dateType: 'flexible' | 'exact';
@@ -17,7 +18,7 @@ export interface TripDraft {
   travelStyles: string[];
   groupSizeType: 'later' | 'set';
   groupSize: number;
-  coverImage: string;
+  galleryImages: string[];
   
   // Step 3 - Plan
   budgetType: 'skip' | 'rough' | 'detailed';
@@ -38,6 +39,7 @@ export interface TripDraft {
 export const getDefaultDraft = (): TripDraft => ({
   visibility: 'public',
   title: '',
+  description: '',
   primaryDestination: '',
   additionalStops: [],
   dateType: 'flexible',
@@ -46,7 +48,7 @@ export const getDefaultDraft = (): TripDraft => ({
   travelStyles: [],
   groupSizeType: 'later',
   groupSize: 3,
-  coverImage: '',
+  galleryImages: [],
   budgetType: 'skip',
   roughBudgetTotal: 0,
   roughBudgetCategories: [],

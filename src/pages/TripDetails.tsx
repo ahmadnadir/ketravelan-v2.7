@@ -16,6 +16,8 @@ import {
   Route,
   FileText,
   Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
@@ -23,10 +25,18 @@ import { PillChip } from "@/components/shared/PillChip";
 import { AvatarRow } from "@/components/shared/AvatarRow";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { mockTrips, mockMembers } from "@/data/mockData";
 import { getPublishedTripById, PublishedTrip } from "@/lib/publishedTrips";
 import { useToast } from "@/hooks/use-toast";
 import SafetyNotice from "@/components/trip-details/SafetyNotice";
+import { tripCategories } from "@/data/categories";
+import { cn } from "@/lib/utils";
 
 const iconMap: Record<string, any> = {
   car: Car,
@@ -39,14 +49,11 @@ const iconMap: Record<string, any> = {
   activities: Ticket,
 };
 
-const travelStyles: Record<string, { label: string; icon: string }> = {
-  outdoor: { label: "Outdoor & Adventure", icon: "🏔️" },
-  diving: { label: "Diving & Water", icon: "🤿" },
-  city: { label: "City & Urban", icon: "🏙️" },
-  festival: { label: "Festival / Music", icon: "🎉" },
-  crossborder: { label: "Cross-Border", icon: "🌍" },
-  umrah: { label: "Umrah DIY", icon: "🕋" },
-};
+// Build category lookup from tripCategories
+const categoryLookup: Record<string, { label: string; icon: string }> = {};
+tripCategories.forEach(cat => {
+  categoryLookup[cat.id] = { label: cat.label, icon: cat.icon };
+});
 
 // Generate contextual value proposition based on trip data
 const generateValueProposition = (tripData: any): string => {
@@ -143,14 +150,16 @@ export default function TripDetails() {
         title: publishedTrip.title,
         destination: publishedTrip.primaryDestination,
         additionalStops: publishedTrip.additionalStops,
-        description: `A ${publishedTrip.visibility} trip to ${publishedTrip.primaryDestination}${publishedTrip.additionalStops.length > 0 ? ` and ${publishedTrip.additionalStops.length} more stop${publishedTrip.additionalStops.length > 1 ? 's' : ''}` : ''}.`,
-        tags: publishedTrip.travelStyles.map(s => travelStyles[s]?.label || s),
+        description: publishedTrip.description || `A ${publishedTrip.visibility} trip to ${publishedTrip.primaryDestination}${publishedTrip.additionalStops.length > 0 ? ` and ${publishedTrip.additionalStops.length} more stop${publishedTrip.additionalStops.length > 1 ? 's' : ''}` : ''}.`,
+        tags: publishedTrip.travelStyles.map(s => categoryLookup[s]?.label || s),
         requirements: publishedTrip.expectations,
         budgetBreakdown,
         price: totalBudget,
         totalSlots: publishedTrip.groupSizeType === 'set' ? publishedTrip.groupSize : 10,
         slotsLeft: publishedTrip.groupSizeType === 'set' ? publishedTrip.groupSize - 1 : 9,
-        imageUrl: publishedTrip.coverImage || "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800",
+        galleryImages: publishedTrip.galleryImages.length > 0 
+          ? publishedTrip.galleryImages 
+          : ["https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800"],
         dateType: publishedTrip.dateType,
         startDate: publishedTrip.startDate,
         endDate: publishedTrip.endDate,
@@ -172,6 +181,7 @@ export default function TripDetails() {
         dayByDayPlan: [],
         visibility: 'public' as const,
         travelStyleIds: [],
+        galleryImages: [mockTrip.imageUrl],
       };
     }
   }, [publishedTrip, mockTrip]);
@@ -183,11 +193,14 @@ export default function TripDetails() {
   const urgencyText = getUrgencyText(joined, tripData.totalSlots);
   const descriptionBullets = parseDescriptionToBullets(tripData.description);
 
-  const images = [
-    tripData.imageUrl,
-    "https://images.unsplash.com/photo-1516571137133-1be29e37143a?w=800",
-    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800",
-  ];
+  // Use gallery images, with fallbacks
+  const images = tripData.galleryImages.length > 0 
+    ? tripData.galleryImages 
+    : ["https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800"];
+  
+  // Share modal state
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const nextImage = () => setCurrentImage((prev) => (prev + 1) % images.length);
   const prevImage = () => setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
@@ -204,22 +217,73 @@ export default function TripDetails() {
           url: tripUrl,
         });
       } catch (err) {
+        // User cancelled or share failed - fall back to modal
         if ((err as Error).name !== 'AbortError') {
-          await navigator.clipboard.writeText(tripUrl);
-          toast({
-            title: "Trip link copied",
-            description: "Link has been copied to your clipboard",
-          });
+          setShareModalOpen(true);
         }
       }
     } else {
+      // Fallback to custom modal
+      setShareModalOpen(true);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
       await navigator.clipboard.writeText(tripUrl);
+      setCopied(true);
       toast({
-        title: "Trip link copied",
-        description: "Link has been copied to your clipboard",
+        title: "Link copied!",
+        description: "Trip link has been copied to clipboard.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please try again.",
+        variant: "destructive",
       });
     }
   };
+
+  const shareOptions = [
+    {
+      name: "WhatsApp",
+      icon: MessageCircle,
+      color: "bg-green-500",
+      onClick: () => window.open(`https://wa.me/?text=${encodeURIComponent(shareText + " " + tripUrl)}`, "_blank"),
+    },
+    {
+      name: "Facebook",
+      icon: () => (
+        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+      ),
+      color: "bg-blue-600",
+      onClick: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(tripUrl)}`, "_blank"),
+    },
+    {
+      name: "Twitter",
+      icon: () => (
+        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+      ),
+      color: "bg-black dark:bg-white dark:text-black",
+      onClick: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(tripUrl)}`, "_blank"),
+    },
+    {
+      name: "Telegram",
+      icon: () => (
+        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+        </svg>
+      ),
+      color: "bg-sky-500",
+      onClick: () => window.open(`https://t.me/share/url?url=${encodeURIComponent(tripUrl)}&text=${encodeURIComponent(shareText)}`, "_blank"),
+    },
+  ];
 
   const handleFavourite = () => {
     setIsFavourited(!isFavourited);
@@ -234,8 +298,69 @@ export default function TripDetails() {
   };
 
   return (
-    <AppLayout hideHeader>
-      <div className="pb-36">
+    <>
+      {/* Share Modal */}
+      <Dialog open={shareModalOpen} onOpenChange={setShareModalOpen}>
+        <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] max-w-sm left-1/2 -translate-x-1/2 rounded-2xl">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-center">Share Trip</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Trip Preview */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
+              <img 
+                src={images[0]} 
+                alt={tripData.title} 
+                className="h-12 w-12 rounded-lg object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm text-foreground truncate">{tripData.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{tripData.destination}</p>
+              </div>
+            </div>
+
+            {/* Copy Link */}
+            <button
+              onClick={handleCopyLink}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
+            >
+              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                {copied ? (
+                  <Check className="h-5 w-5 text-green-500" />
+                ) : (
+                  <Copy className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+              <span className="text-sm font-medium text-foreground">
+                {copied ? "Copied!" : "Copy Link"}
+              </span>
+            </button>
+
+            {/* Share Options */}
+            <div className="grid grid-cols-4 gap-3">
+              {shareOptions.map((option) => (
+                <button
+                  key={option.name}
+                  onClick={() => {
+                    option.onClick();
+                    setShareModalOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-secondary transition-colors"
+                >
+                  <div className={cn("h-12 w-12 rounded-full flex items-center justify-center text-white", option.color)}>
+                    <option.icon />
+                  </div>
+                  <span className="text-xs text-muted-foreground">{option.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AppLayout hideHeader>
+        <div className="pb-36">
         {/* Image Gallery */}
         <div className="relative -mx-4 sm:-mx-6">
           <div className="aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
@@ -600,5 +725,6 @@ export default function TripDetails() {
         </div>
       </div>
     </AppLayout>
+    </>
   );
 }
