@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockMembers } from "@/data/mockData";
+import { mockMembers, ExpensePayment } from "@/data/mockData";
 
 // Using expenseCategories from lib for consistency
 
@@ -55,6 +55,7 @@ export interface ExpenseData {
   splitWith?: string[];
   customSplitAmounts?: CustomSplitAmount[];
   notes?: string;
+  payments?: ExpensePayment[];
 }
 
 interface AddExpenseModalProps {
