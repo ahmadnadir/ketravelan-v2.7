@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { ChatComposer } from "@/components/chat/ChatComposer";
 import { UserQuickActionsModal } from "@/components/chat/UserQuickActionsModal";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { cn } from "@/lib/utils";
 
 // Mock direct messages for demo
@@ -28,6 +29,26 @@ export default function DirectChat() {
   const { id } = useParams();
   const user = mockUsers[id || "dm-1"] || { id: "1", name: "Unknown User" };
   const [userModalOpen, setUserModalOpen] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Simulate typing indicator for demo
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTyping(true);
+      setTimeout(() => setIsTyping(false), 3000);
+    }, 10000);
+    
+    // Show initially after 2 seconds
+    const timeout = setTimeout(() => {
+      setIsTyping(true);
+      setTimeout(() => setIsTyping(false), 3000);
+    }, 2000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
 
   const handleSend = (message: string) => {
     console.log("Send message:", message);
@@ -96,11 +117,14 @@ export default function DirectChat() {
                 "text-[10px] sm:text-xs text-muted-foreground",
                 isOwn ? "mr-1" : "ml-2"
               )}>
-                {msg.timestamp}
+              {msg.timestamp}
               </span>
             </div>
           );
         })}
+        
+        {/* Typing indicator */}
+        {isTyping && <TypingIndicator />}
       </div>
 
       {/* User Quick Actions Modal */}
