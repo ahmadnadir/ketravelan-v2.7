@@ -19,6 +19,8 @@ import {
   Wallet,
   Route,
   ClipboardList,
+  FileText,
+  X,
 } from "lucide-react";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { PillChip } from "@/components/shared/PillChip";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useDraftTrip, TripDraft } from "@/hooks/useDraftTrip";
 import { DestinationSearch } from "@/components/create-trip/DestinationSearch";
@@ -49,21 +52,13 @@ import {
 } from "@/components/ui/drawer";
 import { toast } from "@/hooks/use-toast";
 import { savePublishedTrip, PublishedTrip } from "@/lib/publishedTrips";
+import { tripCategories } from "@/data/categories";
 
 const steps = [
   { id: 1, title: "Visibility" },
   { id: 2, title: "Basics" },
   { id: 3, title: "Plan" },
   { id: 4, title: "Review" },
-];
-
-const travelStyles = [
-  { id: "outdoor", label: "Outdoor & Adventure", icon: "🏔️" },
-  { id: "diving", label: "Diving & Water", icon: "🤿" },
-  { id: "city", label: "City & Urban", icon: "🏙️" },
-  { id: "festival", label: "Festival / Music", icon: "🎉" },
-  { id: "crossborder", label: "Cross-Border", icon: "🌍" },
-  { id: "umrah", label: "Umrah DIY", icon: "🕋" },
 ];
 
 export default function CreateTrip() {
@@ -108,6 +103,7 @@ export default function CreateTrip() {
     const publishedTrip: PublishedTrip = {
       id: tripId,
       title: draft.title,
+      description: draft.description,
       visibility: draft.visibility,
       primaryDestination: draft.primaryDestination,
       additionalStops: draft.additionalStops,
@@ -117,7 +113,7 @@ export default function CreateTrip() {
       travelStyles: draft.travelStyles,
       groupSizeType: draft.groupSizeType,
       groupSize: draft.groupSize,
-      coverImage: draft.coverImage,
+      galleryImages: draft.galleryImages,
       budgetType: draft.budgetType,
       roughBudgetTotal: draft.roughBudgetTotal,
       roughBudgetCategories: draft.roughBudgetCategories,
@@ -406,7 +402,23 @@ export default function CreateTrip() {
               />
             </div>
 
-            {/* Primary Destination */}
+            {/* About This Trip */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                About This Trip
+              </label>
+              <Textarea
+                placeholder="Describe what makes this trip special, what travelers can expect..."
+                value={draft.description}
+                onChange={(e) => updateDraft("description", e.target.value)}
+                className="rounded-xl text-sm min-h-[100px]"
+              />
+              <p className="text-xs text-muted-foreground">
+                This will appear on your trip page to help others understand your trip.
+              </p>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center gap-1">
                 <MapPin className="h-4 w-4 text-primary" />
@@ -482,20 +494,20 @@ export default function CreateTrip() {
                 Helps others understand the vibe. Select at least one.
               </p>
               <div className="flex flex-wrap gap-2">
-                {travelStyles.map((style) => (
+                {tripCategories.map((category) => (
                   <button
-                    key={style.id}
+                    key={category.id}
                     type="button"
-                    onClick={() => toggleTravelStyle(style.id)}
+                    onClick={() => toggleTravelStyle(category.id)}
                     className={cn(
                       "px-3 py-2 text-sm rounded-xl border transition-all flex items-center gap-2",
-                      draft.travelStyles.includes(style.id)
+                      draft.travelStyles.includes(category.id)
                         ? "bg-primary/10 border-primary text-primary font-medium"
                         : "bg-secondary/50 border-border/50 text-foreground hover:border-primary/30"
                     )}
                   >
-                    <span>{style.icon}</span>
-                    {style.label}
+                    <span>{category.icon}</span>
+                    {category.label}
                   </button>
                 ))}
               </div>
@@ -543,22 +555,54 @@ export default function CreateTrip() {
               )}
             </div>
 
-            {/* Cover Image */}
+            {/* Gallery Images */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center gap-1">
                 <Image className="h-4 w-4 text-muted-foreground" />
-                Cover Image
+                Trip Gallery (up to 3 photos)
               </label>
-              <Card className="p-6 border-dashed border-2 border-border/50 hover:border-primary/30 transition-colors cursor-pointer">
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="p-3 rounded-xl bg-secondary">
-                    <Image className="h-6 w-6 text-muted-foreground" />
+              <div className="grid grid-cols-3 gap-2">
+                {[0, 1, 2].map((index) => (
+                  <div key={index} className="relative">
+                    {draft.galleryImages[index] ? (
+                      <div className="relative aspect-square rounded-xl overflow-hidden border border-border">
+                        <img 
+                          src={draft.galleryImages[index]} 
+                          alt={`Gallery ${index + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = draft.galleryImages.filter((_, i) => i !== index);
+                            updateDraft("galleryImages", updated);
+                          }}
+                          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        {index === 0 && (
+                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] bg-primary text-primary-foreground rounded">
+                            Cover
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <Card className="aspect-square border-dashed border-2 border-border/50 hover:border-primary/30 transition-colors cursor-pointer flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-1 text-center p-2">
+                          <Image className="h-5 w-5 text-muted-foreground" />
+                          <p className="text-[10px] text-muted-foreground">
+                            {index === 0 ? "Cover" : "Add"}
+                          </p>
+                        </div>
+                      </Card>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload (optional)
-                  </p>
-                </div>
-              </Card>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                First image will be used as the cover photo
+              </p>
             </div>
           </div>
         )}
@@ -715,13 +759,13 @@ export default function CreateTrip() {
                 {draft.travelStyles.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {draft.travelStyles.map((styleId) => {
-                      const style = travelStyles.find((s) => s.id === styleId);
-                      return style ? (
+                      const category = tripCategories.find((c) => c.id === styleId);
+                      return category ? (
                         <span
                           key={styleId}
                           className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
                         >
-                          {style.icon} {style.label}
+                          {category.icon} {category.label}
                         </span>
                       ) : null;
                     })}

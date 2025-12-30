@@ -5,6 +5,7 @@ const PUBLISHED_TRIPS_KEY = 'ketravelan-published-trips';
 export interface PublishedTrip {
   id: string;
   title: string;
+  description: string;
   visibility: 'public' | 'private';
   primaryDestination: string;
   additionalStops: string[];
@@ -14,7 +15,7 @@ export interface PublishedTrip {
   travelStyles: string[];
   groupSizeType: 'later' | 'set';
   groupSize: number;
-  coverImage: string;
+  galleryImages: string[];
   budgetType: 'skip' | 'rough' | 'detailed';
   roughBudgetTotal: number;
   roughBudgetCategories: string[];
