@@ -45,26 +45,28 @@ export function SendReminderModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md mx-4 rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Send Payment Reminder</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Send Payment Reminder</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <p className="text-sm text-muted-foreground">
-            Remind <span className="font-medium text-foreground">{recipientName}</span> to pay{" "}
-            <span className="font-medium text-foreground">RM {amount}</span>
-          </p>
+          <div className="p-4 bg-secondary/50 rounded-xl">
+            <p className="text-sm text-muted-foreground">
+              Remind <span className="font-medium text-foreground">{recipientName}</span> to pay{" "}
+              <span className="font-medium text-foreground">RM {amount}</span>
+            </p>
+          </div>
 
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Write your reminder message..."
-            className="min-h-[100px] resize-none"
+            className="min-h-[100px] resize-none rounded-xl"
           />
 
           {/* Multi-channel notification info */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+          <div className="flex items-start gap-2 p-4 rounded-xl bg-muted/50">
             <div className="flex gap-1.5 mt-0.5">
               <Bell className="h-3.5 w-3.5 text-muted-foreground" />
               <MessageCircle className="h-3.5 w-3.5 text-muted-foreground" />
@@ -82,7 +84,7 @@ export function SendReminderModal({
             </p>
           )}
 
-          <Button className="w-full" onClick={handleSend}>
+          <Button className="w-full h-12 rounded-xl" onClick={handleSend}>
             <Send className="h-4 w-4 mr-2" />
             Send Reminder
           </Button>

@@ -243,9 +243,9 @@ export function AddExpenseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-4 rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
             {isEditMode ? (
               <>
                 <Pencil className="h-5 w-5 text-primary" />
@@ -270,6 +270,7 @@ export function AddExpenseModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={100}
+              className="h-12 rounded-xl"
             />
           </div>
 
@@ -284,6 +285,7 @@ export function AddExpenseModal({
               onChange={(e) => setAmount(e.target.value)}
               min="0"
               step="0.01"
+              className="h-12 rounded-xl"
             />
           </div>
 
@@ -291,12 +293,12 @@ export function AddExpenseModal({
           <div className="space-y-2">
             <Label>Category *</Label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
+              <SelectTrigger className="h-12 rounded-xl">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 {expenseCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
+                  <SelectItem key={cat.id} value={cat.id} className="rounded-lg">
                     <span className="flex items-center gap-2">
                       <span>{cat.icon}</span>
                       <span>{cat.label}</span>
@@ -311,12 +313,12 @@ export function AddExpenseModal({
           <div className="space-y-2">
             <Label>Paid By</Label>
             <Select value={paidBy} onValueChange={setPaidBy}>
-              <SelectTrigger>
+              <SelectTrigger className="h-12 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 {mockMembers.map((member) => (
-                  <SelectItem key={member.id} value={member.name}>
+                  <SelectItem key={member.id} value={member.name} className="rounded-lg">
                     <span className="flex items-center gap-2">
                       <Avatar className="h-5 w-5">
                         <AvatarImage src={member.imageUrl} />
@@ -339,9 +341,8 @@ export function AddExpenseModal({
               <Button
                 type="button"
                 variant={splitType === "equal" ? "default" : "outline"}
-                size="sm"
                 onClick={() => setSplitType("equal")}
-                className="flex-1"
+                className="flex-1 h-11 rounded-xl"
               >
                 <Users className="h-4 w-4 mr-1.5" />
                 Split Equally
@@ -349,9 +350,8 @@ export function AddExpenseModal({
               <Button
                 type="button"
                 variant={splitType === "custom" ? "default" : "outline"}
-                size="sm"
                 onClick={() => setSplitType("custom")}
-                className="flex-1"
+                className="flex-1 h-11 rounded-xl"
               >
                 <UserCheck className="h-4 w-4 mr-1.5" />
                 Custom Split
@@ -369,7 +369,7 @@ export function AddExpenseModal({
                   variant="ghost"
                   size="sm"
                   onClick={handleSelectAll}
-                  className="h-7 text-xs"
+                  className="h-7 text-xs rounded-lg"
                 >
                   All
                 </Button>
@@ -378,17 +378,17 @@ export function AddExpenseModal({
                   variant="ghost"
                   size="sm"
                   onClick={handleDeselectAll}
-                  className="h-7 text-xs"
+                  className="h-7 text-xs rounded-lg"
                 >
                   None
                 </Button>
               </div>
             </div>
-            <div className="border border-border rounded-lg p-2 space-y-1 max-h-48 overflow-y-auto">
+            <div className="border border-border rounded-xl p-2 space-y-1 max-h-48 overflow-y-auto bg-secondary/30">
               {mockMembers.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center gap-2 p-2 rounded-md hover:bg-secondary/50"
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50"
                 >
                   <div 
                     className="flex items-center gap-2 cursor-pointer flex-1"
@@ -416,7 +416,7 @@ export function AddExpenseModal({
                           placeholder="0.00"
                           value={customAmounts[member.id] || ""}
                           onChange={(e) => handleCustomAmountChange(member.id, e.target.value)}
-                          className="w-20 h-7 text-xs"
+                          className="w-20 h-8 text-xs rounded-lg"
                           min="0"
                           step="0.01"
                           onClick={(e) => e.stopPropagation()}
@@ -471,6 +471,7 @@ export function AddExpenseModal({
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               maxLength={500}
+              className="rounded-xl min-h-[80px]"
             />
           </div>
 
@@ -478,24 +479,24 @@ export function AddExpenseModal({
           <div className="space-y-2">
             <Label>Receipt (Optional)</Label>
             {receiptPreview ? (
-              <div className="relative border border-border rounded-lg p-2">
+              <div className="relative border border-border rounded-xl p-2 bg-secondary/30">
                 <img
                   src={receiptPreview}
                   alt="Receipt preview"
-                  className="w-full h-32 object-cover rounded-md"
+                  className="w-full h-32 object-cover rounded-lg"
                 />
                 <Button
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="absolute top-3 right-3 h-7 w-7"
+                  className="absolute top-3 right-3 h-7 w-7 rounded-lg"
                   onClick={handleRemoveReceipt}
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-primary/50 transition-colors">
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-4 cursor-pointer hover:border-primary/50 transition-colors bg-secondary/30">
                 <Upload className="h-6 w-6 text-muted-foreground mb-2" />
                 <span className="text-sm text-muted-foreground">
                   Tap to upload receipt
@@ -515,7 +516,7 @@ export function AddExpenseModal({
             <Button
               type="button"
               variant="outline"
-              className="flex-1"
+              className="flex-1 h-12 rounded-xl"
               onClick={() => {
                 resetForm();
                 onOpenChange(false);
@@ -525,7 +526,7 @@ export function AddExpenseModal({
             </Button>
             <Button
               type="button"
-              className="flex-1"
+              className="flex-1 h-12 rounded-xl"
               onClick={handleSubmit}
               disabled={!isValid}
             >
