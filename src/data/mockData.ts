@@ -342,6 +342,7 @@ export interface UserProfile {
   id: string;
   name: string;
   imageUrl?: string;
+  coverPhotoUrl?: string;
   location?: string;
   bio?: string;
   travelStyles: string[];
@@ -367,6 +368,7 @@ export const mockUserProfiles: Record<string, UserProfile> = {
     id: "1",
     name: "Ahmad Razak",
     imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+    coverPhotoUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200",
     location: "Kuala Lumpur, Malaysia",
     bio: "Passionate traveler who loves exploring new cultures and cuisines. Always looking for the next adventure! I've been organizing group trips for 5 years and love bringing people together.",
     travelStyles: ["Adventure", "Budget-friendly", "Nature", "Food"],
@@ -388,6 +390,7 @@ export const mockUserProfiles: Record<string, UserProfile> = {
     id: "2",
     name: "Sarah Tan",
     imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200",
+    coverPhotoUrl: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200",
     location: "Singapore",
     bio: "Weekend explorer and coffee enthusiast. Love discovering hidden gems and local experiences. First time doing DIY group travel!",
     travelStyles: ["City & Urban", "Food", "Culture", "Photography"],
@@ -407,6 +410,7 @@ export const mockUserProfiles: Record<string, UserProfile> = {
     id: "3",
     name: "Lisa Wong",
     imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200",
+    coverPhotoUrl: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200",
     location: "Johor Bahru, Malaysia",
     bio: "Frequent DIY traveler with a passion for nature and adventure. Always up for hiking and exploring off-the-beaten-path destinations.",
     travelStyles: ["Adventure", "Nature", "Hiking", "Wildlife"],
@@ -424,6 +428,7 @@ export const mockUserProfiles: Record<string, UserProfile> = {
     id: "4",
     name: "John Lee",
     imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
+    coverPhotoUrl: "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=1200",
     location: "Penang, Malaysia",
     bio: "Photography lover who travels to capture beautiful moments. Always carrying my camera and looking for the perfect shot.",
     travelStyles: ["Photography", "Nature", "City & Urban", "Sunrise/Sunset"],
