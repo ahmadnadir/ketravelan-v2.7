@@ -70,6 +70,39 @@ export default function CreateTrip() {
   const [showExitModal, setShowExitModal] = useState(false);
   // Store draft snapshot for share modal (since we clear draft before showing modal)
   const draftSnapshotRef = useRef<TripDraft | null>(null);
+  // File input ref for gallery images
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle gallery image upload
+  const handleGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      return;
+    }
+
+    // Convert to base64 for localStorage storage
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64 && draft.galleryImages.length < 3) {
+        updateDraft("galleryImages", [...draft.galleryImages, base64]);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
@@ -561,6 +594,16 @@ export default function CreateTrip() {
                 <Image className="h-4 w-4 text-muted-foreground" />
                 Trip Gallery (up to 3 photos)
               </label>
+              
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={galleryInputRef}
+                accept="image/*"
+                onChange={handleGalleryImageUpload}
+                className="hidden"
+              />
+              
               <div className="grid grid-cols-3 gap-2">
                 {[0, 1, 2].map((index) => (
                   <div key={index} className="relative">
@@ -588,14 +631,25 @@ export default function CreateTrip() {
                         )}
                       </div>
                     ) : (
-                      <Card className="aspect-square border-dashed border-2 border-border/50 hover:border-primary/30 transition-colors cursor-pointer flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-1 text-center p-2">
-                          <Image className="h-5 w-5 text-muted-foreground" />
-                          <p className="text-[10px] text-muted-foreground">
-                            {index === 0 ? "Cover" : "Add"}
-                          </p>
-                        </div>
-                      </Card>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (draft.galleryImages.length < 3) {
+                            galleryInputRef.current?.click();
+                          }
+                        }}
+                        disabled={draft.galleryImages.length >= 3}
+                        className="w-full"
+                      >
+                        <Card className="aspect-square border-dashed border-2 border-border/50 hover:border-primary/30 transition-colors cursor-pointer flex items-center justify-center">
+                          <div className="flex flex-col items-center gap-1 text-center p-2">
+                            <Image className="h-5 w-5 text-muted-foreground" />
+                            <p className="text-[10px] text-muted-foreground">
+                              {index === 0 ? "Cover" : "Add"}
+                            </p>
+                          </div>
+                        </Card>
+                      </button>
                     )}
                   </div>
                 ))}
