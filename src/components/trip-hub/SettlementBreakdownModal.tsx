@@ -209,7 +209,7 @@ export function SettlementBreakdownModal({
                 {reverseExpenses.map((expense) => {
                   const categoryData = getCategoryById(expense.category);
                   return (
-                    <Card key={expense.expenseId} className="p-3 border-border/50 bg-muted/30">
+                    <Card key={expense.expenseId} className="p-3 border-border/50">
                       <div className="flex items-start gap-3">
                         <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
                           <span className="text-base">{categoryData.emoji}</span>
