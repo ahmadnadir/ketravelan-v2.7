@@ -12,16 +12,12 @@ import { tripCategories } from "@/data/categories";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// Split categories for progressive disclosure
-const primaryCategories = tripCategories.slice(0, 3); // Nature & Outdoor, Beach, City & Urban
-const secondaryCategories = tripCategories.slice(3); // Adventure, Culture, Food, Cross Border
 
 export default function Explore() {
   const [tab, setTab] = useState("upcoming");
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Progressive disclosure states
-  const [showMoreCategories, setShowMoreCategories] = useState(false);
+  // Budget slider visibility
   const [showBudgetSlider, setShowBudgetSlider] = useState(false);
 
   // Pending filter state (user is editing)
@@ -100,8 +96,7 @@ export default function Explore() {
       searchQuery: "",
       dates: "",
     });
-    // Collapse expanded sections
-    setShowMoreCategories(false);
+    // Collapse budget slider
     setShowBudgetSlider(false);
   };
 
@@ -219,16 +214,18 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* Categories - Progressive Disclosure */}
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              {/* Primary Categories (always visible) */}
-              {primaryCategories.map((category) => (
+          {/* Categories - Horizontal Scrollable */}
+          <div className="-mx-4 px-4">
+            <div 
+              className="flex gap-2 overflow-x-auto pb-1" 
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {tripCategories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => togglePendingCategory(category.id)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all whitespace-nowrap shrink-0",
                     pendingCategories.includes(category.id)
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-foreground hover:bg-secondary/80"
@@ -241,53 +238,6 @@ export default function Explore() {
                   <span>{category.label}</span>
                 </button>
               ))}
-
-              {/* + More / Show less toggle */}
-              {!showMoreCategories && (
-                <button
-                  onClick={() => setShowMoreCategories(true)}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-secondary text-muted-foreground hover:bg-secondary/80 transition-colors"
-                >
-                  <span>+ More</span>
-                </button>
-              )}
-            </div>
-
-            {/* Secondary Categories (expandable) */}
-            <div
-              className={cn(
-                "overflow-hidden transition-all duration-200 ease-out",
-                showMoreCategories ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
-              )}
-            >
-              <div className="flex flex-wrap gap-2 pt-1">
-                {secondaryCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => togglePendingCategory(category.id)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all",
-                      pendingCategories.includes(category.id)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-foreground hover:bg-secondary/80"
-                    )}
-                  >
-                    {pendingCategories.includes(category.id) && (
-                      <Check className="h-3.5 w-3.5" />
-                    )}
-                    <span>{category.icon}</span>
-                    <span>{category.label}</span>
-                  </button>
-                ))}
-
-                {/* Show less */}
-                <button
-                  onClick={() => setShowMoreCategories(false)}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-secondary text-muted-foreground hover:bg-secondary/80 transition-colors"
-                >
-                  <span>Show less</span>
-                </button>
-              </div>
             </div>
           </div>
 
