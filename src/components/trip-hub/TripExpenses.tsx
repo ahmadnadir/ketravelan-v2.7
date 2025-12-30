@@ -11,6 +11,8 @@ import { SendReminderModal } from "@/components/trip-hub/SendReminderModal";
 import { YourQRSection } from "@/components/trip-hub/YourQRSection";
 import { AddExpenseModal, NewExpense, ExpenseData } from "@/components/trip-hub/AddExpenseModal";
 import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
+import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
+import { BalanceSummary } from "@/components/trip-hub/BalanceSummary";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -130,6 +132,8 @@ export function TripExpenses() {
   const [selectedSettlement, setSelectedSettlement] = useState<Settlement | null>(null);
   const [editingExpense, setEditingExpense] = useState<ExpenseData | null>(null);
   const [deletingExpense, setDeletingExpense] = useState<ExpenseData | null>(null);
+  const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
+  const [viewingReceipt, setViewingReceipt] = useState<{ title: string; url?: string } | null>(null);
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
@@ -347,6 +351,15 @@ export function TripExpenses() {
     setDeleteExpenseOpen(true);
   };
 
+  const openReceiptViewer = (expense: ExpenseData) => {
+    // For demo purposes, use a placeholder receipt image
+    setViewingReceipt({
+      title: expense.title,
+      url: expense.hasReceipt ? "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop" : undefined,
+    });
+    setReceiptViewerOpen(true);
+  };
+
   // Check if a settlement can show reminder (pending + others owe current user)
   const canShowReminder = (settlement: Settlement) => {
     return settlement.status === "pending" && settlement.toUser.name === CURRENT_USER;
@@ -491,6 +504,9 @@ export function TripExpenses() {
                 })}
               </div>
             </Card>
+
+            {/* Balance Summary */}
+            <BalanceSummary expenses={expenses} currentUser={CURRENT_USER} />
           </div>
         )}
 
@@ -547,7 +563,7 @@ export function TripExpenses() {
                     {...expense}
                     onEdit={() => openEditExpense(expense)}
                     onDelete={() => openDeleteExpense(expense)}
-                    onViewReceipt={() => console.log("View receipt", expense.id)}
+                    onViewReceipt={() => openReceiptViewer(expense)}
                   />
                 ))
               ) : (
@@ -765,6 +781,17 @@ export function TripExpenses() {
         amount={selectedSettlement?.amount || 0}
         tripName="Cameron Highlands"
         onSend={handleReminderSend}
+      />
+
+      {/* Receipt Viewer Modal */}
+      <ReceiptViewerModal
+        open={receiptViewerOpen}
+        onOpenChange={(open) => {
+          setReceiptViewerOpen(open);
+          if (!open) setViewingReceipt(null);
+        }}
+        expenseTitle={viewingReceipt?.title || ""}
+        receiptUrl={viewingReceipt?.url}
       />
     </div>
   );
