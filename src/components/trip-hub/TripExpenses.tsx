@@ -13,6 +13,7 @@ import { AddExpenseModal, NewExpense, ExpenseData } from "@/components/trip-hub/
 import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
 import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
 import { ExpenseDetailsModal } from "@/components/trip-hub/ExpenseDetailsModal";
+import { SettlementBreakdownModal, SettlementExpense } from "@/components/trip-hub/SettlementBreakdownModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -110,6 +111,10 @@ export function TripExpenses() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [viewingExpenseDetails, setViewingExpenseDetails] = useState<ExpenseData | null>(null);
   const [initialModalTab, setInitialModalTab] = useState<"overview" | "payments">("overview");
+  
+  // Settlement breakdown modal state
+  const [breakdownModalOpen, setBreakdownModalOpen] = useState(false);
+  const [selectedSettlementForBreakdown, setSelectedSettlementForBreakdown] = useState<Settlement | null>(null);
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
@@ -168,6 +173,66 @@ export function TripExpenses() {
       return true;
     });
   }, [settlements, directionFilter, statusFilter]);
+
+  // Compute contributing expenses for each settlement
+  const getContributingExpenses = (settlement: Settlement): SettlementExpense[] => {
+    const contributingExpenses: SettlementExpense[] = [];
+    
+    expenses.forEach(expense => {
+      // Check if toUser paid for the expense and fromUser is in the split
+      const paidByToUser = expense.paidBy === settlement.toUser.name;
+      const fromUserInSplit = expense.splitWith?.includes(settlement.fromUser.id);
+      
+      if (paidByToUser && fromUserInSplit) {
+        // Calculate share amount
+        const splitCount = expense.splitWith?.length || 1;
+        const shareAmount = expense.splitType === "equal" 
+          ? expense.amount / splitCount
+          : expense.customSplitAmounts?.find(s => s.memberId === settlement.fromUser.id)?.amount || (expense.amount / splitCount);
+        
+        // Determine payment status for this member
+        const memberPayment = expense.payments?.find(p => p.memberId === settlement.fromUser.id);
+        const status: SettlementExpense["status"] = memberPayment?.status === "received" 
+          ? "received" 
+          : memberPayment?.status === "submitted" 
+            ? "submitted" 
+            : "awaiting";
+        
+        contributingExpenses.push({
+          expenseId: expense.id,
+          title: expense.title,
+          date: expense.date,
+          shareAmount,
+          status,
+          category: getCategoryFromTitle(expense.title),
+        });
+      }
+    });
+    
+    return contributingExpenses;
+  };
+
+  // Handler for settlement card click
+  const handleSettlementCardClick = (settlement: Settlement) => {
+    setSelectedSettlementForBreakdown(settlement);
+    setBreakdownModalOpen(true);
+  };
+
+  // Handler for marking all as paid from breakdown modal
+  const handleMarkAllPaidFromBreakdown = () => {
+    if (selectedSettlementForBreakdown) {
+      setSettlements(prev =>
+        prev.map(s =>
+          s.id === selectedSettlementForBreakdown.id ? { ...s, status: "paid" as const } : s
+        )
+      );
+      toast({
+        title: "All payments confirmed",
+        description: `Settlement with ${selectedSettlementForBreakdown.fromUser.name} marked as paid`,
+      });
+      setBreakdownModalOpen(false);
+    }
+  };
 
   // Card tap handlers
   const handleTotalSpendTap = () => {
@@ -664,6 +729,7 @@ export function TripExpenses() {
                     amount={settlement.amount}
                     status={settlement.status}
                     showReminder={canShowReminder(settlement)}
+                    onCardClick={() => handleSettlementCardClick(settlement)}
                     onViewPayment={() => handleViewQR(settlement)}
                     onSendReminder={() => handleSendReminder(settlement)}
                     onMarkPaid={() => handleMarkPaid(settlement)}
@@ -855,6 +921,36 @@ export function TripExpenses() {
         }}
         onConfirmPaymentReceived={handleConfirmPaymentReceived}
       />
+
+      {/* Settlement Breakdown Modal */}
+      {selectedSettlementForBreakdown && (
+        <SettlementBreakdownModal
+          open={breakdownModalOpen}
+          onOpenChange={(open) => {
+            setBreakdownModalOpen(open);
+            if (!open) setSelectedSettlementForBreakdown(null);
+          }}
+          fromUser={selectedSettlementForBreakdown.fromUser}
+          toUser={selectedSettlementForBreakdown.toUser}
+          totalAmount={selectedSettlementForBreakdown.amount}
+          status={selectedSettlementForBreakdown.status}
+          contributingExpenses={getContributingExpenses(selectedSettlementForBreakdown)}
+          currentUserId={mockMembers.find(m => m.name === CURRENT_USER)?.id || "1"}
+          onUploadProof={() => {
+            handleMarkPaid(selectedSettlementForBreakdown);
+            setBreakdownModalOpen(false);
+          }}
+          onMarkAllPaid={handleMarkAllPaidFromBreakdown}
+          onSendReminder={() => {
+            handleSendReminder(selectedSettlementForBreakdown);
+            setBreakdownModalOpen(false);
+          }}
+          onViewQR={() => {
+            handleViewQR(selectedSettlementForBreakdown);
+            setBreakdownModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

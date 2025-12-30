@@ -11,6 +11,7 @@ interface SettlementCardProps {
   currency?: string;
   status: "pending" | "paid";
   showReminder?: boolean;
+  onCardClick?: () => void;
   onViewPayment?: () => void;
   onSendReminder?: () => void;
   onMarkPaid?: () => void;
@@ -23,17 +24,22 @@ export function SettlementCard({
   currency = "RM",
   status,
   showReminder,
+  onCardClick,
   onViewPayment,
   onSendReminder,
   onMarkPaid,
 }: SettlementCardProps) {
   return (
-    <Card className="p-4 border-border/50">
+    <Card 
+      className="p-4 border-border/50 cursor-pointer hover:bg-muted/30 transition-colors active:scale-[0.99]"
+      onClick={onCardClick}
+    >
       <div className="flex items-center gap-3">
         {/* From User - Clickable */}
         <Link 
           to={`/user/${fromUser.id}`}
           className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
             {fromUser.imageUrl ? (
@@ -65,6 +71,7 @@ export function SettlementCard({
         <Link 
           to={`/user/${toUser.id}`}
           className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
             {toUser.imageUrl ? (
@@ -102,7 +109,7 @@ export function SettlementCard({
             variant="outline" 
             size="sm" 
             className="w-full h-10 text-sm"
-            onClick={onViewPayment}
+            onClick={(e) => { e.stopPropagation(); onViewPayment?.(); }}
           >
             <QrCode className="h-4 w-4 mr-2" />
             View QR
@@ -114,7 +121,7 @@ export function SettlementCard({
               variant="outline" 
               size="sm" 
               className="w-full h-10 text-sm"
-              onClick={onSendReminder}
+              onClick={(e) => { e.stopPropagation(); onSendReminder?.(); }}
             >
               <Bell className="h-4 w-4 mr-2" />
               Send Reminder
@@ -126,7 +133,7 @@ export function SettlementCard({
             <Button 
               size="sm" 
               className="w-full h-10 text-sm bg-foreground text-background hover:bg-foreground/90"
-              onClick={onMarkPaid}
+              onClick={(e) => { e.stopPropagation(); onMarkPaid?.(); }}
             >
               Mark as Paid
             </Button>
