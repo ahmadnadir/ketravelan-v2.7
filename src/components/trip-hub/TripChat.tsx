@@ -1,25 +1,32 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { mockMessages } from "@/data/mockData";
+import { mockMessages, mockMembers } from "@/data/mockData";
 import { ChatComposer } from "@/components/chat/ChatComposer";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+// Create a map of member data for quick lookup
+const memberMap = mockMembers.reduce((acc, member) => {
+  acc[member.id] = member;
+  return acc;
+}, {} as Record<string, typeof mockMembers[0]>);
 
 export function TripChat() {
   const [isTyping, setIsTyping] = useState(false);
-  const [typingUser, setTypingUser] = useState("");
+  const [typingUser, setTypingUser] = useState({ name: "", imageUrl: "" });
 
   // Simulate typing indicator for demo
   useEffect(() => {
     const interval = setInterval(() => {
       setIsTyping(true);
-      setTypingUser("Sarah");
+      setTypingUser({ name: "Sarah", imageUrl: memberMap["2"]?.imageUrl || "" });
       setTimeout(() => setIsTyping(false), 3000);
     }, 10000);
     
     // Show initially after 2 seconds
     const timeout = setTimeout(() => {
       setIsTyping(true);
-      setTypingUser("Sarah");
+      setTypingUser({ name: "Sarah", imageUrl: memberMap["2"]?.imageUrl || "" });
       setTimeout(() => setIsTyping(false), 3000);
     }, 2000);
 
@@ -42,6 +49,7 @@ export function TripChat() {
         {mockMessages.map((msg) => {
           const isOwn = msg.senderId === currentUserId;
           const isSystem = msg.type === "system";
+          const sender = memberMap[msg.senderId];
 
           if (isSystem) {
             return (
@@ -56,35 +64,50 @@ export function TripChat() {
           return (
             <div
               key={msg.id}
-              className={cn("flex flex-col gap-0.5 sm:gap-1", isOwn && "items-end")}
+              className={cn("flex gap-2", isOwn ? "justify-end" : "justify-start")}
             >
+              {/* Avatar for other users (WhatsApp style) */}
               {!isOwn && (
-                <span className="text-[10px] sm:text-xs text-muted-foreground ml-2 sm:ml-3">
-                  {msg.senderName}
-                </span>
+                <Avatar className="h-7 w-7 flex-shrink-0 mt-5">
+                  <AvatarImage src={sender?.imageUrl} alt={msg.senderName} />
+                  <AvatarFallback className="text-xs">{msg.senderName.charAt(0)}</AvatarFallback>
+                </Avatar>
               )}
-              <div
-                className={cn(
-                  "max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl",
-                  isOwn
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-secondary text-secondary-foreground rounded-bl-sm"
+              
+              <div className={cn("flex flex-col gap-0.5 sm:gap-1", isOwn && "items-end")}>
+                {!isOwn && (
+                  <span className="text-[10px] sm:text-xs text-muted-foreground ml-2 sm:ml-3">
+                    {msg.senderName}
+                  </span>
                 )}
-              >
-                <p className="text-xs sm:text-sm">{msg.content}</p>
+                <div
+                  className={cn(
+                    "max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl",
+                    isOwn
+                      ? "bg-primary text-primary-foreground rounded-br-sm"
+                      : "bg-secondary text-secondary-foreground rounded-bl-sm"
+                  )}
+                >
+                  <p className="text-xs sm:text-sm">{msg.content}</p>
+                </div>
+                <span className={cn(
+                  "text-[10px] sm:text-xs text-muted-foreground",
+                  isOwn ? "mr-1" : "ml-2 sm:ml-3"
+                )}>
+                  {msg.timestamp}
+                </span>
               </div>
-              <span className={cn(
-                "text-[10px] sm:text-xs text-muted-foreground",
-                isOwn ? "mr-1" : "ml-2 sm:ml-3"
-              )}>
-                {msg.timestamp}
-              </span>
             </div>
           );
         })}
         
-        {/* Typing indicator */}
-        {isTyping && <TypingIndicator userName={typingUser} />}
+        {/* Typing indicator with padding */}
+        {isTyping && (
+          <TypingIndicator 
+            userName={typingUser.name} 
+            userImageUrl={typingUser.imageUrl}
+          />
+        )}
       </div>
 
       {/* Composer - anchored at bottom */}
