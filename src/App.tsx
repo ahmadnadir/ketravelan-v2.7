@@ -12,6 +12,7 @@ import MyTrips from "./pages/MyTrips";
 import Chat from "./pages/Chat";
 import DirectChat from "./pages/DirectChat";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 import UserProfileView from "./pages/UserProfileView";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/chat" element={<Chat />} />
           <Route path="/chat/:id" element={<DirectChat />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/edit" element={<EditProfile />} />
           <Route path="/user/:userId" element={<UserProfileView />} />
           <Route path="/favourites" element={<Favourites />} />
           <Route path="/approvals" element={<Approvals />} />

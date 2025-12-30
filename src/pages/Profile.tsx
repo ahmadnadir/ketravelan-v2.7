@@ -81,10 +81,12 @@ export default function Profile() {
               <span>Joined Jan 2024</span>
             </div>
           </div>
-          <Button variant="outline" className="rounded-full text-sm">
-            <Settings className="h-4 w-4 mr-1.5 sm:mr-2" />
-            Edit Profile
-          </Button>
+          <Link to="/profile/edit">
+            <Button variant="outline" className="rounded-full text-sm">
+              <Settings className="h-4 w-4 mr-1.5 sm:mr-2" />
+              Edit Profile
+            </Button>
+          </Link>
         </div>
 
         {/* Bio */}
