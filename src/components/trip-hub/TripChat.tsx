@@ -11,9 +11,9 @@ export function TripChat() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-130px)] relative">
-      {/* Messages - add bottom padding to account for fixed composer */}
-      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 sm:pb-28">
+    <div className="flex flex-col h-full">
+      {/* Messages - scrolls within parent FocusedFlowLayout */}
+      <div className="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
         {mockMessages.map((msg) => {
           const isOwn = msg.senderId === currentUserId;
           const isSystem = msg.type === "system";
@@ -59,8 +59,10 @@ export function TripChat() {
         })}
       </div>
 
-      {/* Composer */}
-      <ChatComposer onSend={handleSend} />
+      {/* Composer - anchored at bottom */}
+      <div className="flex-none border-t border-border/50">
+        <ChatComposer onSend={handleSend} />
+      </div>
     </div>
   );
 }
