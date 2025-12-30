@@ -243,7 +243,7 @@ export function AddExpenseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-4 rounded-2xl">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto scrollbar-hide w-[calc(100%-2rem)] sm:w-full rounded-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
             {isEditMode ? (
@@ -384,7 +384,7 @@ export function AddExpenseModal({
                 </Button>
               </div>
             </div>
-            <div className="border border-border rounded-xl p-2 space-y-1 max-h-48 overflow-y-auto bg-secondary/30">
+            <div className="border border-border rounded-xl p-2 space-y-1 max-h-48 overflow-y-auto scrollbar-hide bg-secondary/30">
               {mockMembers.map((member) => (
                 <div
                   key={member.id}
