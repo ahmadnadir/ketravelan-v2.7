@@ -122,7 +122,9 @@ export function ExpenseCard({
           {/* Status Section - Always show progress bar */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className={`text-xs font-medium ${isFullySettled ? "text-stat-green" : "text-yellow-600"}`}>
+              <span className={`text-xs font-medium ${
+                isFullySettled ? "text-stat-green" : paymentProgress === 0 ? "text-destructive" : "text-yellow-600"
+              }`}>
                 {paymentProgress}% settled
               </span>
             </div>
