@@ -748,32 +748,30 @@ export function TripExpenses() {
                   return sortedContributions.map(([name, { amount: contribution, imageUrl }]) => {
                     const percentage = totalCost > 0 ? Math.round((contribution / totalCost) * 100) : 0;
                     return (
-                      <div key={name} className="flex items-center gap-2 sm:gap-3 py-1.5">
-                        {/* Avatar + Member Name - Left */}
-                        <div className="flex items-center gap-2 min-w-[100px] sm:min-w-[120px]">
-                          <Avatar className="h-6 w-6 sm:h-7 sm:w-7 shrink-0">
-                            <AvatarImage src={imageUrl} alt={name} />
-                            <AvatarFallback className="text-[10px] sm:text-xs bg-secondary text-muted-foreground">
-                              {name.split(' ').map(n => n[0]).join('')}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs sm:text-sm text-foreground truncate">
+                      <div key={name} className="space-y-1 sm:space-y-1.5">
+                        {/* Top row: Avatar + Name on left, Amount + % on right */}
+                        <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                          <span className="text-foreground truncate flex items-center gap-1.5 sm:gap-2">
+                            <Avatar className="h-5 w-5 sm:h-6 sm:w-6 shrink-0">
+                              <AvatarImage src={imageUrl} alt={name} />
+                              <AvatarFallback className="text-[10px] sm:text-xs bg-secondary text-muted-foreground">
+                                {name.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
                             {name}
+                          </span>
+                          <span className="text-foreground shrink-0">
+                            {formatCurrency(contribution)} <span className="text-muted-foreground">({percentage}%)</span>
                           </span>
                         </div>
                         
-                        {/* Progress Bar - Center (neutral dark) */}
-                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        {/* Full-width progress bar below */}
+                        <div className="h-1.5 sm:h-2 bg-secondary rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-foreground/70 rounded-full transition-all"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        
-                        {/* Amount + Percentage - Right */}
-                        <span className="text-xs sm:text-sm text-foreground shrink-0 min-w-[90px] sm:min-w-[110px] text-right">
-                          {formatCurrency(contribution)} ({percentage}%)
-                        </span>
                       </div>
                     );
                   });
