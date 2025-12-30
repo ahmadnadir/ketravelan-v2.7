@@ -27,6 +27,9 @@ interface SettlementBreakdownModalProps {
   totalAmount: number;
   status: "pending" | "paid";
   contributingExpenses: SettlementExpense[];
+  reverseExpenses?: SettlementExpense[];  // Expenses in reverse direction (offset)
+  grossOwed?: number;                      // Total before netting
+  grossOffset?: number;                    // Amount offset (subtracted)
   currentUserId: string;
   onUploadProof?: () => void;
   onMarkAllPaid?: () => void;
@@ -42,6 +45,9 @@ export function SettlementBreakdownModal({
   totalAmount,
   status,
   contributingExpenses,
+  reverseExpenses = [],
+  grossOwed,
+  grossOffset,
   currentUserId,
   onUploadProof,
   onMarkAllPaid,
@@ -140,49 +146,104 @@ export function SettlementBreakdownModal({
         </DialogHeader>
 
         {/* Scrollable Body - Expense Breakdown List */}
-        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-3">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            Expense Breakdown
-          </h3>
+        <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-4">
+          {/* Section: What fromUser owes toUser */}
+          <div>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+              {fromUser.name.split(' ')[0]} owes {toUser.name.split(' ')[0]}
+            </h3>
 
-          {contributingExpenses.length > 0 ? (
-            contributingExpenses.map((expense) => {
-              const categoryData = getCategoryById(expense.category);
-              return (
-                <Card key={expense.expenseId} className="p-3 border-border/50">
-                  <div className="flex items-start gap-3">
-                    {/* Category Icon */}
-                    <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                      <span className="text-base">{categoryData.emoji}</span>
-                    </div>
-
-                    {/* Expense Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm truncate">
-                            {expense.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {formatDate(expense.date)}
-                          </p>
+            {contributingExpenses.length > 0 ? (
+              <div className="space-y-2">
+                {contributingExpenses.map((expense) => {
+                  const categoryData = getCategoryById(expense.category);
+                  return (
+                    <Card key={expense.expenseId} className="p-3 border-border/50">
+                      <div className="flex items-start gap-3">
+                        <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                          <span className="text-base">{categoryData.emoji}</span>
                         </div>
-                        <p className="font-semibold text-foreground text-sm shrink-0">
-                          RM {expense.shareAmount.toFixed(2)}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground text-sm truncate">
+                                {expense.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {formatDate(expense.date)}
+                              </p>
+                            </div>
+                            <p className="font-semibold text-foreground text-sm shrink-0">
+                              RM {expense.shareAmount.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className="mt-2">
+                            {getStatusBadge(expense.status)}
+                          </div>
+                        </div>
                       </div>
-                      <div className="mt-2">
-                        {getStatusBadge(expense.status)}
-                      </div>
-                    </div>
+                    </Card>
+                  );
+                })}
+                {grossOwed !== undefined && (
+                  <div className="flex justify-between items-center pt-2 px-1">
+                    <span className="text-sm text-muted-foreground">Subtotal</span>
+                    <span className="font-semibold text-foreground">RM {grossOwed.toFixed(2)}</span>
                   </div>
-                </Card>
-              );
-            })
-          ) : (
-            <Card className="p-6 text-center border-border/50">
-              <p className="text-sm text-muted-foreground">No expenses found for this settlement</p>
-            </Card>
+                )}
+              </div>
+            ) : (
+              <Card className="p-4 text-center border-border/50">
+                <p className="text-sm text-muted-foreground">No expenses</p>
+              </Card>
+            )}
+          </div>
+
+          {/* Section: Offset (reverse direction) */}
+          {reverseExpenses.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Less: {toUser.name.split(' ')[0]} owes {fromUser.name.split(' ')[0]}
+              </h3>
+              <div className="space-y-2">
+                {reverseExpenses.map((expense) => {
+                  const categoryData = getCategoryById(expense.category);
+                  return (
+                    <Card key={expense.expenseId} className="p-3 border-border/50 bg-muted/30">
+                      <div className="flex items-start gap-3">
+                        <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                          <span className="text-base">{categoryData.emoji}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground text-sm truncate">
+                                {expense.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {formatDate(expense.date)}
+                              </p>
+                            </div>
+                            <p className="font-semibold text-stat-red text-sm shrink-0">
+                              -RM {expense.shareAmount.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className="mt-2">
+                            {getStatusBadge(expense.status)}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+                {grossOffset !== undefined && (
+                  <div className="flex justify-between items-center pt-2 px-1">
+                    <span className="text-sm text-muted-foreground">Offset</span>
+                    <span className="font-semibold text-stat-red">-RM {grossOffset.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
 

@@ -285,23 +285,23 @@ export function TripExpenses() {
     });
   }, [settlements, directionFilter, statusFilter]);
 
-  // Compute contributing expenses for each settlement
-  const getContributingExpenses = (settlement: Settlement): SettlementExpense[] => {
-    const contributingExpenses: SettlementExpense[] = [];
+  // Compute contributing expenses for each settlement (both directions for net calculation)
+  const getContributingExpenses = (settlement: Settlement): {
+    owedToReceiver: SettlementExpense[];
+    owedToDebtor: SettlementExpense[];
+    grossOwed: number;
+    grossOffset: number;
+  } => {
+    const owedToReceiver: SettlementExpense[] = []; // fromUser owes toUser
+    const owedToDebtor: SettlementExpense[] = [];   // toUser owes fromUser (reverse/offset)
     
     expenses.forEach(expense => {
-      // Check if toUser paid for the expense and fromUser is in the split
-      const paidByToUser = expense.paidBy === settlement.toUser.name;
-      const fromUserInSplit = expense.splitWith?.includes(settlement.fromUser.id);
+      const payer = mockMembers.find(m => m.name === expense.paidBy);
+      if (!payer) return;
       
-      if (paidByToUser && fromUserInSplit) {
-        // Calculate share amount
-        const splitCount = expense.splitWith?.length || 1;
-        const shareAmount = expense.splitType === "equal" 
-          ? expense.amount / splitCount
-          : expense.customSplitAmounts?.find(s => s.memberId === settlement.fromUser.id)?.amount || (expense.amount / splitCount);
-        
-        // Determine payment status for this member
+      // Direction 1: toUser paid, fromUser owes
+      if (payer.id === settlement.toUser.id && expense.splitWith?.includes(settlement.fromUser.id)) {
+        const shareAmount = calculateUserShare(expense, settlement.fromUser.id);
         const memberPayment = expense.payments?.find(p => p.memberId === settlement.fromUser.id);
         const status: SettlementExpense["status"] = memberPayment?.status === "settled" 
           ? "settled" 
@@ -309,18 +309,45 @@ export function TripExpenses() {
             ? "submitted" 
             : "pending";
         
-        contributingExpenses.push({
-          expenseId: expense.id,
-          title: expense.title,
-          date: expense.date,
-          shareAmount,
-          status,
-          category: getCategoryFromTitle(expense.title),
-        });
+        if (status !== "settled") {
+          owedToReceiver.push({
+            expenseId: expense.id,
+            title: expense.title,
+            date: expense.date,
+            shareAmount,
+            status,
+            category: getCategoryFromTitle(expense.title),
+          });
+        }
+      }
+      
+      // Direction 2: fromUser paid, toUser owes (reverse - this gets subtracted)
+      if (payer.id === settlement.fromUser.id && expense.splitWith?.includes(settlement.toUser.id)) {
+        const shareAmount = calculateUserShare(expense, settlement.toUser.id);
+        const memberPayment = expense.payments?.find(p => p.memberId === settlement.toUser.id);
+        const status: SettlementExpense["status"] = memberPayment?.status === "settled" 
+          ? "settled" 
+          : memberPayment?.status === "submitted" 
+            ? "submitted" 
+            : "pending";
+        
+        if (status !== "settled") {
+          owedToDebtor.push({
+            expenseId: expense.id,
+            title: expense.title,
+            date: expense.date,
+            shareAmount,
+            status,
+            category: getCategoryFromTitle(expense.title),
+          });
+        }
       }
     });
     
-    return contributingExpenses;
+    const grossOwed = owedToReceiver.reduce((sum, e) => sum + e.shareAmount, 0);
+    const grossOffset = owedToDebtor.reduce((sum, e) => sum + e.shareAmount, 0);
+    
+    return { owedToReceiver, owedToDebtor, grossOwed, grossOffset };
   };
 
   // Handler for settlement card click
@@ -1101,34 +1128,40 @@ export function TripExpenses() {
       />
 
       {/* Settlement Breakdown Modal */}
-      {selectedSettlementForBreakdown && (
-        <SettlementBreakdownModal
-          open={breakdownModalOpen}
-          onOpenChange={(open) => {
-            setBreakdownModalOpen(open);
-            if (!open) setSelectedSettlementForBreakdown(null);
-          }}
-          fromUser={selectedSettlementForBreakdown.fromUser}
-          toUser={selectedSettlementForBreakdown.toUser}
-          totalAmount={selectedSettlementForBreakdown.amount}
-          status={selectedSettlementForBreakdown.status}
-          contributingExpenses={getContributingExpenses(selectedSettlementForBreakdown)}
-          currentUserId={mockMembers.find(m => m.name === CURRENT_USER)?.id || "1"}
-          onUploadProof={() => {
-            handleMarkPaid(selectedSettlementForBreakdown);
-            setBreakdownModalOpen(false);
-          }}
-          onMarkAllPaid={handleMarkAllPaidFromBreakdown}
-          onSendReminder={() => {
-            handleSendReminder(selectedSettlementForBreakdown);
-            setBreakdownModalOpen(false);
-          }}
-          onViewQR={() => {
-            handleViewQR(selectedSettlementForBreakdown);
-            setBreakdownModalOpen(false);
-          }}
-        />
-      )}
+      {selectedSettlementForBreakdown && (() => {
+        const breakdown = getContributingExpenses(selectedSettlementForBreakdown);
+        return (
+          <SettlementBreakdownModal
+            open={breakdownModalOpen}
+            onOpenChange={(open) => {
+              setBreakdownModalOpen(open);
+              if (!open) setSelectedSettlementForBreakdown(null);
+            }}
+            fromUser={selectedSettlementForBreakdown.fromUser}
+            toUser={selectedSettlementForBreakdown.toUser}
+            totalAmount={selectedSettlementForBreakdown.amount}
+            status={selectedSettlementForBreakdown.status}
+            contributingExpenses={breakdown.owedToReceiver}
+            reverseExpenses={breakdown.owedToDebtor}
+            grossOwed={breakdown.grossOwed}
+            grossOffset={breakdown.grossOffset}
+            currentUserId={mockMembers.find(m => m.name === CURRENT_USER)?.id || "1"}
+            onUploadProof={() => {
+              handleMarkPaid(selectedSettlementForBreakdown);
+              setBreakdownModalOpen(false);
+            }}
+            onMarkAllPaid={handleMarkAllPaidFromBreakdown}
+            onSendReminder={() => {
+              handleSendReminder(selectedSettlementForBreakdown);
+              setBreakdownModalOpen(false);
+            }}
+            onViewQR={() => {
+              handleViewQR(selectedSettlementForBreakdown);
+              setBreakdownModalOpen(false);
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }
