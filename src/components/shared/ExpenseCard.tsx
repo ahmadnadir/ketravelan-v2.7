@@ -119,20 +119,17 @@ export function ExpenseCard({
             </div>
           </div>
 
-          {/* Status Section (Conditional) */}
-          {isFullySettled ? (
-            <Badge variant="secondary" className="bg-stat-green text-stat-green-foreground gap-1.5">
-              <CheckCircle className="h-3 w-3" />
-              Fully settled
-            </Badge>
-          ) : paymentProgress > 0 ? (
+          {/* Status Section - Always show progress bar when there's progress */}
+          {paymentProgress > 0 && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{paymentProgress}% settled</span>
+                <span className={`text-xs ${isFullySettled ? "text-stat-green font-medium" : "text-muted-foreground"}`}>
+                  {paymentProgress}% settled
+                </span>
               </div>
               <Progress value={paymentProgress} className="h-1.5" />
             </div>
-          ) : null}
+          )}
 
           {/* Primary Action Button (Role-Aware) - Only show if not fully settled */}
           {role !== "settled" && (
