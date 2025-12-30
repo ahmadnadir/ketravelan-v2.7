@@ -29,9 +29,9 @@ export function InteractivePhoneMockup() {
   ];
 
   return (
-    <div className="relative mx-auto w-[280px] sm:w-[300px] md:w-[320px]">
+    <div className="relative mx-auto w-[260px] sm:w-[280px] lg:w-[300px]">
       {/* Floating Screen with shadow */}
-      <div className="relative bg-background rounded-[24px] sm:rounded-[28px] overflow-hidden shadow-2xl border border-border/30 h-[500px] sm:h-[540px] md:h-[580px] flex flex-col">
+      <div className="relative bg-background rounded-[24px] sm:rounded-[28px] overflow-hidden shadow-2xl border border-border/30 h-[460px] sm:h-[500px] lg:h-[540px] flex flex-col">
         {/* Header */}
         <div className="bg-card border-b border-border/50 px-2.5 py-2">
           <div className="flex items-center gap-2">
