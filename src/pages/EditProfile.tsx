@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { ImageCropModal } from "@/components/profile/ImageCropModal";
 
 // Available travel styles
 const availableTravelStyles = [
@@ -84,6 +85,8 @@ export default function EditProfile() {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (field: string, value: string) => {
@@ -144,17 +147,22 @@ export default function EditProfile() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const result = event.target?.result as string;
-      setProfileImage(result);
-      localStorage.setItem("userProfileImage", result);
-      toast({
-        title: "Photo updated",
-        description: "Your profile photo has been changed.",
-      });
+      setImageToCrop(result);
+      setCropModalOpen(true);
     };
     reader.readAsDataURL(file);
 
     // Reset input so the same file can be selected again
     e.target.value = "";
+  };
+
+  const handleCropComplete = (croppedImageUrl: string) => {
+    setProfileImage(croppedImageUrl);
+    localStorage.setItem("userProfileImage", croppedImageUrl);
+    toast({
+      title: "Photo updated",
+      description: "Your profile photo has been cropped and saved.",
+    });
   };
 
   const handleSave = async () => {
@@ -437,6 +445,14 @@ export default function EditProfile() {
           )}
         </Card>
       </div>
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        open={cropModalOpen}
+        onOpenChange={setCropModalOpen}
+        imageSrc={imageToCrop}
+        onCropComplete={handleCropComplete}
+      />
     </AppLayout>
   );
 }
