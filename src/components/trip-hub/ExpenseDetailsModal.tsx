@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Receipt, Users, User, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon } from "lucide-react";
+import { Receipt, Users, User, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon, Bell } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -519,9 +519,25 @@ export function ExpenseDetailsModal({
             ) : isPayer ? (
               /* Case B: Others owe me - Show pending payments */
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold text-foreground">Pending Payments from Others</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold text-foreground">Pending Payments from Others</h3>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const pendingCount = memberPayments.filter(p => p.status === "awaiting").length;
+                      toast({
+                        title: "Reminders sent",
+                        description: `${pendingCount} member(s) have been notified about their pending payment.`,
+                      });
+                    }}
+                    className="h-7 text-xs text-muted-foreground"
+                  >
+                    Remind All
+                  </Button>
                 </div>
 
                 <div className="space-y-2">
@@ -574,14 +590,31 @@ export function ExpenseDetailsModal({
                               </div>
                             </div>
                             {!isReceived && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewPayment(member, memberPayment!, amount)}
-                                className="h-8 text-xs"
-                              >
-                                View Payment
-                              </Button>
+                              <div className="flex items-center gap-1">
+                                {memberPayment?.status === "awaiting" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      toast({
+                                        title: "Reminder sent",
+                                        description: `${member.name} has been notified about their pending payment.`,
+                                      });
+                                    }}
+                                    className="h-8 w-8"
+                                  >
+                                    <Bell className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleViewPayment(member, memberPayment!, amount)}
+                                  className="h-8 text-xs"
+                                >
+                                  View Payment
+                                </Button>
+                              </div>
                             )}
                           </div>
                         </Card>
