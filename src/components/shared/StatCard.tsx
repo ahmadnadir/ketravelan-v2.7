@@ -18,13 +18,15 @@ interface StatCardProps {
   tooltip?: string;
   onClick?: () => void;
   className?: string;
+  variant?: "default" | "highlight" | "summary";
+  showIcon?: boolean;
 }
 
-const borderStyles = {
-  blue: "border-l-stat-blue",
-  green: "border-l-stat-green",
-  orange: "border-l-stat-orange",
-  red: "border-l-stat-red",
+const iconColors = {
+  blue: "text-stat-blue",
+  green: "text-stat-green",
+  orange: "text-stat-orange",
+  red: "text-stat-red",
 };
 
 export function StatCard({
@@ -37,19 +39,45 @@ export function StatCard({
   tooltip,
   onClick,
   className,
+  variant = "default",
+  showIcon = true,
 }: StatCardProps) {
+  // Summary variant: centered, no icon, larger text
+  if (variant === "summary") {
+    return (
+      <Card 
+        className={cn(
+          "p-4 sm:p-5 border-border/50 transition-all",
+          onClick && "cursor-pointer hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
+          className
+        )}
+        onClick={onClick}
+      >
+        <div className="text-center space-y-1">
+          <p className="text-[13px] sm:text-xs text-muted-foreground">{title}</p>
+          <p className="text-2xl sm:text-xl font-bold text-foreground">{value}</p>
+          {description && (
+            <p className="text-[12px] sm:text-[11px] text-muted-foreground/80">{description}</p>
+          )}
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card 
       className={cn(
-        "p-3 sm:p-4 border-border/50 transition-all border-l-[3px]",
-        borderStyles[color],
-        onClick && "cursor-pointer hover:border-primary/50 hover:border-l-primary hover:shadow-md active:scale-[0.98]",
+        "p-3 sm:p-4 border-border/50 transition-all",
+        onClick && "cursor-pointer hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
         className
       )}
       onClick={onClick}
     >
       <div className="space-y-0.5 sm:space-y-1">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {showIcon && (
+            <Icon className={cn("h-4 w-4 shrink-0", iconColors[color])} />
+          )}
           <p className="text-[13px] sm:text-xs md:text-sm text-muted-foreground">{title}</p>
           {tooltip && (
             <TooltipProvider delayDuration={200}>
