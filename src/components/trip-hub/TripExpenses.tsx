@@ -1004,7 +1004,10 @@ export function TripExpenses() {
       </div>
 
       {/* Tab Content - Extra padding for sticky CTA */}
-      <div className={subTab === "breakdown" || subTab === "expenses" ? "pb-24" : "pb-8"}>
+      <div 
+        key={subTab} 
+        className={`animate-fade-in ${subTab === "breakdown" || subTab === "expenses" ? "pb-24" : "pb-8"}`}
+      >
         {/* Breakdown Tab */}
         {subTab === "breakdown" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6">
