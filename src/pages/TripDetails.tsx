@@ -737,9 +737,6 @@ export default function TripDetails() {
               Message
             </Button>
           </div>
-          <p className="text-[10px] sm:text-xs text-muted-foreground text-center mt-1.5">
-            No payment required to join
-          </p>
         </div>
       </div>
 
@@ -769,13 +766,6 @@ export default function TripDetails() {
               />
               <p className="text-xs text-muted-foreground text-right">
                 {joinNote.length}/300
-              </p>
-            </div>
-            
-            {/* Info note */}
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground">
-                No payment is required at this stage. The organizer will review your request and respond within 24-48 hours.
               </p>
             </div>
             
