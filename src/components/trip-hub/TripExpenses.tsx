@@ -15,6 +15,7 @@ import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
 import { ExpenseDetailsModal } from "@/components/trip-hub/ExpenseDetailsModal";
 import { SettlementBreakdownModal, SettlementExpense } from "@/components/trip-hub/SettlementBreakdownModal";
 import { SettlementConfirmDialog } from "@/components/trip-hub/SettlementConfirmDialog";
+import { SettlementReceiptsModal } from "@/components/trip-hub/SettlementReceiptsModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -180,6 +181,9 @@ export function TripExpenses() {
   // Settlement confirmation dialog state
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingSettlement, setPendingSettlement] = useState<Settlement | null>(null);
+  
+  // Settlement receipts modal state
+  const [receiptsModalOpen, setReceiptsModalOpen] = useState(false);
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
@@ -449,6 +453,37 @@ export function TripExpenses() {
       setBreakdownModalOpen(false);
       setConfirmDialogOpen(true);
     }
+  };
+
+  // Handler for viewing settlement receipts
+  const handleViewSettlementReceipts = () => {
+    if (selectedSettlementForBreakdown) {
+      setBreakdownModalOpen(false);
+      setReceiptsModalOpen(true);
+    }
+  };
+
+  // Get receipts for a settlement
+  const getReceiptsForSettlement = (settlement: Settlement) => {
+    const { owedToReceiver } = getContributingExpenses(settlement);
+    
+    return owedToReceiver
+      .filter(e => e.status === "submitted")
+      .map(e => {
+        const expense = expenses.find(exp => exp.id === e.expenseId);
+        const payment = expense?.payments?.find(p => p.memberId === settlement.fromUser.id);
+        
+        return {
+          expenseId: e.expenseId,
+          expenseTitle: e.title,
+          amount: e.shareAmount,
+          date: e.date,
+          receiptUrl: payment?.receiptUrl || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop",
+          payerNote: payment?.payerNote,
+          uploadedAt: payment?.uploadedAt,
+          category: e.category,
+        };
+      });
   };
 
   // Card tap handlers
@@ -1235,9 +1270,30 @@ export function TripExpenses() {
               handleViewQR(selectedSettlementForBreakdown);
               setBreakdownModalOpen(false);
             }}
+            onViewReceipts={handleViewSettlementReceipts}
           />
         );
       })()}
+
+      {/* Settlement Receipts Modal */}
+      {selectedSettlementForBreakdown && (
+        <SettlementReceiptsModal
+          open={receiptsModalOpen}
+          onOpenChange={(open) => {
+            setReceiptsModalOpen(open);
+            if (!open) setSelectedSettlementForBreakdown(null);
+          }}
+          fromUser={selectedSettlementForBreakdown.fromUser}
+          toUser={selectedSettlementForBreakdown.toUser}
+          totalAmount={selectedSettlementForBreakdown.amount}
+          receipts={getReceiptsForSettlement(selectedSettlementForBreakdown)}
+          onMarkAllPaid={() => {
+            setPendingSettlement(selectedSettlementForBreakdown);
+            setReceiptsModalOpen(false);
+            setConfirmDialogOpen(true);
+          }}
+        />
+      )}
 
       {/* Settlement Confirmation Dialog */}
       {pendingSettlement && (
