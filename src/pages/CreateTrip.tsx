@@ -252,35 +252,56 @@ export default function CreateTrip() {
       <div className="px-4 pt-3 pb-5">
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
           <div className="grid grid-cols-2 gap-3">
-            {/* Back button - always visible */}
-            <Button
-              variant="outline"
-              onClick={currentStep === 1 ? () => setShowExitModal(true) : prevStep}
-              className="rounded-lg h-11 text-sm font-medium"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back
-            </Button>
-
-            {/* Continue/Publish button */}
-            {currentStep < 4 ? (
-              <Button
-                onClick={nextStep}
-                disabled={(currentStep === 1 && !draft.visibility) || (currentStep === 2 && !canProceedStep2())}
-                className="rounded-lg h-11 text-sm font-medium"
-              >
-                Continue
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
+            {publishedTripId ? (
+              // Post-publish buttons
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/trip/${publishedTripId}`)}
+                  className="rounded-lg h-11 text-sm font-medium"
+                >
+                  View Trip
+                </Button>
+                <Button
+                  onClick={() => setShowShareModal(true)}
+                  className="rounded-lg h-11 text-sm font-medium gap-2"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
+              </>
             ) : (
-              <Button
-                onClick={handlePublish}
-                disabled={!essentials}
-                className="rounded-lg h-11 text-sm font-medium"
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Publish
-              </Button>
+              // Pre-publish buttons
+              <>
+                <Button
+                  variant="outline"
+                  onClick={currentStep === 1 ? () => setShowExitModal(true) : prevStep}
+                  className="rounded-lg h-11 text-sm font-medium"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Back
+                </Button>
+
+                {currentStep < 4 ? (
+                  <Button
+                    onClick={nextStep}
+                    disabled={(currentStep === 1 && !draft.visibility) || (currentStep === 2 && !canProceedStep2())}
+                    className="rounded-lg h-11 text-sm font-medium"
+                  >
+                    Continue
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handlePublish}
+                    disabled={!essentials}
+                    className="rounded-lg h-11 text-sm font-medium"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Publish
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
