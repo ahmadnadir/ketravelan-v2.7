@@ -538,7 +538,7 @@ export function ExpenseDetailsModal({
                         </p>
                         <Badge 
                           variant={isPaid ? "default" : "outline"} 
-                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green text-stat-green-foreground" : "text-yellow-600 border-yellow-500/30 bg-yellow-500/10"}`}
+                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green text-stat-green-foreground border-transparent" : "text-amber-600 border-amber-500/30 bg-amber-500/10"}`}
                         >
                           {isPaid ? "Settled" : "Pending"}
                         </Badge>

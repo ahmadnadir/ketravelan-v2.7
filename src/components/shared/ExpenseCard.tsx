@@ -2,6 +2,7 @@ import { MoreVertical } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -142,7 +143,7 @@ export function ExpenseCard({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h4 className="font-semibold text-sm sm:text-base text-foreground truncate">{title}</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Paid by {paidBy} · {date}
               </p>
             </div>
@@ -189,18 +190,22 @@ export function ExpenseCard({
           </div>
 
           {/* Personal Impact Row - Primary Focus */}
-          <div className="flex items-center justify-between text-sm pt-1">
+          <div className="flex items-center justify-between text-xs pt-1">
             <span className="font-medium text-foreground">Your share:</span>
-            <span className="font-semibold">
-              {formatCurrency(personalShare.amount, currency)} · {" "}
-              <span className={cn(
-                "capitalize",
-                personalShare.status === "settled" && "text-stat-green",
-                personalShare.status === "pending" && "text-amber-600"
-              )}>
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
+              <Badge 
+                variant="outline"
+                className={cn(
+                  "text-[10px] px-2 py-0.5 font-medium",
+                  personalShare.status === "settled" 
+                    ? "bg-stat-green text-stat-green-foreground border-transparent" 
+                    : "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                )}
+              >
                 {personalShare.status === "settled" ? "Settled" : "Pending"}
-              </span>
-            </span>
+              </Badge>
+            </div>
           </div>
 
           {/* Primary Action Button - Always visible */}
