@@ -309,23 +309,12 @@ export default function CreateTrip() {
             
             <div className="grid gap-3">
               <Card
-                className={cn(
-                  "p-4 cursor-pointer transition-all border-2",
-                  draft.visibility === "public"
-                    ? "border-primary bg-primary/5"
-                    : "border-border/50 hover:border-primary/30"
-                )}
+                className="p-4 cursor-pointer transition-all border border-border/50 hover:border-primary/50 hover:shadow-md active:scale-[0.98]"
                 onClick={() => updateDraft("visibility", "public")}
               >
                 <div className="flex items-start gap-4">
-                  <div className={cn(
-                    "p-3 rounded-xl shrink-0",
-                    draft.visibility === "public" ? "bg-primary/10" : "bg-secondary"
-                  )}>
-                    <Globe className={cn(
-                      "h-6 w-6",
-                      draft.visibility === "public" ? "text-primary" : "text-muted-foreground"
-                    )} />
+                  <div className="p-3 rounded-xl shrink-0 bg-secondary">
+                    <Globe className="h-6 w-6 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground">Public Trip</h3>
@@ -358,23 +347,12 @@ export default function CreateTrip() {
               </Card>
 
               <Card
-                className={cn(
-                  "p-4 cursor-pointer transition-all border-2",
-                  draft.visibility === "private"
-                    ? "border-primary bg-primary/5"
-                    : "border-border/50 hover:border-primary/30"
-                )}
+                className="p-4 cursor-pointer transition-all border border-border/50 hover:border-primary/50 hover:shadow-md active:scale-[0.98]"
                 onClick={() => updateDraft("visibility", "private")}
               >
                 <div className="flex items-start gap-4">
-                  <div className={cn(
-                    "p-3 rounded-xl shrink-0",
-                    draft.visibility === "private" ? "bg-primary/10" : "bg-secondary"
-                  )}>
-                    <Lock className={cn(
-                      "h-6 w-6",
-                      draft.visibility === "private" ? "text-primary" : "text-muted-foreground"
-                    )} />
+                  <div className="p-3 rounded-xl shrink-0 bg-secondary">
+                    <Lock className="h-6 w-6 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground">Friends / Private</h3>
