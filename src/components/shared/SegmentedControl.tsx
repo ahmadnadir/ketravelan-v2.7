@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 interface SegmentedControlProps {
-  options: { label: string; value: string; count?: number }[];
+  options: { label: string; value: string; count?: number; hasUnread?: boolean }[];
   value: string;
   onChange: (value: string) => void;
   className?: string;
@@ -27,13 +27,8 @@ export function SegmentedControl({
           )}
         >
           <span className="truncate">{option.label}</span>
-          {option.count !== undefined && (
-            <span className={cn(
-              "ml-1 sm:ml-1.5",
-              value === option.value ? "text-primary" : "text-muted-foreground"
-            )}>
-              ({option.count})
-            </span>
+          {option.hasUnread && (
+            <span className="ml-1.5 h-2 w-2 rounded-full bg-red-500 inline-block" />
           )}
         </button>
       ))}
