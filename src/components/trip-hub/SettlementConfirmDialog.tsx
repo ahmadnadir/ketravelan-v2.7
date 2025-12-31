@@ -56,14 +56,14 @@ export function SettlementConfirmDialog({
             <span className="sr-only">Close</span>
           </button>
 
-          <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
+          <DialogTitle className="flex items-center gap-2 text-xl sm:text-lg font-semibold">
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Check className="h-4 w-4 text-primary" />
             </div>
             Confirm Settlement
           </DialogTitle>
           
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-[15px] sm:text-sm text-muted-foreground mt-2">
             Mark <span className="font-medium text-foreground">{formatCurrency(totalAmount)}</span> to{" "}
             <span className="font-medium text-foreground">{recipientName}</span> as settled?
           </p>
@@ -73,7 +73,7 @@ export function SettlementConfirmDialog({
         <div className="flex-1 overflow-auto p-4">
           {affectedExpenses.length > 0 && (
             <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-[15px] sm:text-sm font-medium text-foreground">
                 This will settle {affectedExpenses.length} expense{affectedExpenses.length > 1 ? "s" : ""}:
               </p>
               <ScrollArea className="max-h-48">
@@ -88,11 +88,11 @@ export function SettlementConfirmDialog({
                       >
                         <div className="flex items-center gap-2.5">
                           <span className="text-base">{emoji}</span>
-                          <span className="text-sm font-medium text-foreground truncate max-w-[180px]">
+                          <span className="text-[15px] sm:text-sm font-medium text-foreground truncate max-w-[180px]">
                             {expense.title}
                           </span>
                         </div>
-                        <Badge variant="secondary" className="text-xs font-semibold bg-background">
+                        <Badge variant="secondary" className="text-[13px] sm:text-xs font-semibold bg-background">
                           {formatCurrency(expense.shareAmount)}
                         </Badge>
                       </div>

@@ -337,7 +337,7 @@ export function ExpenseDetailsModal({
                 <span className="text-2xl">{category.emoji}</span>
               </div>
               <div className="w-full space-y-2">
-                <p className="text-lg font-semibold text-foreground">{expense.title}</p>
+                <p className="text-xl sm:text-lg font-semibold text-foreground">{expense.title}</p>
                 {/* Progress bar with amount - under title */}
                 <div className="space-y-2">
                   <span className={`text-sm font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : "text-amber-600"}`}>
@@ -377,9 +377,9 @@ export function ExpenseDetailsModal({
                 </Avatar>
                 
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground">Paid by</p>
-                  <p className="font-medium text-foreground truncate">{expense.paidBy}</p>
-                  <p className="text-xs text-muted-foreground">{formatDisplayDate(expense.date)}</p>
+                  <p className="text-[13px] sm:text-xs text-muted-foreground">Paid by</p>
+                  <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">{expense.paidBy}</p>
+                  <p className="text-[13px] sm:text-xs text-muted-foreground">{formatDisplayDate(expense.date)}</p>
                 </div>
                 
                 <div className="text-right shrink-0 flex items-center">
@@ -392,7 +392,7 @@ export function ExpenseDetailsModal({
             <div className="mt-4">
               <div className="flex items-center gap-2 mb-2">
                 <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
-                <h3 className="text-xs font-medium text-muted-foreground">Receipts</h3>
+                <h3 className="text-[13px] sm:text-xs font-medium text-muted-foreground">Receipts</h3>
               </div>
 
               {uploadedReceipts.length > 0 ? (
@@ -470,8 +470,8 @@ export function ExpenseDetailsModal({
                           <div className="absolute bottom-0 left-0 right-0 p-3">
                             <div className="flex items-center justify-between mb-2">
                               <div>
-                                <p className="text-[11px] text-foreground/80">{receipt.uploadedBy}</p>
-                                <p className="text-[11px] text-muted-foreground">{receipt.uploadedAt}</p>
+                                <p className="text-[13px] sm:text-[11px] text-foreground/80">{receipt.uploadedBy}</p>
+                                <p className="text-[13px] sm:text-[11px] text-muted-foreground">{receipt.uploadedAt}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -502,7 +502,7 @@ export function ExpenseDetailsModal({
               ) : (
                 <Card className="p-4 text-center border-border/50">
                   <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">No receipts uploaded yet</p>
+                  <p className="text-[15px] sm:text-sm text-muted-foreground">No receipts uploaded yet</p>
                 </Card>
               )}
             </div>
@@ -511,8 +511,8 @@ export function ExpenseDetailsModal({
             <div className="mt-4">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                <h3 className="text-xs font-medium text-muted-foreground">Split breakdown</h3>
-                <Badge variant="secondary" className="text-[10px] px-1.5">
+                <h3 className="text-[13px] sm:text-xs font-medium text-muted-foreground">Split breakdown</h3>
+                <Badge variant="secondary" className="text-[12px] sm:text-[10px] px-1.5">
                   {expense.splitType === "equal" ? "Equal" : "Custom"}
                 </Badge>
               </div>
@@ -537,12 +537,12 @@ export function ExpenseDetailsModal({
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9 shrink-0">
                           <AvatarImage src={member.imageUrl} alt={member.name} />
-                          <AvatarFallback className="text-xs">
+                          <AvatarFallback className="text-[13px] sm:text-xs">
                             {member.name.split(" ").map(n => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
-                        <p className="flex-1 min-w-0 text-sm font-medium text-foreground truncate">{member.name}</p>
-                        <p className="text-sm font-semibold text-foreground whitespace-nowrap">
+                        <p className="flex-1 min-w-0 text-[15px] sm:text-sm font-medium text-foreground truncate">{member.name}</p>
+                        <p className="text-[15px] sm:text-sm font-semibold text-foreground whitespace-nowrap">
                           RM {amount.toFixed(2)}
                         </p>
                         <StatusBadge 
@@ -565,15 +565,15 @@ export function ExpenseDetailsModal({
               <div className="space-y-4">
                 <Card className="p-4 text-center border-border/50 bg-stat-green/5">
                   <CheckCircle className="h-10 w-10 mx-auto text-stat-green mb-2" />
-                  <p className="font-medium text-foreground">All payments settled</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="font-medium text-foreground text-[15px] sm:text-sm">All payments settled</p>
+                  <p className="text-[15px] sm:text-sm text-muted-foreground mt-1">
                     Everyone has paid their share for this expense.
                   </p>
                 </Card>
 
                 {/* Payment History List */}
                 <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-muted-foreground">Payment History</h3>
+                  <h3 className="text-[15px] sm:text-sm font-medium text-muted-foreground">Payment History</h3>
                   {splitMembers
                     .filter(memberId => {
                       const member = getMemberById(memberId);
@@ -597,12 +597,12 @@ export function ExpenseDetailsModal({
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10 shrink-0">
                               <AvatarImage src={member.imageUrl} alt={member.name} />
-                              <AvatarFallback className="text-xs">
+                              <AvatarFallback className="text-[13px] sm:text-xs">
                                 {member.name.split(" ").map(n => n[0]).join("")}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
+                              <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">{member.name}</p>
                               <p className="text-base font-bold text-foreground">
                                 RM {amount.toFixed(2)}
                               </p>
@@ -639,7 +639,7 @@ export function ExpenseDetailsModal({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-sm font-semibold text-foreground">Pending Payments from Others</h3>
+                    <h3 className="text-[15px] sm:text-sm font-semibold text-foreground">Pending Payments from Others</h3>
                   </div>
                   <Button
                     variant="ghost"
@@ -687,12 +687,12 @@ export function ExpenseDetailsModal({
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10 shrink-0">
                               <AvatarImage src={member.imageUrl} alt={member.name} />
-                              <AvatarFallback className="text-xs">
+                              <AvatarFallback className="text-[13px] sm:text-xs">
                                 {member.name.split(" ").map(n => n[0]).join("")}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
+                              <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">{member.name}</p>
                               <p className="text-base font-bold text-foreground">
                                 RM {amount.toFixed(2)}
                               </p>
@@ -726,7 +726,7 @@ export function ExpenseDetailsModal({
               <div className="space-y-4">
                 {/* Amount Display - Clean centered design */}
                 <div className="bg-muted/50 rounded-2xl p-6 text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                  <p className="text-[15px] sm:text-sm text-muted-foreground mb-1">Amount</p>
                   <p className="text-3xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
                 </div>
 
@@ -735,7 +735,7 @@ export function ExpenseDetailsModal({
                   <div className="space-y-4">
                     {/* Optional Note */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">
+                      <label className="text-[15px] sm:text-sm font-medium text-foreground">
                         Add a note (optional)
                       </label>
                       <Textarea
@@ -748,7 +748,7 @@ export function ExpenseDetailsModal({
 
                     {/* Receipt Upload */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">
+                      <label className="text-[15px] sm:text-sm font-medium text-foreground">
                         Upload Payment Receipt
                       </label>
 
@@ -812,7 +812,7 @@ export function ExpenseDetailsModal({
                       Confirm Payment
                     </Button>
 
-                    <p className="text-xs text-muted-foreground text-center">
+                    <p className="text-[13px] sm:text-xs text-muted-foreground text-center">
                       {expense.paidBy} will be notified to confirm your payment.
                     </p>
                   </div>
