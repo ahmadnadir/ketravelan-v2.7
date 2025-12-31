@@ -102,8 +102,8 @@ export function SettlementCard({
 
       {/* Actions - Role-based at bottom */}
       <div className="flex flex-col gap-2 pt-3 border-t border-border/50">
-        {/* If I OWE someone: Show View QR and Upload Receipts */}
-        {isUserPayer && (
+        {/* If I OWE someone and PENDING: Show View QR and Upload Receipt */}
+        {isUserPayer && status === "pending" && (
           <>
             <Button 
               variant="outline" 
@@ -123,6 +123,19 @@ export function SettlementCard({
               Upload Receipt
             </Button>
           </>
+        )}
+        
+        {/* If I OWE someone and SETTLED: Show View Details */}
+        {isUserPayer && status === "settled" && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full h-10 text-sm"
+            onClick={(e) => { e.stopPropagation(); onViewDetails?.(); }}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            View Details
+          </Button>
         )}
         
         {/* If someone owes ME: Show View Details */}
