@@ -580,9 +580,10 @@ export function ExpenseDetailsModal({
                       const memberPayment = memberPayments.find(p => p.memberId === memberId);
 
                       return (
-                        <Card key={memberId} className="p-3 border-border/50">
+                        <Card key={memberId} className="p-4 border-border/50">
+                          {/* Top Row: Avatar + Name + Amount */}
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-9 w-9 shrink-0">
+                            <Avatar className="h-10 w-10 shrink-0">
                               <AvatarImage src={member.imageUrl} alt={member.name} />
                               <AvatarFallback className="text-xs">
                                 {member.name.split(" ").map(n => n[0]).join("")}
@@ -590,28 +591,32 @@ export function ExpenseDetailsModal({
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
-                              <p className="text-xs text-muted-foreground">RM {amount.toFixed(2)}</p>
+                              <p className="text-base font-bold text-foreground">
+                                RM {amount.toFixed(2)}
+                              </p>
                             </div>
+                          </div>
+                          
+                          {/* Status + View Receipt Row */}
+                          <div className="flex items-center justify-between mt-3 ml-13">
                             <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border-stat-green/30">
                               Settled
                             </Badge>
-                            {memberPayment?.receiptUrl && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setReviewingPayment({
-                                    member,
-                                    payment: memberPayment,
-                                    amount
-                                  });
-                                }}
-                                className="h-7 text-xs text-primary"
-                              >
-                                <Eye className="h-3.5 w-3.5 mr-1" />
-                                View Receipt
-                              </Button>
-                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setReviewingPayment({
+                                  member,
+                                  payment: memberPayment || { memberId, status: "settled" as const },
+                                  amount
+                                });
+                              }}
+                              className="h-7 text-xs"
+                            >
+                              <Eye className="h-3.5 w-3.5 mr-1" />
+                              View Receipt
+                            </Button>
                           </div>
                         </Card>
                       );
