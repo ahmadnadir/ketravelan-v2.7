@@ -569,12 +569,23 @@ export default function TripDetails() {
                   <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Budget Breakdown</h3>
                   <div className="space-y-2 sm:space-y-3">
                     {tripData.budgetBreakdown.map((item) => {
-                      const Icon = iconMap[item.icon] || Ticket;
+                      // Map budget categories to emojis
+                      const categoryEmojiMap: Record<string, string> = {
+                        'Transport': '🚗',
+                        'transport': '🚗',
+                        'Accommodation': '🏨',
+                        'accommodation': '🏨',
+                        'Food & Drinks': '🍴',
+                        'food': '🍴',
+                        'Activities': '🎫',
+                        'activities': '🎫',
+                      };
+                      const emoji = categoryEmojiMap[item.category] || categoryEmojiMap[item.icon] || '📦';
                       return (
                         <div key={item.category} className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                              <span className="text-base sm:text-lg">{emoji}</span>
                             </div>
                             <span className="text-xs sm:text-sm text-foreground truncate">{item.category}</span>
                           </div>
