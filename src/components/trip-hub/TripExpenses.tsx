@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, QrCode, SlidersHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -169,17 +169,6 @@ export function TripExpenses() {
 
   // Ref for scrolling to category breakdown
   const categoryBreakdownRef = useRef<HTMLDivElement>(null);
-  
-  // Ref for auto-scroll on tab change
-  const topScrollAnchorRef = useRef<HTMLDivElement>(null);
-  
-  // Auto-scroll to top when switching sub-tabs
-  useEffect(() => {
-    topScrollAnchorRef.current?.scrollIntoView({ 
-      behavior: "smooth", 
-      block: "start" 
-    });
-  }, [subTab]);
 
   // Modal states
   const [viewQROpen, setViewQROpen] = useState(false);
@@ -865,9 +854,6 @@ export function TripExpenses() {
 
   return (
     <div className="relative">
-      {/* Scroll anchor for auto-scroll on tab change */}
-      <div ref={topScrollAnchorRef} className="absolute top-0 left-0" />
-      
       {/* Always Visible: Header + Stat Cards */}
       <div className="px-3 sm:px-4 pt-3 sm:pt-4 space-y-4">
         {/* Header */}
