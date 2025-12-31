@@ -186,7 +186,7 @@ export function PaymentReviewModal({
               }}
             >
               <Bell className="h-4 w-4 mr-2" />
-              Send Reminder to {member.name}
+              Remind
             </Button>
           )}
 

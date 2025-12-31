@@ -251,7 +251,7 @@ export function SettlementBreakdownModal({
                   }}
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Upload Payment Proof
+                  Upload Receipt
                 </Button>
               ) : isViewerReceiving ? (
                 <Button 
@@ -262,7 +262,7 @@ export function SettlementBreakdownModal({
                   }}
                 >
                   <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Mark All as Paid
+                  Mark as Paid
                 </Button>
               ) : null
             )}

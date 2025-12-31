@@ -120,7 +120,7 @@ export function SettlementCard({
               onClick={(e) => { e.stopPropagation(); onCardClick?.(); }}
             >
               <Upload className="h-4 w-4 mr-2" />
-              Upload Receipts
+              Upload Receipt
             </Button>
           </>
         )}
