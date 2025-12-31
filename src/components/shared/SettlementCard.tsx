@@ -38,7 +38,7 @@ export function SettlementCard({
   const isUserReceiver = currentUserId === toUser.id; // Someone owes me
   return (
     <Card 
-      className="p-4 border-border/50 cursor-pointer hover:bg-muted/30 transition-colors active:scale-[0.99]"
+      className="p-4 border-border/50 cursor-pointer hover:border-primary/50 hover:shadow-md active:scale-[0.98] transition-all"
       onClick={onCardClick}
     >
       {/* Top Section: From → To (Compact Context) */}
