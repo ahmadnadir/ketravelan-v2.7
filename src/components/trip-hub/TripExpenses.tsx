@@ -145,6 +145,7 @@ export function TripExpenses() {
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [filterPayer, setFilterPayer] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | "awaiting" | "settled" | "pending">("all");
   
   // Settlement filters
   const [directionFilter, setDirectionFilter] = useState<"all" | "owesMe" | "iOwe">("all");
@@ -237,6 +238,17 @@ export function TripExpenses() {
   }, [expenses]);
 
   // Filter and sort expenses
+  // Helper to determine user's payment status for an expense
+  const getUserPaymentStatus = (expense: ExpenseData): "settled" | "awaiting" | "pending" | "payer" => {
+    const isPayer = expense.paidBy.toLowerCase().includes(CURRENT_USER.toLowerCase());
+    if (isPayer) return "payer";
+    
+    const userPayment = expense.payments?.find(p => p.memberId === CURRENT_USER_ID);
+    if (userPayment?.status === "settled") return "settled";
+    if (userPayment?.status === "submitted") return "awaiting";
+    return "pending";
+  };
+
   const filteredExpenses = useMemo(() => {
     let result = [...expenses];
     
@@ -250,6 +262,17 @@ export function TripExpenses() {
       result = result.filter(e => getCategoryFromTitle(e.title) === filterCategory);
     }
     
+    // Filter by status
+    if (filterStatus !== "all") {
+      result = result.filter(e => {
+        const status = getUserPaymentStatus(e);
+        if (filterStatus === "awaiting") return status === "awaiting";
+        if (filterStatus === "settled") return status === "settled" || e.paymentProgress === 100;
+        if (filterStatus === "pending") return status === "pending";
+        return true;
+      });
+    }
+    
     // Sort by date
     result.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
@@ -258,7 +281,7 @@ export function TripExpenses() {
     });
     
     return result;
-  }, [expenses, sortOrder, filterPayer, filterCategory]);
+  }, [expenses, sortOrder, filterPayer, filterCategory, filterStatus]);
 
   // Filter settlements based on direction and status filters
   const filteredSettlements = useMemo(() => {
@@ -952,6 +975,18 @@ export function TripExpenses() {
                   <SelectItem value="Food & Drinks">Food & Drinks</SelectItem>
                   <SelectItem value="Accommodation">Accommodation</SelectItem>
                   <SelectItem value="Activities">Activities</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterStatus} onValueChange={(value: "all" | "awaiting" | "settled" | "pending") => setFilterStatus(value)}>
+                <SelectTrigger className="flex-1 min-w-[100px] h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border">
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="awaiting">Awaiting Confirmation</SelectItem>
+                  <SelectItem value="pending">Pending Payment</SelectItem>
+                  <SelectItem value="settled">Settled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
