@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -31,6 +31,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { mockTrips, mockMembers } from "@/data/mockData";
 import { getPublishedTripById, PublishedTrip } from "@/lib/publishedTrips";
@@ -115,6 +116,10 @@ export default function TripDetails() {
   const [isFavourited, setIsFavourited] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Join confirmation modal state
+  const [showJoinConfirmModal, setShowJoinConfirmModal] = useState(false);
 
   // Try to load from published trips first, then fall back to mock data
   const publishedTrip = useMemo(() => id ? getPublishedTripById(id) : null, [id]);
@@ -711,12 +716,14 @@ export default function TripDetails() {
       <div className="fixed bottom-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
           <div className="grid grid-cols-2 gap-3">
-            <Link to={`/trip/${id}/hub`}>
-              <Button size="lg" className="w-full rounded-xl text-sm sm:text-base gap-2">
-                <UserPlus className="h-4 w-4" />
-                Request to Join
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="w-full rounded-xl text-sm sm:text-base gap-2"
+              onClick={() => setShowJoinConfirmModal(true)}
+            >
+              <UserPlus className="h-4 w-4" />
+              Request to Join
+            </Button>
             <Button size="lg" variant="outline" className="w-full rounded-xl text-sm sm:text-base gap-2">
               <MessageCircle className="h-4 w-4" />
               Message
@@ -727,6 +734,87 @@ export default function TripDetails() {
           </p>
         </div>
       </div>
+
+      {/* Request to Join Confirmation Modal */}
+      <Dialog open={showJoinConfirmModal} onOpenChange={setShowJoinConfirmModal}>
+        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-3 border-b border-border/50">
+            <DialogTitle>Request to Join Trip</DialogTitle>
+            <DialogDescription>
+              Here's what happens when you request to join
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="p-4 space-y-4">
+            {/* Steps */}
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-primary">1</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Submit your request</p>
+                  <p className="text-xs text-muted-foreground">
+                    The trip organizer will receive your join request
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-primary">2</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Wait for approval</p>
+                  <p className="text-xs text-muted-foreground">
+                    The organizer will review your request and respond within 24-48 hours
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-primary">3</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Get access to Trip Hub</p>
+                  <p className="text-xs text-muted-foreground">
+                    Once approved, you'll have full access to chat, itinerary, and expense splitting
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Info note */}
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground">
+                No payment is required at this stage. You can discuss payment details with the group after joining.
+              </p>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowJoinConfirmModal(false)}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowJoinConfirmModal(false);
+                  navigate(`/trip/${id}/hub`);
+                }}
+                className="rounded-xl gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Continue
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
     </>
   );
