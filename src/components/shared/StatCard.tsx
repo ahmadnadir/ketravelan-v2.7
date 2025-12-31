@@ -50,7 +50,7 @@ export function StatCard({
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
           <div className="flex items-center gap-1">
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">{title}</p>
+            <p className="text-[13px] sm:text-xs md:text-sm text-muted-foreground truncate">{title}</p>
             {tooltip && (
               <TooltipProvider delayDuration={200}>
                 <Tooltip>
@@ -64,12 +64,12 @@ export function StatCard({
               </TooltipProvider>
             )}
           </div>
-          <p className="text-base sm:text-xl font-bold text-foreground truncate">{value}</p>
+          <p className="text-lg sm:text-base md:text-xl font-bold text-foreground truncate">{value}</p>
           {subtitle && (
-            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{subtitle}</p>
+            <p className="text-[12px] sm:text-[10px] md:text-xs text-muted-foreground truncate">{subtitle}</p>
           )}
           {description && (
-            <p className="text-[10px] sm:text-xs text-muted-foreground/80 truncate">{description}</p>
+            <p className="text-[12px] sm:text-[10px] md:text-xs text-muted-foreground/80 truncate">{description}</p>
           )}
         </div>
         <div className={cn("p-1.5 sm:p-2 rounded-lg sm:rounded-xl shrink-0", colorStyles[color])}>

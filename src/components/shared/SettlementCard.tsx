@@ -53,12 +53,12 @@ export function SettlementCard({
             {fromUser.imageUrl ? (
               <img src={fromUser.imageUrl} alt={fromUser.name} className="h-full w-full object-cover" />
             ) : (
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-[13px] sm:text-xs font-medium text-muted-foreground">
                 {fromUser.name.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
-          <span className="text-xs font-medium text-foreground line-clamp-2 max-w-[90px] leading-tight">
+          <span className="text-[13px] sm:text-xs font-medium text-foreground line-clamp-2 max-w-[90px] leading-tight">
             {fromUser.name}
           </span>
         </Link>
@@ -72,14 +72,14 @@ export function SettlementCard({
           className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <span className="text-xs font-medium text-foreground line-clamp-2 max-w-[90px] leading-tight text-right">
+          <span className="text-[13px] sm:text-xs font-medium text-foreground line-clamp-2 max-w-[90px] leading-tight text-right">
             {toUser.name}
           </span>
           <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
             {toUser.imageUrl ? (
               <img src={toUser.imageUrl} alt={toUser.name} className="h-full w-full object-cover" />
             ) : (
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-[13px] sm:text-xs font-medium text-muted-foreground">
                 {toUser.name.charAt(0).toUpperCase()}
               </span>
             )}
@@ -92,14 +92,14 @@ export function SettlementCard({
         <p className="text-2xl font-bold text-foreground">
           {currency} {amount.toLocaleString()}
         </p>
-        <p className="text-xs text-muted-foreground mt-0.5">Net amount owed</p>
+        <p className="text-[13px] sm:text-xs text-muted-foreground mt-0.5">Net amount owed</p>
       </div>
 
       {/* Status Badge - Centered */}
       <div className="flex justify-center mb-3">
         <span
           className={cn(
-            "text-xs font-medium px-3 py-1 rounded-full",
+            "text-[13px] sm:text-xs font-medium px-3.5 sm:px-3 py-1.5 sm:py-1 rounded-full",
             status === "settled"
               ? "bg-stat-green/10 text-stat-green"
               : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
