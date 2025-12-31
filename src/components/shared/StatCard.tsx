@@ -20,11 +20,11 @@ interface StatCardProps {
   className?: string;
 }
 
-const colorStyles = {
-  blue: "bg-stat-blue/10 text-stat-blue",
-  green: "bg-stat-green/10 text-stat-green",
-  orange: "bg-stat-orange/10 text-stat-orange",
-  red: "bg-stat-red/10 text-stat-red",
+const borderStyles = {
+  blue: "border-l-stat-blue",
+  green: "border-l-stat-green",
+  orange: "border-l-stat-orange",
+  red: "border-l-stat-red",
 };
 
 export function StatCard({
@@ -41,8 +41,9 @@ export function StatCard({
   return (
     <Card 
       className={cn(
-        "p-3 sm:p-4 border-border/50 transition-all",
-        onClick && "cursor-pointer hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
+        "p-3 sm:p-4 border-border/50 transition-all border-l-[3px]",
+        borderStyles[color],
+        onClick && "cursor-pointer hover:border-primary/50 hover:border-l-primary hover:shadow-md active:scale-[0.98]",
         className
       )}
       onClick={onClick}
