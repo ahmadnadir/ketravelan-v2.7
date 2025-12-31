@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Receipt, Users, User, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon, Bell } from "lucide-react";
+import { useState, useRef } from "react";
+import { Receipt, Users, User, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon, Bell, Camera, X, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -183,13 +183,11 @@ export function ExpenseDetailsModal({
   };
 
   const handleSubmitProof = () => {
-    if (!uploadedFile) return;
-    
-    onUploadProof?.(uploadedFile, uploadNote);
+    onUploadProof?.(uploadedFile || undefined, uploadNote);
     
     toast({
-      title: "Payment proof uploaded",
-      description: `Your receipt has been sent to ${expense.paidBy} for confirmation.`,
+      title: uploadedFile ? "Payment proof uploaded" : "Payment marked as paid",
+      description: `${expense.paidBy} will be notified to confirm your payment.`,
     });
     
     // Reset upload state
@@ -197,6 +195,10 @@ export function ExpenseDetailsModal({
     setUploadPreview(null);
     setUploadNote("");
   };
+
+  // Refs for file inputs
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Handle marking a member's payment as settled
   const handleMarkMemberSettled = (memberId: string) => {
@@ -725,72 +727,87 @@ export function ExpenseDetailsModal({
 
                 {/* Upload Payment Proof Section */}
                 {currentUserPayment?.status !== "settled" && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <Separator />
                     
-                    <div className="flex items-center gap-2">
-                      <Upload className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="text-sm font-semibold text-foreground">Upload Payment Receipt</h3>
+                    {/* Optional Note - Always Visible */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Add a note (optional)
+                      </label>
+                      <Textarea
+                        value={uploadNote}
+                        onChange={(e) => setUploadNote(e.target.value)}
+                        placeholder="e.g., Paid via DuitNow"
+                        className="resize-none h-20 rounded-xl text-sm"
+                      />
                     </div>
 
-                    {!uploadedFile ? (
-                      <label className="block">
-                        <div className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors">
-                          <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground">
-                            Tap to upload receipt or screenshot
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            JPG, PNG up to 10MB
-                          </p>
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleFileChange}
-                        />
+                    {/* Receipt Upload */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Upload Payment Receipt
                       </label>
-                    ) : (
-                      <div className="space-y-3">
-                        {/* Preview */}
-                        <div className="relative rounded-xl overflow-hidden bg-secondary/30">
-                          <img 
-                            src={uploadPreview || ""} 
-                            alt="Receipt preview" 
-                            className="w-full h-40 object-cover"
+
+                      {uploadPreview ? (
+                        <div className="relative">
+                          <img
+                            src={uploadPreview}
+                            alt="Receipt preview"
+                            className="w-full h-40 object-cover rounded-xl border border-border"
+                          />
+                          <button
+                            onClick={handleRemoveFile}
+                            className="absolute top-2 right-2 p-1.5 bg-background/90 rounded-full hover:bg-background transition-colors"
+                          >
+                            <X className="h-4 w-4 text-foreground" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            ref={cameraInputRef}
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleFileChange}
+                            className="hidden"
+                          />
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="hidden"
                           />
                           <Button
-                            variant="secondary"
-                            size="sm"
-                            className="absolute top-2 right-2 h-7 text-xs"
-                            onClick={handleRemoveFile}
+                            variant="outline"
+                            className="flex-1 h-12 rounded-xl"
+                            onClick={() => cameraInputRef.current?.click()}
                           >
-                            Remove
+                            <Camera className="h-4 w-4 mr-2" />
+                            Camera
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="flex-1 h-12 rounded-xl"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload
                           </Button>
                         </div>
+                      )}
+                    </div>
 
-                        {/* Optional Note */}
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1.5">Add a note (optional)</p>
-                          <Textarea
-                            placeholder="e.g., Paid via TNG on Jan 16"
-                            value={uploadNote}
-                            onChange={(e) => setUploadNote(e.target.value)}
-                            className="min-h-[60px] text-sm resize-none"
-                          />
-                        </div>
-
-                        {/* Submit Button */}
-                        <Button 
-                          className="w-full"
-                          onClick={handleSubmitProof}
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Submit Proof
-                        </Button>
-                      </div>
-                    )}
+                    {/* Submit Button - Always visible */}
+                    <Button 
+                      className="w-full h-12 rounded-xl"
+                      onClick={handleSubmitProof}
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Confirm Payment
+                    </Button>
 
                     <p className="text-xs text-muted-foreground text-center">
                       {expense.paidBy} will be notified to confirm your payment.
