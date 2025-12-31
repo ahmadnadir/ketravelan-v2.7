@@ -116,6 +116,16 @@ export default {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        "settle-pulse": {
+          "0%, 100%": { 
+            boxShadow: "0 0 0 0 hsl(var(--stat-green) / 0.4)",
+            backgroundColor: "hsl(var(--stat-green) / 0.05)"
+          },
+          "50%": { 
+            boxShadow: "0 0 0 4px hsl(var(--stat-green) / 0)",
+            backgroundColor: "hsl(var(--stat-green) / 0.1)"
+          }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -123,6 +133,7 @@ export default {
         "slide-up": "slide-up 0.3s ease-out",
         "slide-down": "slide-down 0.3s ease-out",
         "fade-in": "fade-in 0.2s ease-out",
+        "settle-pulse": "settle-pulse 1s ease-in-out 3",
       },
     },
   },

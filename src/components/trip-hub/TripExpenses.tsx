@@ -196,6 +196,9 @@ export function TripExpenses() {
   // Settlement receipts modal state
   const [receiptsModalOpen, setReceiptsModalOpen] = useState(false);
 
+  // Track recently settled expense IDs for visual feedback
+  const [recentlySettledIds, setRecentlySettledIds] = useState<string[]>([]);
+
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
 
@@ -496,11 +499,24 @@ export function TripExpenses() {
   // Handler for confirming settlement from dialog
   const handleConfirmSettlement = () => {
     if (pendingSettlement) {
+      // Get affected expense IDs before cascade
+      const expenseUpdates = getExpensePaymentsForSettlement(pendingSettlement);
+      const uniqueIds = [...new Set(expenseUpdates.map(u => u.expenseId))];
+      
       cascadeSettlementToExpenses(pendingSettlement);
+      
+      // Set recently settled for visual feedback
+      setRecentlySettledIds(uniqueIds);
+      
+      // Auto-switch to expenses tab to show the changes
+      setSubTab("breakdown");
+      
+      // Clear highlight after 3 seconds
+      setTimeout(() => setRecentlySettledIds([]), 3000);
       
       toast({
         title: "Settlement completed",
-        description: `All payments with ${pendingSettlement.toUser.name} have been marked as settled`,
+        description: `${uniqueIds.length} expense(s) with ${pendingSettlement.toUser.name} marked as settled`,
       });
       
       setPendingSettlement(null);
@@ -1155,6 +1171,7 @@ export function TripExpenses() {
                     onPrimaryAction={() => handlePrimaryAction(expense)}
                     onEdit={() => openEditExpense(expense)}
                     onDelete={() => openDeleteExpense(expense)}
+                    isHighlighted={recentlySettledIds.includes(expense.id)}
                   />
                 ))
               ) : (
