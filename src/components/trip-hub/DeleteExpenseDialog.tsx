@@ -26,7 +26,7 @@ export function DeleteExpenseDialog({
 }: DeleteExpenseDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Expense</AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
