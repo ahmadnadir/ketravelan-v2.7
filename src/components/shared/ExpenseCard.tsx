@@ -143,8 +143,8 @@ export function ExpenseCard({
           {/* Header: Title and Amount */}
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h4 className="font-semibold text-sm sm:text-base text-foreground truncate">{title}</h4>
-              <p className="text-xs text-muted-foreground">
+              <h4 className="font-semibold text-[15px] sm:text-sm md:text-base text-foreground truncate">{title}</h4>
+              <p className="text-[13px] leading-relaxed sm:text-xs sm:leading-normal text-muted-foreground">
                 Paid by {paidBy} · {formatDisplayDate(date)}
               </p>
             </div>
@@ -177,7 +177,7 @@ export function ExpenseCard({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className={cn(
-                "text-xs font-medium",
+                "text-[13px] leading-relaxed sm:text-xs sm:leading-normal font-medium",
                 isFullySettled ? "text-stat-green" : "text-muted-foreground"
               )}>
                 Group settlement: {paymentProgress}%
@@ -191,14 +191,14 @@ export function ExpenseCard({
           </div>
 
           {/* Personal Impact Row - Primary Focus */}
-          <div className="flex items-center justify-between text-xs pt-1">
-            <span className="font-medium text-foreground">Your share:</span>
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-[13px] sm:text-xs font-medium text-foreground">Your share:</span>
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
+              <span className="text-[14px] sm:text-xs font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
               <Badge 
                 variant="status"
                 className={cn(
-                  "text-[10px] px-2 py-0.5 font-medium",
+                  "text-[12px] sm:text-[10px] px-2.5 sm:px-2 py-1 sm:py-0.5 font-medium",
                   personalShare.status === "settled" 
                     ? "bg-green-500/10 text-green-600 border-green-500/30" 
                     : "bg-amber-500/10 text-amber-600 border-amber-500/30"
