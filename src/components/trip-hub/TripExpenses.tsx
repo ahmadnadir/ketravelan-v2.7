@@ -8,7 +8,6 @@ import { StatCard } from "@/components/shared/StatCard";
 import { ExpenseCard } from "@/components/shared/ExpenseCard";
 import { SettlementCard } from "@/components/shared/SettlementCard";
 import { ViewQRModal } from "@/components/trip-hub/ViewQRModal";
-import { MarkAsPaidModal } from "@/components/trip-hub/MarkAsPaidModal";
 import { SendReminderModal } from "@/components/trip-hub/SendReminderModal";
 import { YourQRSection } from "@/components/trip-hub/YourQRSection";
 import { AddExpenseModal, NewExpense, ExpenseData } from "@/components/trip-hub/AddExpenseModal";
@@ -16,7 +15,7 @@ import { DeleteExpenseDialog } from "@/components/trip-hub/DeleteExpenseDialog";
 import { ReceiptViewerModal } from "@/components/trip-hub/ReceiptViewerModal";
 import { ExpenseDetailsModal } from "@/components/trip-hub/ExpenseDetailsModal";
 import { SettlementBreakdownModal, SettlementExpense } from "@/components/trip-hub/SettlementBreakdownModal";
-import { SettlementConfirmDialog } from "@/components/trip-hub/SettlementConfirmDialog";
+import { SettlementConfirmModal } from "@/components/trip-hub/SettlementConfirmModal";
 import { SettlementReceiptsModal } from "@/components/trip-hub/SettlementReceiptsModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -173,7 +172,6 @@ export function TripExpenses() {
 
   // Modal states
   const [viewQROpen, setViewQROpen] = useState(false);
-  const [markPaidOpen, setMarkPaidOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const [deleteExpenseOpen, setDeleteExpenseOpen] = useState(false);
@@ -190,9 +188,9 @@ export function TripExpenses() {
   const [breakdownModalOpen, setBreakdownModalOpen] = useState(false);
   const [selectedSettlementForBreakdown, setSelectedSettlementForBreakdown] = useState<Settlement | null>(null);
   
-  // Settlement confirmation dialog state
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [pendingSettlement, setPendingSettlement] = useState<Settlement | null>(null);
+  // Unified settlement confirmation modal state
+  const [settlementConfirmModalOpen, setSettlementConfirmModalOpen] = useState(false);
+  const [settlementToConfirm, setSettlementToConfirm] = useState<Settlement | null>(null);
   
   // Settlement receipts modal state
   const [receiptsModalOpen, setReceiptsModalOpen] = useState(false);
@@ -491,20 +489,20 @@ export function TripExpenses() {
     }).filter(Boolean) as { id: string; title: string; shareAmount: number }[];
   };
 
-  // Handler for initiating settlement confirmation (shows dialog)
+  // Handler for initiating settlement confirmation (direct to unified modal)
   const handleInitiateSettlement = (settlement: Settlement) => {
-    setPendingSettlement(settlement);
-    setConfirmDialogOpen(true);
+    setSettlementToConfirm(settlement);
+    setSettlementConfirmModalOpen(true);
   };
 
-  // Handler for confirming settlement from dialog
+  // Handler for confirming settlement from unified modal
   const handleConfirmSettlement = () => {
-    if (pendingSettlement) {
+    if (settlementToConfirm) {
       // Get affected expense IDs before cascade
-      const expenseUpdates = getExpensePaymentsForSettlement(pendingSettlement);
+      const expenseUpdates = getExpensePaymentsForSettlement(settlementToConfirm);
       const uniqueIds = [...new Set(expenseUpdates.map(u => u.expenseId))];
       
-      cascadeSettlementToExpenses(pendingSettlement);
+      cascadeSettlementToExpenses(settlementToConfirm);
       
       // Set recently settled for visual feedback
       setRecentlySettledIds(uniqueIds);
@@ -517,19 +515,19 @@ export function TripExpenses() {
       
       toast({
         title: "Settlement completed",
-        description: `${uniqueIds.length} expense(s) with ${pendingSettlement.toUser.name} marked as settled`,
+        description: `${uniqueIds.length} expense(s) with ${settlementToConfirm.toUser.name} marked as settled`,
       });
       
-      setPendingSettlement(null);
+      setSettlementToConfirm(null);
     }
   };
 
   // Handler for marking all as paid from breakdown modal
   const handleMarkAllPaidFromBreakdown = () => {
     if (selectedSettlementForBreakdown) {
-      setPendingSettlement(selectedSettlementForBreakdown);
+      setSettlementToConfirm(selectedSettlementForBreakdown);
       setBreakdownModalOpen(false);
-      setConfirmDialogOpen(true);
+      setSettlementConfirmModalOpen(true);
     }
   };
 
@@ -593,23 +591,15 @@ export function TripExpenses() {
     setViewQROpen(true);
   };
 
+  // Handler for "Mark as Paid" - directly opens unified confirmation modal
   const handleMarkPaid = (settlement: Settlement) => {
-    setSelectedSettlement(settlement);
-    setMarkPaidOpen(true);
+    setSettlementToConfirm(settlement);
+    setSettlementConfirmModalOpen(true);
   };
 
   const handleSendReminder = (settlement: Settlement) => {
     setSelectedSettlement(settlement);
     setReminderOpen(true);
-  };
-
-  const handleConfirmPayment = (note?: string, receiptFile?: File) => {
-    if (selectedSettlement) {
-      // Show confirmation dialog before settling
-      setPendingSettlement(selectedSettlement);
-      setMarkPaidOpen(false);
-      setConfirmDialogOpen(true);
-    }
   };
 
   const handleReminderSend = (message: string) => {
@@ -1460,21 +1450,6 @@ export function TripExpenses() {
         qrCodeUrl={selectedMemberForQR?.qrCodeUrl || selectedSettlement?.toUser.qrCodeUrl || userQRUrl || undefined}
       />
 
-      {/* Mark as Paid Modal */}
-      <MarkAsPaidModal
-        open={markPaidOpen}
-        onOpenChange={setMarkPaidOpen}
-        recipientName={selectedSettlement?.toUser.id === CURRENT_USER_ID 
-          ? selectedSettlement?.fromUser.name || "" 
-          : selectedSettlement?.toUser.name || ""}
-        amount={selectedSettlement?.amount || 0}
-        isReceiver={selectedSettlement?.toUser.id === CURRENT_USER_ID}
-        payerReceiptUrl={selectedSettlement?.toUser.id === CURRENT_USER_ID 
-          ? selectedSettlement?.receiptUrl 
-          : undefined}
-        onConfirm={handleConfirmPayment}
-      />
-
       {/* Send Reminder Modal */}
       <SendReminderModal
         open={reminderOpen}
@@ -1567,27 +1542,42 @@ export function TripExpenses() {
           totalAmount={selectedSettlementForBreakdown.amount}
           receipts={getReceiptsForSettlement(selectedSettlementForBreakdown)}
           onMarkAllPaid={() => {
-            setPendingSettlement(selectedSettlementForBreakdown);
+            setSettlementToConfirm(selectedSettlementForBreakdown);
             setReceiptsModalOpen(false);
-            setConfirmDialogOpen(true);
+            setSettlementConfirmModalOpen(true);
           }}
         />
       )}
 
-      {/* Settlement Confirmation Dialog */}
-      {pendingSettlement && (
-        <SettlementConfirmDialog
-          open={confirmDialogOpen}
-          onOpenChange={(open) => {
-            setConfirmDialogOpen(open);
-            if (!open) setPendingSettlement(null);
-          }}
-          recipientName={pendingSettlement.toUser.name}
-          totalAmount={pendingSettlement.amount}
-          affectedExpenses={getAffectedExpensesForDisplay(pendingSettlement)}
-          onConfirm={handleConfirmSettlement}
-        />
-      )}
+      {/* Unified Settlement Confirmation Modal */}
+      {settlementToConfirm && (() => {
+        const breakdown = getContributingExpenses(settlementToConfirm);
+        return (
+          <SettlementConfirmModal
+            open={settlementConfirmModalOpen}
+            onOpenChange={(open) => {
+              setSettlementConfirmModalOpen(open);
+              if (!open) setSettlementToConfirm(null);
+            }}
+            fromUser={settlementToConfirm.fromUser}
+            toUser={settlementToConfirm.toUser}
+            netAmount={settlementToConfirm.amount}
+            owedToReceiver={breakdown.owedToReceiver.map(e => ({ title: e.title, amount: e.shareAmount }))}
+            owedToDebtor={breakdown.owedToDebtor.map(e => ({ title: e.title, amount: e.shareAmount }))}
+            grossOwed={breakdown.grossOwed}
+            grossOffset={breakdown.grossOffset}
+            receiptUrl={settlementToConfirm.receiptUrl}
+            onViewReceipt={() => {
+              setViewingReceipt({ 
+                title: "Payment Receipt", 
+                url: settlementToConfirm.receiptUrl 
+              });
+              setReceiptViewerOpen(true);
+            }}
+            onConfirm={handleConfirmSettlement}
+          />
+        );
+      })()}
 
       {/* Filter & Sort Drawer - Mobile Only */}
       {isMobile && (
