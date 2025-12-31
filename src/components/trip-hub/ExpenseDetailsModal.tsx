@@ -687,41 +687,38 @@ export function ExpenseDetailsModal({
 
                       return (
                         <Card key={memberId} className="p-4 border-border/50">
-                          {/* Vertical Layout */}
-                          <div className="space-y-3">
-                            {/* Top Row: Avatar + Name + Amount */}
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10 shrink-0">
-                                <AvatarImage src={member.imageUrl} alt={member.name} />
-                                <AvatarFallback className="text-xs">
-                                  {member.name.split(" ").map(n => n[0]).join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
-                              </div>
-                              <p className="text-base font-bold text-foreground whitespace-nowrap">
+                          {/* Top Row: Avatar + Name + Amount */}
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 shrink-0">
+                              <AvatarImage src={member.imageUrl} alt={member.name} />
+                              <AvatarFallback className="text-xs">
+                                {member.name.split(" ").map(n => n[0]).join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
+                              <p className="text-base font-bold text-foreground">
                                 RM {amount.toFixed(2)}
                               </p>
                             </div>
-                            
-                            {/* Status Badge Row */}
-                            <div className="ml-13">
-                              {getStatusBadge()}
-                            </div>
-
-                            {/* Button Row - Full Width */}
-                            {!isSettled && (
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => setShowReceiptsModal(true)}
-                                className="w-full text-xs"
-                              >
-                                <Eye className="h-3.5 w-3.5 mr-1.5" />
-                                View Payment Receipts
-                              </Button>
-                            )}
+                          </div>
+                          
+                          {/* Status + View Payment Row */}
+                          <div className="flex items-center justify-between mt-3 ml-13">
+                            {getStatusBadge()}
+                            <Button
+                              variant={isSettled ? "ghost" : "outline"}
+                              size="sm"
+                              onClick={() => setReviewingPayment({
+                                member,
+                                payment: memberPayment || { memberId, status: "pending" as const },
+                                amount
+                              })}
+                              className="h-7 text-xs"
+                            >
+                              <Eye className="h-3.5 w-3.5 mr-1" />
+                              {isSettled ? "View Receipt" : "View Payment"}
+                            </Button>
                           </div>
                         </Card>
                       );
