@@ -131,7 +131,7 @@ export function ExpenseCard({
   return (
     <Card 
       className={cn(
-        "group p-3 sm:p-4 border-border/50 cursor-pointer hover:bg-secondary/20 hover:shadow-md transition-all duration-150",
+        "group p-3 sm:p-4 border-border/50 cursor-pointer hover:border-primary/50 hover:shadow-md active:scale-[0.98] transition-all",
         isHighlighted && "ring-2 ring-stat-green/50 animate-settle-pulse"
       )}
       onClick={handleCardClick}
