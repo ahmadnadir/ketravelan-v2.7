@@ -17,6 +17,8 @@ interface MarkAsPaidModalProps {
   currency?: string;
   /** If true, this is confirming payment FROM someone (receiver view) */
   isReceiver?: boolean;
+  /** The receipt URL uploaded by the payer (shown in receiver view) */
+  payerReceiptUrl?: string;
   onConfirm: (note?: string, receiptFile?: File) => void;
 }
 
@@ -27,6 +29,7 @@ export function MarkAsPaidModal({
   amount,
   currency = "RM",
   isReceiver = false,
+  payerReceiptUrl,
   onConfirm,
 }: MarkAsPaidModalProps) {
   const [note, setNote] = useState("");
@@ -87,77 +90,100 @@ export function MarkAsPaidModal({
             </p>
           </div>
 
-          {/* Optional Note */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
-              Add a note (optional)
-            </label>
-            <Textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g., Paid via DuitNow"
-              className="resize-none h-20 rounded-xl"
-            />
-          </div>
+          {/* PAYER VIEW - Note & Upload */}
+          {!isReceiver && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Add a note (optional)
+                </label>
+                <Textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="e.g., Paid via DuitNow"
+                  className="resize-none h-20 rounded-xl"
+                />
+              </div>
 
-          {/* Receipt Upload */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
-              Upload Payment Receipt
-            </label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Upload Payment Receipt
+                </label>
 
-            {previewUrl ? (
-              <div className="relative">
+                {previewUrl ? (
+                  <div className="relative">
+                    <img
+                      src={previewUrl}
+                      alt="Receipt preview"
+                      className="w-full h-40 object-cover rounded-xl border border-border"
+                    />
+                    <button
+                      onClick={handleRemoveReceipt}
+                      className="absolute top-2 right-2 p-1.5 bg-background/90 rounded-full hover:bg-background transition-colors"
+                    >
+                      <X className="h-4 w-4 text-foreground" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      className="flex-1 h-12 rounded-xl"
+                      onClick={() => cameraInputRef.current?.click()}
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      Camera
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 h-12 rounded-xl"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* RECEIVER VIEW - View payer's receipt */}
+          {isReceiver && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Payment Receipt from {recipientName}
+              </label>
+              {payerReceiptUrl ? (
                 <img
-                  src={previewUrl}
-                  alt="Receipt preview"
-                  className="w-full h-40 object-cover rounded-xl border border-border"
+                  src={payerReceiptUrl}
+                  alt="Payment receipt"
+                  className="w-full h-auto max-h-60 object-contain rounded-xl border border-border"
                 />
-                <button
-                  onClick={handleRemoveReceipt}
-                  className="absolute top-2 right-2 p-1.5 bg-background/90 rounded-full hover:bg-background transition-colors"
-                >
-                  <X className="h-4 w-4 text-foreground" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  ref={cameraInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <Button
-                  variant="outline"
-                  className="flex-1 h-12 rounded-xl"
-                  onClick={() => cameraInputRef.current?.click()}
-                >
-                  <Camera className="h-4 w-4 mr-2" />
-                  Camera
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 h-12 rounded-xl"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Confirm Button - Now in fixed footer */}
+              ) : (
+                <div className="py-8 text-center bg-secondary/30 rounded-xl">
+                  <p className="text-sm text-muted-foreground">
+                    No receipt uploaded yet
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         {/* Fixed Footer */}
@@ -167,7 +193,7 @@ export function MarkAsPaidModal({
             className="w-full h-12 rounded-xl"
           >
             <Check className="h-4 w-4 mr-2" />
-            Confirm Payment
+            {isReceiver ? "Confirm & Settle" : "Confirm Payment"}
           </Button>
         </div>
       </DialogContent>

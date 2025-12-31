@@ -56,6 +56,7 @@ interface Settlement {
   toUser: { id: string; name: string; imageUrl?: string; qrCodeUrl?: string };
   amount: number;
   status: "pending" | "paid";
+  receiptUrl?: string;
 }
 
 // Calculate net settlements between all members based on expense data
@@ -1355,6 +1356,9 @@ export function TripExpenses() {
           : selectedSettlement?.toUser.name || ""}
         amount={selectedSettlement?.amount || 0}
         isReceiver={selectedSettlement?.toUser.id === CURRENT_USER_ID}
+        payerReceiptUrl={selectedSettlement?.toUser.id === CURRENT_USER_ID 
+          ? selectedSettlement?.receiptUrl 
+          : undefined}
         onConfirm={handleConfirmPayment}
       />
 
