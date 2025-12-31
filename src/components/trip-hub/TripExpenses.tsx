@@ -545,7 +545,6 @@ export function TripExpenses() {
   };
 
   const handleYouPaidTap = () => {
-    setFilterPayer(CURRENT_USER);
     setSubTab("expenses");
   };
 
