@@ -98,7 +98,7 @@ export function ItinerarySection({
         description="Add a rough outline or key highlights"
         selected={itineraryType === 'notes'}
         onClick={() => onItineraryTypeChange('notes')}
-        recommended
+        
       >
         <Textarea
           value={simpleNotes}

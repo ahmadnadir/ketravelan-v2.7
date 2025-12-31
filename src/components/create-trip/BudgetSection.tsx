@@ -16,12 +16,12 @@ interface BudgetSectionProps {
 }
 
 const defaultCategories = [
-  'Flight',
-  'Stay',
-  'Food',
-  'Transport',
-  'Activities',
-  'Other',
+  { id: 'Flight', label: 'Flight', emoji: '✈️' },
+  { id: 'Stay', label: 'Stay', emoji: '🏨' },
+  { id: 'Food', label: 'Food', emoji: '🍴' },
+  { id: 'Transport', label: 'Transport', emoji: '🚗' },
+  { id: 'Activities', label: 'Activities', emoji: '🎫' },
+  { id: 'Other', label: 'Other', emoji: '📦' },
 ];
 
 export function BudgetSection({
@@ -71,7 +71,7 @@ export function BudgetSection({
         description="Set a total estimate and main categories"
         selected={budgetType === 'rough'}
         onClick={() => onBudgetTypeChange('rough')}
-        recommended
+        
       >
         <div className="space-y-4">
           <div className="space-y-2">
@@ -94,14 +94,15 @@ export function BudgetSection({
             <div className="flex flex-wrap gap-2">
               {defaultCategories.map((cat) => (
                 <PillChip
-                  key={cat}
-                  label={cat}
-                  selected={roughBudgetCategories.includes(cat)}
-                  onClick={() => toggleCategory(cat)}
+                  key={cat.id}
+                  label={cat.label}
+                  icon={cat.emoji}
+                  selected={roughBudgetCategories.includes(cat.id)}
+                  onClick={() => toggleCategory(cat.id)}
                 />
               ))}
               {roughBudgetCategories
-                .filter(c => !defaultCategories.includes(c))
+                .filter(c => !defaultCategories.some(dc => dc.id === c))
                 .map((cat) => (
                   <div key={cat} className="flex items-center gap-1">
                     <PillChip
@@ -151,12 +152,12 @@ export function BudgetSection({
       >
         <div className="space-y-3">
           {defaultCategories.map((cat) => (
-            <div key={cat} className="flex items-center gap-3">
-              <span className="text-sm text-foreground w-24">{cat}</span>
+            <div key={cat.id} className="flex items-center gap-3">
+              <span className="text-sm text-foreground w-24">{cat.emoji} {cat.label}</span>
               <Input
                 type="number"
-                value={detailedBudget[cat] || ''}
-                onChange={(e) => updateDetailedBudget(cat, Number(e.target.value))}
+                value={detailedBudget[cat.id] || ''}
+                onChange={(e) => updateDetailedBudget(cat.id, Number(e.target.value))}
                 placeholder="RM"
                 className="rounded-xl text-sm flex-1"
               />
