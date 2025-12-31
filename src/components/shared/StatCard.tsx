@@ -47,34 +47,29 @@ export function StatCard({
       )}
       onClick={onClick}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
-          <div className="flex items-center gap-1">
-            <p className="text-[13px] sm:text-xs md:text-sm text-muted-foreground truncate">{title}</p>
-            {tooltip && (
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Info className="h-3 w-3 text-muted-foreground/60 shrink-0 cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[200px] text-xs">
-                    {tooltip}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
-          <p className="text-lg sm:text-base md:text-xl font-bold text-foreground truncate">{value}</p>
-          {subtitle && (
-            <p className="text-[12px] sm:text-[10px] md:text-xs text-muted-foreground truncate">{subtitle}</p>
-          )}
-          {description && (
-            <p className="text-[12px] sm:text-[10px] md:text-xs text-muted-foreground/80 truncate">{description}</p>
+      <div className="space-y-0.5 sm:space-y-1">
+        <div className="flex items-center gap-1">
+          <p className="text-[13px] sm:text-xs md:text-sm text-muted-foreground">{title}</p>
+          {tooltip && (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Info className="h-3 w-3 text-muted-foreground/60 shrink-0 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[200px] text-xs">
+                  {tooltip}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
-        <div className={cn("p-1.5 sm:p-2 rounded-lg sm:rounded-xl shrink-0", colorStyles[color])}>
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-        </div>
+        <p className="text-lg sm:text-base md:text-xl font-bold text-foreground">{value}</p>
+        {subtitle && (
+          <p className="text-[12px] sm:text-[10px] md:text-xs text-muted-foreground">{subtitle}</p>
+        )}
+        {description && (
+          <p className="text-[12px] sm:text-[10px] md:text-xs text-muted-foreground/80">{description}</p>
+        )}
       </div>
     </Card>
   );
