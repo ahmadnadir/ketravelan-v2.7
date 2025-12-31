@@ -29,7 +29,7 @@ export function TripChat() {
           if (isSystem) {
             return (
               <div key={msg.id} className="flex justify-center">
-                <span className="text-[10px] sm:text-xs text-muted-foreground bg-secondary px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                <span className="text-xs sm:text-sm text-muted-foreground bg-secondary px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                   {msg.content}
                 </span>
               </div>
@@ -51,7 +51,7 @@ export function TripChat() {
               
               <div className={cn("flex flex-col gap-0.5 sm:gap-1", isOwn && "items-end")}>
                 {!isOwn && (
-                  <span className="text-[10px] sm:text-xs text-muted-foreground ml-2 sm:ml-3">
+                  <span className="text-xs sm:text-sm text-muted-foreground ml-2 sm:ml-3">
                     {msg.senderName}
                   </span>
                 )}
@@ -63,10 +63,10 @@ export function TripChat() {
                       : "bg-secondary text-secondary-foreground rounded-bl-sm"
                   )}
                 >
-                  <p className="text-xs sm:text-sm">{msg.content}</p>
+                  <p className="text-sm sm:text-base">{msg.content}</p>
                 </div>
                 <span className={cn(
-                  "text-[10px] sm:text-xs text-muted-foreground",
+                  "text-xs sm:text-sm text-muted-foreground",
                   isOwn ? "mr-1" : "ml-2 sm:ml-3"
                 )}>
                   {msg.timestamp}

@@ -41,12 +41,12 @@ export default function TripHub() {
               />
             </div>
             <div className="min-w-0">
-              <h1 className="font-semibold text-foreground truncate text-sm sm:text-base">{trip.title}</h1>
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
-                <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+            <h1 className="font-semibold text-foreground truncate text-base sm:text-lg">{trip.title}</h1>
+              <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                 <span className="truncate">{trip.destination}</span>
                 <span>•</span>
-                <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                 <span>{mockMembers.length}</span>
               </div>
             </div>
