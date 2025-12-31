@@ -35,6 +35,7 @@ export function BudgetSection({
   onDetailedBudgetChange,
 }: BudgetSectionProps) {
   const [customCategory, setCustomCategory] = useState('');
+  const [detailedCustomCategory, setDetailedCustomCategory] = useState('');
 
   const toggleCategory = (category: string) => {
     if (roughBudgetCategories.includes(category)) {
@@ -53,6 +54,19 @@ export function BudgetSection({
 
   const updateDetailedBudget = (category: string, value: number) => {
     onDetailedBudgetChange({ ...detailedBudget, [category]: value });
+  };
+
+  const addDetailedCustomCategory = () => {
+    if (detailedCustomCategory.trim() && !detailedBudget.hasOwnProperty(detailedCustomCategory.trim())) {
+      updateDetailedBudget(detailedCustomCategory.trim(), 0);
+      setDetailedCustomCategory('');
+    }
+  };
+
+  const removeDetailedCategory = (category: string) => {
+    const newBudget = { ...detailedBudget };
+    delete newBudget[category];
+    onDetailedBudgetChange(newBudget);
   };
 
   return (
@@ -163,6 +177,57 @@ export function BudgetSection({
               />
             </div>
           ))}
+          
+          {/* Custom categories */}
+          {Object.keys(detailedBudget)
+            .filter(cat => !defaultCategories.some(dc => dc.id === cat))
+            .map((cat) => (
+              <div key={cat} className="flex items-center gap-3">
+                <span className="text-sm text-foreground w-24">📦 {cat}</span>
+                <Input
+                  type="number"
+                  value={detailedBudget[cat] || ''}
+                  onChange={(e) => updateDetailedBudget(cat, Number(e.target.value))}
+                  placeholder="RM"
+                  className="rounded-xl text-sm flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeDetailedCategory(cat)}
+                  className="p-1 hover:bg-secondary rounded"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </div>
+            ))}
+          
+          {/* Add custom category input */}
+          {Object.keys(detailedBudget).length < 10 && (
+            <div className="flex gap-2 mt-2">
+              <Input
+                value={detailedCustomCategory}
+                onChange={(e) => setDetailedCustomCategory(e.target.value)}
+                placeholder="Add custom category"
+                className="rounded-xl text-sm flex-1"
+                maxLength={20}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addDetailedCustomCategory();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={addDetailedCustomCategory}
+                disabled={!detailedCustomCategory.trim()}
+                className="p-2 bg-secondary rounded-xl hover:bg-secondary/80 disabled:opacity-50"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          
           <div className="pt-2 border-t border-border flex items-center justify-between">
             <span className="text-sm font-medium text-foreground">Total</span>
             <span className="text-sm font-bold text-primary">
