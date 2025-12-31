@@ -64,6 +64,16 @@
     --nav-inactive: 220 10% 60%;
     --nav-active: 220 20% 15%;
 
+    /* Member contribution colors - vibrant, playful palette */
+    --member-coral: 16 85% 60%;
+    --member-teal: 175 70% 45%;
+    --member-violet: 280 65% 60%;
+    --member-sky: 195 80% 55%;
+    --member-rose: 340 75% 60%;
+    --member-amber: 45 95% 55%;
+    --member-mint: 160 60% 50%;
+    --member-indigo: 240 60% 60%;
+
     /* Sidebar kept for compatibility */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -112,6 +122,16 @@
     --sidebar-accent-foreground: 220 14% 90%;
     --sidebar-border: 220 20% 20%;
     --sidebar-ring: 220 20% 85%;
+
+    /* Member contribution colors - dark mode adjustments */
+    --member-coral: 16 75% 55%;
+    --member-teal: 175 60% 50%;
+    --member-violet: 280 55% 65%;
+    --member-sky: 195 70% 60%;
+    --member-rose: 340 65% 55%;
+    --member-amber: 45 85% 50%;
+    --member-mint: 160 50% 55%;
+    --member-indigo: 240 50% 65%;
   }
 }
 
