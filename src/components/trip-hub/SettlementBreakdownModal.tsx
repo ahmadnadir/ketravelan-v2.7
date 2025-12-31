@@ -132,7 +132,7 @@ export function SettlementBreakdownModal({
         <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-4">
           {/* Section: What fromUser owes toUser */}
           <div>
-            <h3 className="text-[13px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            <h3 className="text-[13px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 bg-background">
               {isViewerOwing ? "You owe" : `${fromUser.name.split(' ')[0]} owes`} {isViewerReceiving ? "You" : toUser.name.split(' ')[0]}
             </h3>
 
@@ -184,8 +184,8 @@ export function SettlementBreakdownModal({
 
           {/* Section: Offset (reverse direction) */}
           {reverseExpenses.length > 0 && (
-            <div>
-              <h3 className="text-[13px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            <div className="pt-2 border-t border-border/30">
+              <h3 className="text-[13px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 bg-background">
                 Less: {isViewerReceiving ? "You owe" : `${toUser.name.split(' ')[0]} owes`} {isViewerOwing ? "You" : fromUser.name.split(' ')[0]}
               </h3>
               <div className="space-y-2">
@@ -220,7 +220,7 @@ export function SettlementBreakdownModal({
                   );
                 })}
                 {grossOffset !== undefined && (
-                  <div className="flex justify-between items-center pt-2 px-1">
+                  <div className="flex justify-between items-center pt-2 px-1 border-t border-border/20 mt-2">
                     <span className="text-[15px] sm:text-sm text-muted-foreground">Offset</span>
                     <span className="font-semibold text-stat-red text-[15px] sm:text-sm">-RM {grossOffset.toFixed(2)}</span>
                   </div>
