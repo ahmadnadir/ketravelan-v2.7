@@ -25,11 +25,9 @@ export function OptionCard({
   return (
     <Card
       className={cn(
-        "p-4 cursor-pointer transition-all border-2",
+        "p-4 cursor-pointer transition-all border",
         "hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
-        selected
-          ? "border-primary bg-primary/5 shadow-md"
-          : "border-border/50"
+        "border-border/50"
       )}
       onClick={onClick}
     >
