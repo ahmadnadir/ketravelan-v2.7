@@ -313,6 +313,22 @@ export const mockExpenses: ExpenseData[] = [
       { memberId: "4", status: "settled" },
     ]
   },
+  { 
+    id: "6", 
+    title: "Boat tour tickets", 
+    amount: 200, 
+    paidBy: "Priya Kumar",
+    date: "Jan 17, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 50, 
+    category: "Activities", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "5"],
+    payments: [
+      { memberId: "1", status: "pending" },
+      { memberId: "5", status: "settled" },
+    ]
+  },
 ];
 
 export const mockMessages = [
