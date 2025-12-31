@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from "react";
-import { ChevronRight } from "lucide-react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ScrollableTabBarProps {
@@ -16,16 +16,43 @@ export function ScrollableTabBar({
   className,
 }: ScrollableTabBarProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [showScrollHint, setShowScrollHint] = useState(true);
+  const [showLeftHint, setShowLeftHint] = useState(false);
+
+  // Scroll a specific tab into view (centered if possible)
+  const scrollToTab = useCallback((tabValue: string) => {
+    const container = scrollRef.current;
+    const tab = tabRefs.current.get(tabValue);
+    
+    if (!container || !tab) return;
+    
+    // Calculate scroll position to center the tab
+    const tabCenter = tab.offsetLeft + tab.offsetWidth / 2;
+    const containerCenter = container.clientWidth / 2;
+    const scrollTarget = tabCenter - containerCenter;
+    
+    container.scrollTo({
+      left: Math.max(0, scrollTarget),
+      behavior: "smooth"
+    });
+  }, []);
+
+  // Handle scroll position to update hints
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    
+    const isAtEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 10;
+    const isAtStart = el.scrollLeft <= 10;
+    
+    setShowScrollHint(!isAtEnd);
+    setShowLeftHint(!isAtStart);
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-
-    const handleScroll = () => {
-      const isAtEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 10;
-      setShowScrollHint(!isAtEnd);
-    };
 
     // Initial check
     handleScroll();
@@ -40,10 +67,43 @@ export function ScrollableTabBar({
       el.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [handleScroll]);
+
+  // Auto-scroll to active tab on mount and when value changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollToTab(value);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [value, scrollToTab]);
+
+  const handleTabClick = (tabValue: string) => {
+    onChange(tabValue);
+    scrollToTab(tabValue);
+  };
 
   return (
     <div className={cn("relative", className)}>
+      {/* Left edge fade gradient */}
+      <div
+        className={cn(
+          "absolute left-0 top-0 bottom-0 w-10 pointer-events-none transition-opacity duration-300 rounded-l-xl z-10",
+          "bg-gradient-to-r from-secondary to-transparent",
+          showLeftHint ? "opacity-100" : "opacity-0"
+        )}
+      />
+
+      {/* Left chevron hint */}
+      <div
+        className={cn(
+          "absolute left-1.5 top-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-300 z-10",
+          showLeftHint ? "opacity-50" : "opacity-0"
+        )}
+      >
+        <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+      </div>
+
       {/* Scrollable container */}
       <div
         ref={scrollRef}
@@ -58,7 +118,10 @@ export function ScrollableTabBar({
         {options.map((option) => (
           <button
             key={option.value}
-            onClick={() => onChange(option.value)}
+            ref={(el) => {
+              if (el) tabRefs.current.set(option.value, el);
+            }}
+            onClick={() => handleTabClick(option.value)}
             className={cn(
               "min-h-[44px] px-4 text-sm font-medium rounded-lg whitespace-nowrap transition-all flex items-center justify-center",
               value === option.value
@@ -80,7 +143,7 @@ export function ScrollableTabBar({
         )}
       />
 
-      {/* Chevron hint */}
+      {/* Right chevron hint */}
       <div
         className={cn(
           "absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-300",
