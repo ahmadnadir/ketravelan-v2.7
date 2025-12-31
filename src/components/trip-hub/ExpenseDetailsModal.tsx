@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Receipt, Users, User, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon, Bell, Camera, X, Check, Pencil } from "lucide-react";
+import { Receipt, Users, User, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon, Bell, Camera, X, Check, Pencil, Maximize2, ArrowLeft } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -62,7 +62,8 @@ export function ExpenseDetailsModal({
 }: ExpenseDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [zoom, setZoom] = useState(1);
-  const [showFullReceipt, setShowFullReceipt] = useState(false);
+  const [showFullReceipt, setShowFullReceipt] = useState(true);
+  const [showFullScreenReceipt, setShowFullScreenReceipt] = useState(false);
   
   // Upload state for Payments tab
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -123,7 +124,8 @@ export function ExpenseDetailsModal({
       setUploadPreview(null);
       setUploadNote("");
       setZoom(1);
-      setShowFullReceipt(false);
+      setShowFullReceipt(true);
+      setShowFullScreenReceipt(false);
       setReviewingPayment(null);
       setIsEditingNote(false);
       setIsEditingReceipt(false);
@@ -438,10 +440,11 @@ export function ExpenseDetailsModal({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setShowFullReceipt(false)}
-                                className="h-7 text-xs"
+                                onClick={() => setShowFullScreenReceipt(true)}
+                                className="h-7 text-xs gap-1"
                               >
-                                Collapse
+                                <Maximize2 className="h-3 w-3" />
+                                Expand
                               </Button>
                             </div>
                           </div>
@@ -453,7 +456,8 @@ export function ExpenseDetailsModal({
                               <img
                                 src={receipt.url}
                                 alt="Receipt"
-                                className="rounded-lg max-w-full"
+                                className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => setShowFullScreenReceipt(true)}
                               />
                             </div>
                           </div>
@@ -917,6 +921,49 @@ export function ExpenseDetailsModal({
             });
           }}
         />
+
+        {/* Full-Screen Receipt Modal */}
+        {showFullScreenReceipt && receiptUrl && (
+          <div className="fixed inset-0 z-[100] bg-background flex flex-col">
+            {/* Header with Back button */}
+            <div className="flex items-center justify-between p-4 border-b border-border/50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowFullScreenReceipt(false)}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={handleZoomOut} disabled={zoom <= 0.5}>
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground min-w-[3rem] text-center">
+                  {Math.round(zoom * 100)}%
+                </span>
+                <Button variant="ghost" size="icon" onClick={handleZoomIn} disabled={zoom >= 3}>
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={handleDownload}>
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            {/* Full-screen image viewer */}
+            <div className="flex-1 overflow-auto flex items-center justify-center p-4">
+              <div style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}>
+                <img
+                  src={receiptUrl}
+                  alt="Receipt full view"
+                  className="max-w-full max-h-full rounded-xl shadow-lg"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
