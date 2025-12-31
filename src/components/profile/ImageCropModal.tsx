@@ -132,12 +132,12 @@ export function ImageCropModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-sm sm:text-base">Crop Photo</DialogTitle>
+      <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden max-h-[90vh]">
+        <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
+          <DialogTitle className="text-lg font-semibold">Crop Photo</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex flex-col gap-3">
+        <div className="flex-1 overflow-hidden flex flex-col gap-3 p-4">
           {/* Zoom controls */}
           <div className="flex items-center justify-center gap-2">
             <Button
@@ -202,7 +202,7 @@ export function ImageCropModal({
           </p>
         </div>
 
-        <DialogFooter className="flex-row gap-2 sm:gap-2">
+        <DialogFooter className="flex-none p-4 pt-3 border-t border-border/50 flex-row gap-2 sm:gap-2">
           <Button
             type="button"
             variant="outline"

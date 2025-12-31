@@ -1,4 +1,4 @@
-import { ArrowRight, X, Bell, Upload, Receipt, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Bell, Upload, Receipt, CheckCircle2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -74,15 +74,6 @@ export function SettlementBreakdownModal({
       <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
         {/* Fixed Header */}
         <DialogHeader className="flex-none p-4 pb-4 border-b border-border/50">
-          {/* Close button */}
-          <button
-            onClick={() => onOpenChange(false)}
-            className="absolute right-4 top-4 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors focus:outline-none"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </button>
-
           {/* From → To Visual */}
           <div className="flex items-center justify-center gap-4 pt-2">
             {/* From User */}
