@@ -337,13 +337,13 @@ export default function CreateTrip() {
                     </ul>
                   </div>
                   <div className={cn(
-                    "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0",
+                    "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
                     draft.visibility === "public"
                       ? "border-primary bg-primary"
                       : "border-muted-foreground/30"
                   )}>
                     {draft.visibility === "public" && (
-                      <Check className="h-3 w-3 text-primary-foreground" />
+                      <Check className="h-3 w-3 text-primary-foreground animate-scale-in" />
                     )}
                   </div>
                 </div>
@@ -378,13 +378,13 @@ export default function CreateTrip() {
                     </ul>
                   </div>
                   <div className={cn(
-                    "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0",
+                    "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
                     draft.visibility === "private"
                       ? "border-primary bg-primary"
                       : "border-muted-foreground/30"
                   )}>
                     {draft.visibility === "private" && (
-                      <Check className="h-3 w-3 text-primary-foreground" />
+                      <Check className="h-3 w-3 text-primary-foreground animate-scale-in" />
                     )}
                   </div>
                 </div>
