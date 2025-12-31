@@ -227,8 +227,8 @@ export function ExpenseDetailsModal({
     onUploadProof?.(uploadedFile || undefined, uploadNote);
     
     toast({
-      title: uploadedFile ? "Payment proof uploaded" : "Payment marked as paid",
-      description: `${expense.paidBy} will be notified to confirm your payment.`,
+      title: "Payment proof uploaded",
+      description: `${expense.paidBy} will review and acknowledge your payment.`,
     });
     
     // Reset upload form state
