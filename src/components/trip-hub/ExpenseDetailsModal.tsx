@@ -733,8 +733,8 @@ export function ExpenseDetailsModal({
                   <p className="text-3xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
                 </div>
 
-                {/* PENDING State - Show upload form */}
-                {currentUserPayment?.status === "pending" && (
+                {/* PENDING State - Show upload form (also handles undefined status for users who owe) */}
+                {(!currentUserPayment || currentUserPayment.status === "pending") && !isPayer && (
                   <div className="space-y-4">
                     {/* Optional Note */}
                     <div className="space-y-2">
