@@ -309,7 +309,10 @@ export default function CreateTrip() {
             
             <div className="grid gap-3">
               <Card
-                className="p-4 cursor-pointer transition-all border border-border/50 hover:border-primary/50 hover:shadow-md active:scale-[0.98]"
+                className={cn(
+                  "p-4 cursor-pointer transition-all border hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
+                  draft.visibility === "public" ? "border-primary/50" : "border-border/50"
+                )}
                 onClick={() => updateDraft("visibility", "public")}
               >
                 <div className="flex items-start gap-4">
@@ -347,7 +350,10 @@ export default function CreateTrip() {
               </Card>
 
               <Card
-                className="p-4 cursor-pointer transition-all border border-border/50 hover:border-primary/50 hover:shadow-md active:scale-[0.98]"
+                className={cn(
+                  "p-4 cursor-pointer transition-all border hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
+                  draft.visibility === "private" ? "border-primary/50" : "border-border/50"
+                )}
                 onClick={() => updateDraft("visibility", "private")}
               >
                 <div className="flex items-start gap-4">
