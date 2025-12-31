@@ -166,7 +166,7 @@ export function MarkAsPaidModal({
           {/* RECEIVER VIEW - View payer's receipt */}
           {isReceiver && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+              <label className="text-sm font-medium text-foreground block text-center">
                 Payment Receipt from {recipientName}
               </label>
               {payerReceiptUrl ? (
