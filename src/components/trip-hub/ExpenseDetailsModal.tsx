@@ -45,6 +45,7 @@ interface MemberPayment {
   receiptUrl?: string;
   uploadedAt?: string;
   payerNote?: string;
+  confirmedByPayer?: boolean;
 }
 
 export function ExpenseDetailsModal({
@@ -208,7 +209,7 @@ export function ExpenseDetailsModal({
       hour: 'numeric', minute: '2-digit'
     });
     
-    // Update local state for immediate UI feedback - mark as settled directly
+    // Update local state for immediate UI feedback - mark as settled but not confirmed
     setMemberPayments(prev => 
       prev.map(p => p.memberId === currentUserId 
         ? { 
@@ -216,7 +217,8 @@ export function ExpenseDetailsModal({
             status: "settled" as const,
             receiptUrl: savedPreview || undefined,
             payerNote: savedNote || undefined,
-            uploadedAt: submittedAt
+            uploadedAt: submittedAt,
+            confirmedByPayer: false
           } 
         : p
       )
@@ -247,7 +249,7 @@ export function ExpenseDetailsModal({
   // Handle marking a member's payment as settled
   const handleMarkMemberSettled = (memberId: string) => {
     setMemberPayments(prev => 
-      prev.map(p => p.memberId === memberId ? { ...p, status: "settled" as const } : p)
+      prev.map(p => p.memberId === memberId ? { ...p, status: "settled" as const, confirmedByPayer: true } : p)
     );
     
     const member = getMemberById(memberId);
@@ -839,9 +841,15 @@ export function ExpenseDetailsModal({
                         </div>
                       )}
 
-                      <div className="text-xs text-stat-green">
-                        Confirmed by {expense.paidBy}
-                      </div>
+                      {currentUserPayment.confirmedByPayer ? (
+                        <div className="text-xs text-stat-green">
+                          Confirmed by {expense.paidBy}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-muted-foreground">
+                          {expense.paidBy} will review and acknowledge your payment
+                        </div>
+                      )}
                     </Card>
 
                     {/* Receipt Preview - Locked */}
@@ -858,7 +866,10 @@ export function ExpenseDetailsModal({
                     )}
 
                     <p className="text-xs text-muted-foreground text-center">
-                      Payment confirmed by {expense.paidBy}.
+                      {currentUserPayment.confirmedByPayer 
+                        ? `Payment confirmed by ${expense.paidBy}.`
+                        : `Awaiting confirmation from ${expense.paidBy}.`
+                      }
                     </p>
                   </div>
                 )}
