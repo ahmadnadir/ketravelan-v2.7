@@ -871,44 +871,81 @@ export function TripExpenses() {
           <p className="text-sm text-muted-foreground">See where the money went and who's settled.</p>
         </div>
 
-        {/* Interactive Stat Cards - 2x2 Grid - Always Visible */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <StatCard
-            title="Total Trip Spend"
-            value={`RM ${totalCost.toLocaleString()}`}
-            icon={DollarSign}
-            color="blue"
-            description="All group expenses"
-            onClick={handleTotalSpendTap}
-          />
-          <StatCard
-            title="Your Total Expenses"
-            value={`RM ${yourTotalExpenses.toLocaleString()}`}
-            icon={Wallet}
-            color="green"
-            subtitle="Your share of all trip costs"
-            tooltip="Includes expenses paid by others that were split with you"
-            onClick={handleYouPaidTap}
-          />
-          <StatCard
-            title="You're Owed"
-            value={`RM ${owedToYou.toLocaleString()}`}
-            icon={TrendingUp}
-            color="orange"
-            description="Net from others"
-            tooltip="Net amount after offsetting what you owe them"
-            onClick={handleOwedToYouTap}
-          />
-          <StatCard
-            title="You Owe"
-            value={`RM ${youOwe.toLocaleString()}`}
-            icon={TrendingDown}
-            color="red"
-            description="Net to others"
-            tooltip="Net amount after offsetting what they owe you"
-            onClick={handleYouOweTap}
-          />
-        </div>
+        {/* Interactive Stat Cards - Mobile: 1 full + 2 column, Desktop: 2x2 grid */}
+        {isMobile ? (
+          <div className="space-y-2">
+            {/* Your Total Expenses - Full width on mobile */}
+            <StatCard
+              title="Your Total Expenses"
+              value={`RM ${yourTotalExpenses.toLocaleString()}`}
+              icon={Wallet}
+              color="green"
+              subtitle="Your share of all trip costs"
+              tooltip="Includes expenses paid by others that were split with you"
+              onClick={handleYouPaidTap}
+              variant="highlight"
+            />
+            {/* You're Owed + You Owe - Two column layout */}
+            <div className="grid grid-cols-2 gap-2">
+              <StatCard
+                title="You're Owed"
+                value={`RM ${owedToYou.toLocaleString()}`}
+                icon={TrendingUp}
+                color="orange"
+                description="Net from others"
+                tooltip="Net amount after offsetting what you owe them"
+                onClick={handleOwedToYouTap}
+              />
+              <StatCard
+                title="You Owe"
+                value={`RM ${youOwe.toLocaleString()}`}
+                icon={TrendingDown}
+                color="red"
+                description="Net to others"
+                tooltip="Net amount after offsetting what they owe you"
+                onClick={handleYouOweTap}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard
+              title="Total Trip Spend"
+              value={`RM ${totalCost.toLocaleString()}`}
+              icon={DollarSign}
+              color="blue"
+              description="All group expenses"
+              onClick={handleTotalSpendTap}
+            />
+            <StatCard
+              title="Your Total Expenses"
+              value={`RM ${yourTotalExpenses.toLocaleString()}`}
+              icon={Wallet}
+              color="green"
+              subtitle="Your share of all trip costs"
+              tooltip="Includes expenses paid by others that were split with you"
+              onClick={handleYouPaidTap}
+            />
+            <StatCard
+              title="You're Owed"
+              value={`RM ${owedToYou.toLocaleString()}`}
+              icon={TrendingUp}
+              color="orange"
+              description="Net from others"
+              tooltip="Net amount after offsetting what you owe them"
+              onClick={handleOwedToYouTap}
+            />
+            <StatCard
+              title="You Owe"
+              value={`RM ${youOwe.toLocaleString()}`}
+              icon={TrendingDown}
+              color="red"
+              description="Net to others"
+              tooltip="Net amount after offsetting what they owe you"
+              onClick={handleYouOweTap}
+            />
+          </div>
+        )}
 
         {/* Sub Tabs - Below Stat Cards */}
         <SegmentedControl
@@ -942,6 +979,19 @@ export function TripExpenses() {
         {/* Breakdown Tab */}
         {subTab === "breakdown" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6">
+            {/* Total Trip Spend - Summary card on mobile only */}
+            {isMobile && (
+              <StatCard
+                title="Total Trip Spend"
+                value={`RM ${totalCost.toLocaleString()}`}
+                icon={DollarSign}
+                color="blue"
+                description="All group expenses"
+                onClick={handleTotalSpendTap}
+                variant="summary"
+              />
+            )}
+            
             {/* Category Breakdown - Sorted by amount (highest first) */}
             <div ref={categoryBreakdownRef}>
               <Card className="p-3 sm:p-4 border-border/50">
@@ -982,7 +1032,7 @@ export function TripExpenses() {
               {/* Total Group Expense */}
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-xs text-muted-foreground">Total group expense</span>
-                <span className="text-sm text-foreground font-medium">
+                <span className="text-xs sm:text-sm text-foreground font-medium">
                   {formatCurrency(totalCost)}
                 </span>
               </div>
@@ -990,7 +1040,7 @@ export function TripExpenses() {
               {/* Average per person */}
               <div className="flex items-center justify-between py-1.5 border-b border-border/30 mb-3">
                 <span className="text-xs text-muted-foreground">Average per person</span>
-                <span className="text-sm text-foreground font-medium">
+                <span className="text-xs sm:text-sm text-foreground font-medium">
                   {formatCurrency(totalCost / mockMembers.length)}
                 </span>
               </div>
