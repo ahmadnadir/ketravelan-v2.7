@@ -1,6 +1,7 @@
 import { LucideIcon, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useCountUp } from "@/hooks/useCountUp";
 import {
   Tooltip,
   TooltipContent,
@@ -20,6 +21,8 @@ interface StatCardProps {
   className?: string;
   variant?: "default" | "highlight" | "summary";
   showIcon?: boolean;
+  animate?: boolean;
+  animationDelay?: number;
 }
 
 const iconColors = {
@@ -28,6 +31,27 @@ const iconColors = {
   orange: "text-stat-orange",
   red: "text-stat-red",
 };
+
+// Parse numeric value from string like "RM 2,530" or "RM2,530.00"
+function parseNumericValue(value: string | number): { num: number; prefix: string; suffix: string; decimals: number } {
+  if (typeof value === "number") {
+    return { num: value, prefix: "", suffix: "", decimals: 0 };
+  }
+  
+  // Match pattern: optional prefix, number (with commas/decimals), optional suffix
+  const match = value.match(/^([^\d-]*)([-\d,]+\.?\d*)(.*)$/);
+  if (!match) {
+    return { num: 0, prefix: value, suffix: "", decimals: 0 };
+  }
+  
+  const prefix = match[1] || "";
+  const numStr = match[2].replace(/,/g, "");
+  const suffix = match[3] || "";
+  const num = parseFloat(numStr) || 0;
+  const decimals = numStr.includes(".") ? (numStr.split(".")[1]?.length || 0) : 0;
+  
+  return { num, prefix, suffix, decimals };
+}
 
 export function StatCard({
   title,
@@ -41,7 +65,22 @@ export function StatCard({
   className,
   variant = "default",
   showIcon = true,
+  animate = true,
+  animationDelay = 200,
 }: StatCardProps) {
+  const { num, prefix, suffix, decimals } = parseNumericValue(value);
+  
+  const animatedValue = useCountUp({
+    end: num,
+    duration: 800,
+    delay: animationDelay,
+    decimals,
+    prefix,
+    suffix,
+  });
+  
+  const displayValue = animate && num !== 0 ? animatedValue : value;
+
   // Summary variant: centered, no icon, larger text
   if (variant === "summary") {
     return (
@@ -55,7 +94,7 @@ export function StatCard({
       >
         <div className="text-center space-y-1">
           <p className="text-[13px] sm:text-xs text-muted-foreground">{title}</p>
-          <p className="text-2xl sm:text-xl font-bold text-foreground">{value}</p>
+          <p className="text-2xl sm:text-xl font-bold text-foreground">{displayValue}</p>
           {description && (
             <p className="text-[12px] sm:text-[11px] text-muted-foreground/80">{description}</p>
           )}
@@ -92,7 +131,7 @@ export function StatCard({
             </TooltipProvider>
           )}
         </div>
-        <p className="text-lg sm:text-base md:text-xl font-bold text-foreground">{value}</p>
+        <p className="text-lg sm:text-base md:text-xl font-bold text-foreground">{displayValue}</p>
         {subtitle && (
           <p className="text-[12px] sm:text-[10px] md:text-xs text-muted-foreground">{subtitle}</p>
         )}
