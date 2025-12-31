@@ -484,10 +484,10 @@ export default function CreateTrip() {
                     type="button"
                     onClick={() => toggleTravelStyle(category.id)}
                     className={cn(
-                      "px-3 py-2 text-sm rounded-xl border transition-all flex items-center gap-2",
+                      "px-3 py-2 text-sm rounded-full border transition-all flex items-center gap-2 active:scale-95",
                       draft.travelStyles.includes(category.id)
-                        ? "bg-black border-black text-white font-medium"
-                        : "bg-secondary/50 border-border/50 text-foreground hover:bg-black hover:text-white hover:border-black"
+                        ? "bg-foreground text-background border-foreground font-medium"
+                        : "bg-white border-border text-muted-foreground hover:bg-foreground hover:text-background"
                     )}
                   >
                     <span>{category.icon}</span>
