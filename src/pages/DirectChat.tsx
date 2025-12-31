@@ -74,7 +74,7 @@ export default function DirectChat() {
               <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <h1 className="font-semibold text-foreground truncate">{user.name}</h1>
+              <h1 className="font-semibold text-foreground truncate text-base sm:text-lg">{user.name}</h1>
             </div>
           </button>
         </div>
@@ -111,13 +111,13 @@ export default function DirectChat() {
                     : "bg-secondary text-secondary-foreground rounded-bl-sm"
                 )}
               >
-                <p className="text-xs sm:text-sm">{msg.content}</p>
+                <p className="text-sm sm:text-base">{msg.content}</p>
               </div>
               <span className={cn(
-                "text-[10px] sm:text-xs text-muted-foreground",
+                "text-xs sm:text-sm text-muted-foreground",
                 isOwn ? "mr-1" : "ml-2"
               )}>
-              {msg.timestamp}
+                {msg.timestamp}
               </span>
             </div>
           );
