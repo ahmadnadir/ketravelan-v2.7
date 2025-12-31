@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, QrCode, Bell, FileText, Upload } from "lucide-react";
+import { ArrowRight, QrCode, FileText, Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -138,18 +138,6 @@ export function SettlementCard({
           </Button>
         )}
         
-        {/* Send Reminder - Only when someone owes ME and pending */}
-        {showReminder && status === "pending" && isUserReceiver && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full h-10 text-sm"
-            onClick={(e) => { e.stopPropagation(); onSendReminder?.(); }}
-          >
-            <Bell className="h-4 w-4 mr-2" />
-            Send Reminder
-          </Button>
-        )}
         
         {/* Mark as Paid - Only when someone owes ME and pending */}
         {status === "pending" && isUserReceiver && (
