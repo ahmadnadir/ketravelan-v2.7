@@ -24,6 +24,23 @@ export function RouteBuilder({ stops, onChange, primaryDestination }: RouteBuild
   const [isAdding, setIsAdding] = useState(false);
   const [newStop, setNewStop] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== index) {
+      moveStop(draggedIndex, index);
+      setDraggedIndex(index);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
 
   const addStop = (stop: string) => {
     if (stop.trim() && !stops.includes(stop.trim())) {
@@ -73,7 +90,7 @@ export function RouteBuilder({ stops, onChange, primaryDestination }: RouteBuild
       {(stops.length > 0 || primaryDestination) && (
         <div className="flex items-center gap-2 flex-wrap text-sm">
           {primaryDestination && (
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full font-medium">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded-full font-medium">
               <MapPin className="h-3.5 w-3.5" />
               {primaryDestination}
             </span>
@@ -96,16 +113,19 @@ export function RouteBuilder({ stops, onChange, primaryDestination }: RouteBuild
           {stops.map((stop, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 p-2 bg-secondary/50 rounded-xl group"
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              className={cn(
+                "flex items-center gap-2 p-2 bg-secondary/50 rounded-xl group cursor-grab active:cursor-grabbing",
+                draggedIndex === index && "opacity-50"
+              )}
             >
-              <button
-                type="button"
-                className="p-1 cursor-grab touch-none opacity-50 hover:opacity-100"
-                onMouseDown={(e) => e.preventDefault()}
-              >
+              <div className="p-1 touch-none opacity-50 group-hover:opacity-100">
                 <GripVertical className="h-4 w-4 text-muted-foreground" />
-              </button>
-              <span className="flex-1 text-sm font-medium">{stop}</span>
+              </div>
+              <span className="flex-1 text-sm font-medium text-white">{stop}</span>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   type="button"

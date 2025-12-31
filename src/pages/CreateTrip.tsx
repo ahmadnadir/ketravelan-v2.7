@@ -486,8 +486,8 @@ export default function CreateTrip() {
                     className={cn(
                       "px-3 py-2 text-sm rounded-xl border transition-all flex items-center gap-2",
                       draft.travelStyles.includes(category.id)
-                        ? "bg-primary/10 border-primary text-primary font-medium"
-                        : "bg-secondary/50 border-border/50 text-foreground hover:border-primary/30"
+                        ? "bg-black border-black text-white font-medium"
+                        : "bg-secondary/50 border-border/50 text-foreground hover:bg-black hover:text-white hover:border-black"
                     )}
                   >
                     <span>{category.icon}</span>
