@@ -253,7 +253,7 @@ export function ReceiptsFromOthersModal({
                           className="flex-1 text-xs gap-1.5"
                         >
                           <Bell className="h-3.5 w-3.5" />
-                          Send Reminder
+                          Remind
                         </Button>
                         <Button
                           variant="default"
