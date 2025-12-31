@@ -311,12 +311,18 @@ export function TripExpenses() {
     setFilterStatus("all");
   };
 
-  // Filter settlements based on direction and status filters
+  // Filter settlements based on direction and status filters - only show settlements involving current user
   const filteredSettlements = useMemo(() => {
     return settlements.filter(s => {
-      // Direction filter
-      if (directionFilter === "owesMe" && s.toUser.name !== CURRENT_USER) return false;
-      if (directionFilter === "iOwe" && s.fromUser.name !== CURRENT_USER) return false;
+      // Always filter to only show settlements involving the current user
+      const involvesCurrentUser = 
+        s.fromUser.id === CURRENT_USER_ID || s.toUser.id === CURRENT_USER_ID;
+      
+      if (!involvesCurrentUser) return false;
+      
+      // Direction filter (within settlements that involve me)
+      if (directionFilter === "owesMe" && s.toUser.id !== CURRENT_USER_ID) return false;
+      if (directionFilter === "iOwe" && s.fromUser.id !== CURRENT_USER_ID) return false;
       
       // Status filter
       if (statusFilter !== "all" && s.status !== statusFilter) return false;
