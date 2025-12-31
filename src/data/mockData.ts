@@ -330,6 +330,40 @@ export const mockExpenses: ExpenseData[] = [
       { memberId: "5", status: "settled" },
     ]
   },
+  // Historical settled expenses for UI demonstration
+  { 
+    id: "settled-exp-1", 
+    title: "Cable car tickets", 
+    amount: 128, 
+    paidBy: "Ahmad Razak", 
+    date: "Jan 16, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 100,
+    category: "Activities", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "2"],
+    payments: [
+      { memberId: "1", status: "settled" },
+      { memberId: "2", status: "settled" }, // Sarah paid Ahmad her share: RM 64
+    ]
+  },
+  { 
+    id: "settled-exp-2", 
+    title: "Breakfast buffet", 
+    amount: 168, 
+    paidBy: "Lisa Wong", 
+    date: "Jan 17, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 100,
+    category: "Food & Drinks", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "3", "4"],
+    payments: [
+      { memberId: "1", status: "settled" }, // Ahmad paid Lisa his share: RM 56
+      { memberId: "3", status: "settled" },
+      { memberId: "4", status: "settled" },
+    ]
+  },
 ];
 
 export const mockMessages = [

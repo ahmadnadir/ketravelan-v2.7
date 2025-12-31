@@ -404,7 +404,12 @@ export function TripExpenses() {
           ? "settled" 
           : "pending";
         
-        if (status !== "settled") {
+        // Include settled expenses when viewing a settled settlement
+        const shouldInclude = settlement.status === "settled" 
+          ? status === "settled" 
+          : status !== "settled";
+        
+        if (shouldInclude) {
           owedToReceiver.push({
             expenseId: expense.id,
             title: expense.title,
@@ -425,7 +430,12 @@ export function TripExpenses() {
           ? "settled" 
           : "pending";
         
-        if (status !== "settled") {
+        // Include settled expenses when viewing a settled settlement
+        const shouldInclude = settlement.status === "settled" 
+          ? status === "settled" 
+          : status !== "settled";
+        
+        if (shouldInclude) {
           owedToDebtor.push({
             expenseId: expense.id,
             title: expense.title,
