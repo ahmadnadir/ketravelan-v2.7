@@ -3,6 +3,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, QrCode, SlidersHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
+import { ScrollableTabBar } from "@/components/shared/ScrollableTabBar";
 import { StatCard } from "@/components/shared/StatCard";
 import { ExpenseCard } from "@/components/shared/ExpenseCard";
 import { SettlementCard } from "@/components/shared/SettlementCard";
@@ -948,30 +949,55 @@ export function TripExpenses() {
         )}
 
         {/* Sub Tabs - Below Stat Cards */}
-        <SegmentedControl
-          options={[
-            { label: "Summary", value: "breakdown" },
-            { label: "All Expenses", value: "expenses" },
-            { label: "Settlement", value: "settle" },
-            { label: "QR Codes", value: "qrcodes" },
-          ]}
-          value={subTab}
-          onChange={(value) => {
-            setSubTab(value);
-            // Reset filters when switching tabs
-            if (value === "settle") {
-              setDirectionFilter("all");
-              setStatusFilter("all");
-            }
-            if (value === "expenses") {
-              setFilterPayer("all");
-              setFilterCategory("all");
-            }
-            if (value === "qrcodes") {
-              setQrSubView("myqr");
-            }
-          }}
-        />
+        {isMobile ? (
+          <ScrollableTabBar
+            options={[
+              { label: "Summary", value: "breakdown" },
+              { label: "All Expenses", value: "expenses" },
+              { label: "Settlement", value: "settle" },
+              { label: "QR Codes", value: "qrcodes" },
+            ]}
+            value={subTab}
+            onChange={(value) => {
+              setSubTab(value);
+              if (value === "settle") {
+                setDirectionFilter("all");
+                setStatusFilter("all");
+              }
+              if (value === "expenses") {
+                setFilterPayer("all");
+                setFilterCategory("all");
+              }
+              if (value === "qrcodes") {
+                setQrSubView("myqr");
+              }
+            }}
+          />
+        ) : (
+          <SegmentedControl
+            options={[
+              { label: "Summary", value: "breakdown" },
+              { label: "All Expenses", value: "expenses" },
+              { label: "Settlement", value: "settle" },
+              { label: "QR Codes", value: "qrcodes" },
+            ]}
+            value={subTab}
+            onChange={(value) => {
+              setSubTab(value);
+              if (value === "settle") {
+                setDirectionFilter("all");
+                setStatusFilter("all");
+              }
+              if (value === "expenses") {
+                setFilterPayer("all");
+                setFilterCategory("all");
+              }
+              if (value === "qrcodes") {
+                setQrSubView("myqr");
+              }
+            }}
+          />
+        )}
       </div>
 
       {/* Tab Content - Extra padding for sticky CTA */}
