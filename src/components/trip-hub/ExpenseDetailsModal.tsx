@@ -187,6 +187,20 @@ export function ExpenseDetailsModal({
   };
 
   const handleSubmitProof = () => {
+    // Update the current user's payment status to submitted and store receipt data
+    setMemberPayments(prev => 
+      prev.map(p => p.memberId === currentUserId 
+        ? { 
+            ...p, 
+            status: "submitted" as const,
+            receiptUrl: uploadPreview || undefined,
+            payerNote: uploadNote || undefined,
+            uploadedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          } 
+        : p
+      )
+    );
+    
     onUploadProof?.(uploadedFile || undefined, uploadNote);
     
     toast({
@@ -194,9 +208,8 @@ export function ExpenseDetailsModal({
       description: `${expense.paidBy} will be notified to confirm your payment.`,
     });
     
-    // Reset upload state
+    // Reset upload form state (but payment status is now "submitted")
     setUploadedFile(null);
-    setUploadPreview(null);
     setUploadNote("");
   };
 
@@ -696,11 +709,10 @@ export function ExpenseDetailsModal({
                   <p className="text-3xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
                 </div>
 
-                {/* Upload Payment Proof Section */}
-                {currentUserPayment?.status !== "settled" && (
+                {currentUserPayment?.status === "pending" ? (
+                  /* Show upload form when pending */
                   <div className="space-y-4">
-                    
-                    {/* Optional Note - Always Visible */}
+                    {/* Optional Note */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground">
                         Add a note (optional)
@@ -770,7 +782,7 @@ export function ExpenseDetailsModal({
                       )}
                     </div>
 
-                    {/* Submit Button - Always visible */}
+                    {/* Submit Button */}
                     <Button 
                       className="w-full h-12 rounded-xl"
                       onClick={handleSubmitProof}
@@ -781,6 +793,54 @@ export function ExpenseDetailsModal({
 
                     <p className="text-xs text-muted-foreground text-center">
                       {expense.paidBy} will be notified to confirm your payment.
+                    </p>
+                  </div>
+                ) : (
+                  /* Show status view when submitted or settled */
+                  <div className="space-y-4">
+                    {/* Status Badge - centered */}
+                    <div className="flex justify-center">
+                      {currentUserPayment?.status === "submitted" ? (
+                        <Badge className="px-4 py-2 text-sm bg-muted text-muted-foreground border-border">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Awaiting Confirmation
+                        </Badge>
+                      ) : (
+                        <Badge className="px-4 py-2 text-sm bg-stat-green/10 text-stat-green border-stat-green/30">
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Settled
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* My Uploaded Receipt */}
+                    {currentUserPayment?.receiptUrl && (
+                      <Card className="p-4 border-border/50">
+                        <h4 className="text-sm font-medium text-muted-foreground mb-3">My Payment Receipt</h4>
+                        <img
+                          src={currentUserPayment.receiptUrl}
+                          alt="My payment receipt"
+                          className="w-full h-64 object-contain rounded-xl border border-border"
+                        />
+                        {currentUserPayment.payerNote && (
+                          <p className="text-sm text-muted-foreground mt-3 italic">
+                            "{currentUserPayment.payerNote}"
+                          </p>
+                        )}
+                        {currentUserPayment.uploadedAt && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Uploaded {currentUserPayment.uploadedAt}
+                          </p>
+                        )}
+                      </Card>
+                    )}
+
+                    {/* Informational text */}
+                    <p className="text-xs text-muted-foreground text-center">
+                      {currentUserPayment?.status === "submitted" 
+                        ? `${expense.paidBy} has been notified to confirm your payment.`
+                        : `Payment confirmed by ${expense.paidBy}.`
+                      }
                     </p>
                   </div>
                 )}
