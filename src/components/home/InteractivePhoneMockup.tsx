@@ -1,16 +1,26 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, MapPin, Users, Shield, MessageCircle, ExternalLink, Search, Plus, Pin, DollarSign, TrendingUp, TrendingDown, Wallet, Paperclip, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Users, Search, Plus, Pin, DollarSign, TrendingUp, TrendingDown, Wallet, Paperclip, Send, MoreVertical } from "lucide-react";
 import { mockMessages, mockMembers, mockExpenses } from "@/data/mockData";
 
 type TabType = "chat" | "expenses" | "notes";
 type ExpenseSubTab = "breakdown" | "expenses" | "settle" | "qr";
 
+// Category emoji map matching actual implementation
+const categoryEmojiMap: Record<string, string> = {
+  "Transport": "🚗",
+  "Food & Drinks": "🍴",
+  "Accommodation": "🏨",
+  "Activities": "🎫",
+  "Shopping": "🛍️",
+  "Other": "📦",
+};
+
 const categoryBreakdown = [
-  { category: "Transport", amount: 770, percentage: 30, color: "bg-blue-500" },
-  { category: "Food & Drinks", amount: 560, percentage: 22, color: "bg-orange-500" },
-  { category: "Accommodation", amount: 1200, percentage: 47, color: "bg-purple-500" },
-  { category: "Activities", amount: 180, percentage: 7, color: "bg-green-500" },
+  { category: "Transport", amount: 770, percentage: 30, color: "bg-stat-blue", emoji: "🚗" },
+  { category: "Food & Drinks", amount: 560, percentage: 22, color: "bg-stat-orange", emoji: "🍴" },
+  { category: "Accommodation", amount: 1200, percentage: 47, color: "bg-purple-500", emoji: "🏨" },
+  { category: "Activities", amount: 180, percentage: 7, color: "bg-stat-green", emoji: "🎫" },
 ];
 
 const mockNotes = [
@@ -38,6 +48,16 @@ export function InteractivePhoneMockup() {
             <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
               <ChevronLeft className="h-3 w-3 text-muted-foreground" />
             </div>
+            
+            {/* Circular Trip Image */}
+            <div className="h-7 w-7 rounded-full overflow-hidden border border-border/50 shrink-0">
+              <img 
+                src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200" 
+                alt="Langkawi" 
+                className="h-full w-full object-cover" 
+              />
+            </div>
+            
             <div className="flex-1 min-w-0">
               <h1 className="font-semibold text-foreground truncate text-[11px]">Langkawi Island Adventure</h1>
               <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
@@ -50,16 +70,16 @@ export function InteractivePhoneMockup() {
             </div>
           </div>
 
-          {/* Tab Navigation */}
-          <div className="flex gap-0.5 mt-2 bg-secondary rounded-lg p-0.5">
+          {/* Tab Navigation - matches SegmentedControl styling */}
+          <div className="flex p-0.5 mt-2 bg-secondary rounded-xl">
             {tabs.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
                 className={cn(
-                  "flex-1 py-1 px-1.5 text-[9px] font-medium rounded-md transition-all",
+                  "flex-1 py-1.5 px-1.5 text-[9px] font-medium rounded-lg transition-all",
                   activeTab === tab.value
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -192,7 +212,7 @@ function MockExpensesContent() {
           <p className="text-[8px] text-muted-foreground">See where the money went and who's settled.</p>
         </div>
 
-        {/* Stat Cards */}
+        {/* Stat Cards - with improved layout */}
         <div className="grid grid-cols-2 gap-1.5">
           <StatCardMini icon={DollarSign} title="Total Trip Spend" value={`RM ${totalCost.toLocaleString()}`} color="blue" />
           <StatCardMini icon={Wallet} title="You Paid" value="RM 680" color="green" />
@@ -200,22 +220,28 @@ function MockExpensesContent() {
           <StatCardMini icon={TrendingDown} title="You Owe" value="RM 120" color="red" />
         </div>
 
-        {/* Sub Tabs */}
-        <div className="flex gap-0.5 bg-secondary rounded-md p-0.5">
-          {subTabs.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setSubTab(tab.value)}
-              className={cn(
-                "flex-1 py-0.5 px-1 text-[8px] font-medium rounded transition-all",
-                subTab === tab.value
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Sub Tabs - matches ScrollableTabBar pill styling */}
+        <div className="relative">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide p-0.5">
+            {subTabs.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setSubTab(tab.value)}
+                className={cn(
+                  "py-1 px-2.5 text-[8px] font-medium rounded-full whitespace-nowrap transition-all shrink-0",
+                  subTab === tab.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {/* Scroll hint */}
+          <div className="absolute right-0 top-0 bottom-0 w-6 pointer-events-none bg-gradient-to-l from-background to-transparent flex items-center justify-end pr-0.5">
+            <ChevronRight className="h-3 w-3 text-muted-foreground opacity-50" />
+          </div>
         </div>
 
         {/* Sub Tab Content */}
@@ -237,7 +263,9 @@ function BreakdownContent({ totalCost }: { totalCost: number }) {
         {categoryBreakdown.map((item) => (
           <div key={item.category} className="space-y-0.5">
             <div className="flex items-center justify-between text-[8px]">
-              <span className="text-foreground">{item.category}</span>
+              <span className="text-foreground flex items-center gap-1">
+                <span>{item.emoji}</span> {item.category}
+              </span>
               <span className="text-muted-foreground">RM {item.amount} ({item.percentage}%)</span>
             </div>
             <div className="h-1 bg-secondary rounded-full overflow-hidden">
@@ -275,10 +303,11 @@ function ExpensesListContent() {
   return (
     <div className="space-y-1.5">
       {mockExpenses.slice(0, 4).map((expense) => {
+        const emoji = categoryEmojiMap[expense.category] || "📦";
         return (
           <div key={expense.id} className="bg-card border border-border/50 rounded-xl p-2 flex items-center gap-2">
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <DollarSign className="h-3 w-3 text-primary" />
+              <span className="text-sm">{emoji}</span>
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-[9px] font-medium text-foreground truncate">{expense.title}</h4>
@@ -330,7 +359,7 @@ function SettleContent() {
             <p className="text-[9px] font-semibold text-foreground">RM {s.amount}</p>
             <span className={cn(
               "text-[7px] px-1 py-0.5 rounded-full",
-              s.status === "paid" ? "bg-green-500/10 text-green-600" : "bg-orange-500/10 text-orange-600"
+              s.status === "paid" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
             )}>
               {s.status === "paid" ? "Paid" : "Pending"}
             </span>
@@ -419,32 +448,45 @@ function MockNotesContent() {
 
 function NoteCardMini({ note }: { note: { id: string; title: string; content: string; pinned: boolean; time: string } }) {
   return (
-    <div className="bg-card border border-border/50 rounded-xl p-2 space-y-0.5">
-      <div className="flex items-center gap-1">
-        <h4 className="text-[10px] font-semibold text-foreground truncate">{note.title}</h4>
-        {note.pinned && <Pin className="h-2 w-2 text-primary fill-primary shrink-0" />}
+    <div className="bg-card border border-border/50 rounded-xl p-2 hover:border-primary/30 transition-all cursor-pointer">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <h4 className="text-[9px] font-semibold text-foreground truncate">
+              {note.title}
+            </h4>
+            {note.pinned && (
+              <Pin className="h-2 w-2 text-primary fill-primary shrink-0" />
+            )}
+          </div>
+          <p className="text-[8px] text-muted-foreground line-clamp-2 mt-0.5">
+            {note.content}
+          </p>
+          <p className="text-[6px] text-muted-foreground/70 mt-1">{note.time}</p>
+        </div>
+        <MoreVertical className="h-3 w-3 text-muted-foreground shrink-0" />
       </div>
-      <p className="text-[8px] text-muted-foreground line-clamp-1">{note.content}</p>
-      <p className="text-[7px] text-muted-foreground/70">{note.time}</p>
     </div>
   );
 }
 
 function StatCardMini({ icon: Icon, title, value, color }: { icon: React.ElementType; title: string; value: string; color: "blue" | "green" | "orange" | "red" }) {
   const colorClasses = {
-    blue: "bg-blue-500/10 text-blue-600",
-    green: "bg-green-500/10 text-green-600",
-    orange: "bg-orange-500/10 text-orange-600",
-    red: "bg-red-500/10 text-red-600",
+    blue: "bg-stat-blue/10 text-stat-blue",
+    green: "bg-stat-green/10 text-stat-green",
+    orange: "bg-stat-orange/10 text-stat-orange",
+    red: "bg-stat-red/10 text-stat-red",
   };
 
   return (
-    <div className="bg-card border border-border/50 rounded-xl p-2 space-y-0.5">
-      <div className={cn("h-5 w-5 rounded-lg flex items-center justify-center", colorClasses[color])}>
-        <Icon className="h-2.5 w-2.5" />
+    <div className="bg-card border border-border/50 rounded-xl p-2 flex items-center gap-2">
+      <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", colorClasses[color])}>
+        <Icon className="h-3.5 w-3.5" />
       </div>
-      <p className="text-[7px] text-muted-foreground">{title}</p>
-      <p className="text-[11px] font-bold text-foreground">{value}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-[7px] text-muted-foreground truncate">{title}</p>
+        <p className="text-[10px] font-semibold text-foreground truncate">{value}</p>
+      </div>
     </div>
   );
 }
