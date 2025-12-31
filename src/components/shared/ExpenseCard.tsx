@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getCategoryById, getCategoryFromTitle } from "@/lib/expenseCategories";
+import { getCategoryFromTitle } from "@/lib/expenseCategories";
 import { cn } from "@/lib/utils";
 import { formatDisplayDate } from "@/lib/dateUtils";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -72,9 +72,6 @@ export function ExpenseCard({
   onDelete,
   isHighlighted = false,
 }: ExpenseCardProps) {
-  // Get category info - use provided category or derive from title
-  const categoryId = category || getCategoryFromTitle(title);
-  const categoryInfo = getCategoryById(categoryId);
 
   // Determine user's role for this expense
   const isFullySettled = paymentProgress === 100;
@@ -139,13 +136,7 @@ export function ExpenseCard({
       )}
       onClick={handleCardClick}
     >
-      <div className="flex items-start gap-3">
-        {/* Category Icon */}
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${categoryInfo.color.split(' ')[0]}`}>
-          <span className="text-lg">{categoryInfo.emoji}</span>
-        </div>
-
-        <div className="flex-1 min-w-0 space-y-2">
+      <div className="space-y-2">
           {/* Header: Title and Amount */}
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
@@ -226,7 +217,6 @@ export function ExpenseCard({
             </Button>
           </div>
         </div>
-      </div>
     </Card>
   );
 }
