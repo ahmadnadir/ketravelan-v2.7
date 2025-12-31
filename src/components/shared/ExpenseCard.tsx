@@ -1,4 +1,4 @@
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Upload, FileText } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -115,11 +115,21 @@ export function ExpenseCard({
 
   const personalShare = calculatePersonalShare();
 
-  // CTA label based on personal share status only (binary)
-  const getButtonLabel = (): string => {
-    if (personalShare.status === "pending") return "View & Settle";
-    return "View Details";
+  // CTA label and icon based on personal share status only (binary)
+  const getButtonConfig = (): { label: string; icon: React.ReactNode } => {
+    if (personalShare.status === "pending") {
+      return { 
+        label: "View & Settle", 
+        icon: <Upload className="h-4 w-4 mr-2" /> 
+      };
+    }
+    return { 
+      label: "View Details", 
+      icon: <FileText className="h-4 w-4 mr-2" /> 
+    };
   };
+
+  const buttonConfig = getButtonConfig();
 
   // Handle card click (not on button or dropdown)
   const handleCardClick = (e: React.MouseEvent) => {
@@ -207,7 +217,6 @@ export function ExpenseCard({
           {/* Primary Action Button - Always visible */}
           <div className="pt-2">
             <Button
-              variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
@@ -215,10 +224,13 @@ export function ExpenseCard({
               }}
               className={cn(
                 "w-full h-9 text-[14px] sm:text-xs font-medium transition-all duration-150",
-                "border-border/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
+                personalShare.status === "pending" 
+                  ? "bg-foreground text-background hover:bg-foreground/90"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               )}
             >
-              {getButtonLabel()}
+              {buttonConfig.icon}
+              {buttonConfig.label}
             </Button>
           </div>
         </div>
