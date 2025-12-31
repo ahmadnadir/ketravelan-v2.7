@@ -33,10 +33,7 @@ export function OptionCard({
     >
       <div className="flex items-start gap-3">
         <div
-          className={cn(
-            "p-2 rounded-xl shrink-0",
-            selected ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"
-          )}
+          className="p-2 rounded-xl shrink-0 bg-secondary text-muted-foreground"
         >
           {icon}
         </div>
