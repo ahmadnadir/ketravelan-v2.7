@@ -65,12 +65,6 @@ export function PaymentReviewModal({
             Settled
           </Badge>
         );
-      case "submitted":
-        return (
-          <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 border-blue-500/30">
-            Payment Submitted
-          </Badge>
-        );
       default:
         return (
           <Badge variant="outline" className="text-yellow-600 border-yellow-500/30 bg-yellow-500/10">

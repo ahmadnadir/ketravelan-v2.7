@@ -9,7 +9,7 @@ interface SettlementCardProps {
   toUser: { id: string; name: string; imageUrl?: string };
   amount: number;
   currency?: string;
-  status: "pending" | "paid";
+  status: "pending" | "settled";
   currentUserId?: string;
   showReminder?: boolean;
   onCardClick?: () => void;
@@ -100,12 +100,12 @@ export function SettlementCard({
         <span
           className={cn(
             "text-xs font-medium px-3 py-1 rounded-full",
-            status === "paid"
+            status === "settled"
               ? "bg-stat-green/10 text-stat-green"
               : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
           )}
         >
-          {status === "paid" ? "Paid" : "Pending"}
+          {status === "settled" ? "Settled" : "Pending"}
         </span>
       </div>
 

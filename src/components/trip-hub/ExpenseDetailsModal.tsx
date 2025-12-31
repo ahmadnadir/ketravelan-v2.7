@@ -39,7 +39,7 @@ interface ExpenseDetailsModalProps {
 // Mock payment data for each member
 interface MemberPayment {
   memberId: string;
-  status: "pending" | "submitted" | "settled";
+  status: "pending" | "settled";
   receiptUrl?: string;
   uploadedAt?: string;
   payerNote?: string;
@@ -206,12 +206,12 @@ export function ExpenseDetailsModal({
       hour: 'numeric', minute: '2-digit'
     });
     
-    // Update local state for immediate UI feedback
+    // Update local state for immediate UI feedback - mark as settled directly
     setMemberPayments(prev => 
       prev.map(p => p.memberId === currentUserId 
         ? { 
             ...p, 
-            status: "submitted" as const,
+            status: "settled" as const,
             receiptUrl: savedPreview || undefined,
             payerNote: savedNote || undefined,
             uploadedAt: submittedAt
@@ -270,8 +270,8 @@ export function ExpenseDetailsModal({
 
   // Handle viewing a payment for review
   const handleViewPayment = (member: typeof mockMembers[0], payment: MemberPayment, amount: number) => {
-    // Add mock receipt data for submitted payments in demo
-    const enhancedPayment = payment.status === "submitted" && !payment.receiptUrl
+    // Add mock receipt data for settled payments with receipts in demo
+    const enhancedPayment = payment.status === "settled" && !payment.receiptUrl
       ? {
           ...payment,
           receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop",
@@ -532,10 +532,10 @@ export function ExpenseDetailsModal({
                           RM {amount.toFixed(2)}
                         </p>
                         <Badge 
-                          variant={isPaid ? "default" : memberPayment?.status === "submitted" ? "secondary" : "outline"} 
-                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green text-stat-green-foreground" : memberPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600 border-blue-500/30" : "text-yellow-600 border-yellow-500/30 bg-yellow-500/10"}`}
+                          variant={isPaid ? "default" : "outline"} 
+                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green text-stat-green-foreground" : "text-yellow-600 border-yellow-500/30 bg-yellow-500/10"}`}
                         >
-                          {isPaid ? "Settled" : memberPayment?.status === "submitted" ? "Submitted" : "Pending"}
+                          {isPaid ? "Settled" : "Pending"}
                         </Badge>
                       </div>
                     </Card>
@@ -665,7 +665,6 @@ export function ExpenseDetailsModal({
 
                       const memberPayment = memberPayments.find(p => p.memberId === memberId);
                       const isSettled = memberPayment?.status === "settled";
-                      const isSubmitted = memberPayment?.status === "submitted";
 
                       // Get status badge with updated styling
                       const getStatusBadge = () => {
@@ -673,13 +672,6 @@ export function ExpenseDetailsModal({
                           return (
                             <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border-stat-green/30">
                               Settled
-                            </Badge>
-                          );
-                        }
-                        if (isSubmitted) {
-                          return (
-                            <Badge className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-600 border-amber-500/30">
-                              Pending Verification
                             </Badge>
                           );
                         }
@@ -826,202 +818,6 @@ export function ExpenseDetailsModal({
                     </p>
                   </div>
                 )}
-
-                {/* AWAITING_CONFIRMATION State - Show review mode with edit options */}
-                {currentUserPayment?.status === "submitted" && (
-                  <div className="space-y-4">
-                    {/* Status Badge */}
-                    <div className="flex justify-center">
-                      <Badge className="px-4 py-2 text-sm bg-muted text-muted-foreground border-border">
-                        <Clock className="h-4 w-4 mr-2" />
-                        Awaiting Confirmation
-                      </Badge>
-                    </div>
-
-                    {/* Payment Summary Card */}
-                    <Card className="p-4 border-border/50 space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Amount Paid</span>
-                        <span className="text-lg font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</span>
-                      </div>
-                      
-                      {/* Payment Note - Editable */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Payment Note</span>
-                          {!isEditingNote && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-7 px-2 text-xs"
-                              onClick={() => {
-                                setEditNote(currentUserPayment.payerNote || "");
-                                setIsEditingNote(true);
-                              }}
-                            >
-                              <Pencil className="h-3 w-3 mr-1" /> Edit
-                            </Button>
-                          )}
-                        </div>
-                        {isEditingNote ? (
-                          <div className="space-y-2">
-                            <Textarea
-                              value={editNote}
-                              onChange={(e) => setEditNote(e.target.value)}
-                              placeholder="e.g., Paid via DuitNow"
-                              className="resize-none h-16 rounded-xl text-sm"
-                            />
-                            <div className="flex gap-2">
-                              <Button 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={() => {
-                                  setMemberPayments(prev => 
-                                    prev.map(p => p.memberId === currentUserId 
-                                      ? { ...p, payerNote: editNote }
-                                      : p
-                                    )
-                                  );
-                                  setIsEditingNote(false);
-                                  toast({ title: "Note updated" });
-                                }}
-                              >
-                                Save
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={() => setIsEditingNote(false)}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-sm font-medium text-foreground">
-                            {currentUserPayment.payerNote || "No note added"}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="text-xs text-muted-foreground">
-                        Submitted on {currentUserPayment.uploadedAt || "just now"}
-                      </div>
-                    </Card>
-
-                    {/* Receipt Preview - Editable */}
-                    {currentUserPayment.receiptUrl && (
-                      <Card className="p-4 border-border/50">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="text-sm font-medium text-muted-foreground">My Payment Receipt</h4>
-                          {!isEditingReceipt && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-7 px-2 text-xs"
-                              onClick={() => setIsEditingReceipt(true)}
-                            >
-                              <Pencil className="h-3 w-3 mr-1" /> Edit
-                            </Button>
-                          )}
-                        </div>
-                        
-                        {isEditingReceipt ? (
-                          <div className="space-y-3">
-                            <div className="flex gap-2">
-                              <input
-                                ref={cameraInputRef}
-                                type="file"
-                                accept="image/*"
-                                capture="environment"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (event) => {
-                                      const newReceiptUrl = event.target?.result as string;
-                                      setMemberPayments(prev => 
-                                        prev.map(p => p.memberId === currentUserId 
-                                          ? { ...p, receiptUrl: newReceiptUrl }
-                                          : p
-                                        )
-                                      );
-                                      setIsEditingReceipt(false);
-                                      toast({ title: "Receipt updated" });
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
-                                }}
-                                className="hidden"
-                              />
-                              <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (event) => {
-                                      const newReceiptUrl = event.target?.result as string;
-                                      setMemberPayments(prev => 
-                                        prev.map(p => p.memberId === currentUserId 
-                                          ? { ...p, receiptUrl: newReceiptUrl }
-                                          : p
-                                        )
-                                      );
-                                      setIsEditingReceipt(false);
-                                      toast({ title: "Receipt updated" });
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
-                                }}
-                                className="hidden"
-                              />
-                              <Button
-                                variant="outline"
-                                className="flex-1 h-10 rounded-xl"
-                                onClick={() => cameraInputRef.current?.click()}
-                              >
-                                <Camera className="h-4 w-4 mr-2" />
-                                Camera
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="flex-1 h-10 rounded-xl"
-                                onClick={() => fileInputRef.current?.click()}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload
-                              </Button>
-                            </div>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => setIsEditingReceipt(false)}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        ) : (
-                          <img 
-                            src={currentUserPayment.receiptUrl} 
-                            alt="Payment receipt" 
-                            className="w-full h-64 object-contain rounded-xl border border-border cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => setShowFullReceipt(true)}
-                          />
-                        )}
-                      </Card>
-                    )}
-
-                    <p className="text-xs text-muted-foreground text-center">
-                      Your payment has been submitted and is awaiting confirmation by {expense.paidBy}.
-                    </p>
-                  </div>
-                )}
-
                 {/* SETTLED State - Final locked state */}
                 {currentUserPayment?.status === "settled" && (
                   <div className="space-y-4">

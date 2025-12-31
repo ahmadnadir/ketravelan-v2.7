@@ -196,7 +196,7 @@ export const mockMembers = [
 // Payment tracking for each expense member
 export interface ExpensePayment {
   memberId: string;
-  status: "pending" | "submitted" | "settled";
+  status: "pending" | "settled";
   receiptUrl?: string;
   uploadedAt?: string;
   payerNote?: string;
@@ -271,7 +271,7 @@ export const mockExpenses: ExpenseData[] = [
     customSplitAmounts: [{ memberId: "1", amount: 150 }, { memberId: "2", amount: 150 }, { memberId: "3", amount: 150 }],
     payments: [
       { memberId: "1", status: "settled" },
-      { memberId: "2", status: "submitted", receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop", uploadedAt: "Jan 16, 2025", payerNote: "Paid via TNG on Jan 16" },
+      { memberId: "2", status: "settled", receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop", uploadedAt: "Jan 16, 2025", payerNote: "Paid via TNG on Jan 16" },
       { memberId: "3", status: "pending" },
     ]
   },
@@ -288,7 +288,7 @@ export const mockExpenses: ExpenseData[] = [
     splitWith: ["1", "2", "3", "4", "5"], 
     notes: "Seafood dinner at the beach restaurant",
     payments: [
-      { memberId: "1", status: "submitted", receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop", uploadedAt: "Jan 17, 2025", payerNote: "Bank transfer completed" },
+      { memberId: "1", status: "settled", receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop", uploadedAt: "Jan 17, 2025", payerNote: "Bank transfer completed" },
       { memberId: "2", status: "pending" },
       { memberId: "3", status: "settled" },
       { memberId: "4", status: "pending" },
