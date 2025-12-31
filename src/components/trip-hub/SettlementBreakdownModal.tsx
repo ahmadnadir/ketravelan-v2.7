@@ -64,13 +64,13 @@ export function SettlementBreakdownModal({
     switch (expenseStatus) {
       case "pending":
         return (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full border bg-amber-500/10 text-amber-600 border-amber-500/30">
             Pending
           </span>
         );
       case "settled":
         return (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-stat-green/10 text-stat-green">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full border bg-stat-green/10 text-stat-green border-stat-green/30">
             Settled
           </span>
         );

@@ -206,7 +206,7 @@ export function ExpenseCard({
                 className={cn(
                   "text-[12px] sm:text-[10px] px-2.5 sm:px-2 py-1 sm:py-0.5 font-medium",
                   personalShare.status === "settled" 
-                    ? "bg-green-500/10 text-green-600 border-green-500/30" 
+                    ? "bg-stat-green/10 text-stat-green border-stat-green/30" 
                     : "bg-amber-500/10 text-amber-600 border-amber-500/30"
                 )}
               >
