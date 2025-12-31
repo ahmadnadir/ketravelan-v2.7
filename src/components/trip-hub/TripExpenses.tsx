@@ -1347,8 +1347,8 @@ export function TripExpenses() {
 
       {/* Filter & Sort Drawer */}
       <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader className="text-left">
+        <DrawerContent className="h-[85vh] max-h-[85vh] flex flex-col">
+          <DrawerHeader className="text-left shrink-0">
             <DrawerTitle>Filter & Sort Expenses</DrawerTitle>
             <DrawerDescription>
               {activeFilterCount > 0 
@@ -1357,8 +1357,8 @@ export function TripExpenses() {
             </DrawerDescription>
           </DrawerHeader>
           
-          <ScrollArea className="flex-1 px-4 max-h-[50vh]">
-            <div className="space-y-6 pb-4">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4">
+            <div className="space-y-6 pb-6">
               {/* Sort Section */}
               <div className="space-y-3">
                 <h4 className="text-sm font-medium text-foreground">Sort Order</h4>
@@ -1434,12 +1434,12 @@ export function TripExpenses() {
                     <RadioGroupItem value="settled" id="settled" />
                     <Label htmlFor="settled">Settled</Label>
                   </div>
-                </RadioGroup>
+              </RadioGroup>
               </div>
             </div>
-          </ScrollArea>
+          </div>
           
-          <DrawerFooter className="border-t">
+          <DrawerFooter className="border-t shrink-0">
             <div className="flex gap-3">
               <Button 
                 variant="outline" 
