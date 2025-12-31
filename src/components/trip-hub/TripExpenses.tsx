@@ -568,8 +568,8 @@ export function TripExpenses() {
       // Set recently settled for visual feedback
       setRecentlySettledIds(uniqueIds);
       
-      // Auto-switch to expenses tab to show the changes
-      setSubTab("breakdown");
+      // Stay on settlements tab after confirming
+      setSubTab("settlements");
       
       // Clear highlight after 3 seconds
       setTimeout(() => setRecentlySettledIds([]), 3000);
