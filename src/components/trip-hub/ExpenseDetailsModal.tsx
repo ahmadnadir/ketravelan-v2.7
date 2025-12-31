@@ -310,42 +310,31 @@ export function ExpenseDetailsModal({
           <Tabs value={activeTab} className="w-full">
             {/* Overview Tab */}
             <TabsContent value="overview" className="p-4 space-y-4 mt-0">
-            {/* Total Amount with Status Badge */}
+            {/* Combined: Amount + Paid by in one card */}
             <Card className="p-4 border-border/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Amount</p>
-                  <p className="text-2xl font-bold text-foreground">RM {expense.amount.toLocaleString()}</p>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12 shrink-0">
+                  <AvatarImage src={payerMember?.imageUrl} alt={expense.paidBy} />
+                  <AvatarFallback>{expense.paidBy.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">Paid by</p>
+                  <p className="font-medium text-foreground truncate">{expense.paidBy}</p>
+                  <p className="text-xs text-muted-foreground">{expense.date}</p>
                 </div>
-                <Badge 
-                  variant={getStatusBadgeVariant()}
-                  className={expense.paymentProgress === 100 ? "bg-stat-green text-stat-green-foreground" : ""}
-                >
-                  {getPaymentStatus()}
-                </Badge>
+                
+                <div className="text-right shrink-0">
+                  <p className="text-xl font-bold text-foreground">RM {expense.amount.toLocaleString()}</p>
+                  <Badge 
+                    variant={getStatusBadgeVariant()}
+                    className={`text-[10px] ${expense.paymentProgress === 100 ? "bg-stat-green text-stat-green-foreground" : ""}`}
+                  >
+                    {getPaymentStatus()}
+                  </Badge>
+                </div>
               </div>
             </Card>
-
-            {/* Paid By Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <User className="h-3.5 w-3.5 text-muted-foreground" />
-                <h3 className="text-xs font-medium text-muted-foreground">Paid by</h3>
-              </div>
-              <Card className="p-3 border-border/50">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={payerMember?.imageUrl} alt={expense.paidBy} />
-                    <AvatarFallback>{expense.paidBy.split(" ").map(n => n[0]).join("")}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">{expense.paidBy}</p>
-                    <p className="text-xs text-muted-foreground">{expense.date}</p>
-                  </div>
-                  <p className="font-semibold text-foreground">RM {expense.amount.toLocaleString()}</p>
-                </div>
-              </Card>
-            </div>
 
             {/* Receipts Section (elevated priority) */}
             <div className="mt-4">
