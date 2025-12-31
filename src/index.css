@@ -223,4 +223,15 @@
   .max-h-dvh {
     max-height: 100dvh;
   }
+
+  /* Hide scrollbar on mobile */
+  @media (max-width: 767px) {
+    * {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE/Edge */
+    }
+    *::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+  }
 }
