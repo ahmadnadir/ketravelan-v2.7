@@ -67,8 +67,8 @@ export function RequirementsSection({
             className={cn(
               "px-3 py-1.5 text-sm rounded-full border transition-all active:scale-95",
               expectations.includes(exp.label)
-                ? "bg-white text-black border-border font-medium"
-                : "bg-secondary/50 border-border/50 text-muted-foreground hover:bg-foreground hover:text-background"
+                ? "bg-foreground text-background border-foreground font-medium"
+                : "bg-white border-border text-muted-foreground hover:bg-foreground hover:text-background"
             )}
           >
             {exp.emoji} {exp.label}
@@ -82,13 +82,13 @@ export function RequirementsSection({
           {customExpectations.map((exp) => (
             <div
               key={exp}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-black border border-border text-sm rounded-full font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background border border-foreground text-sm rounded-full font-medium"
             >
               <span>📦 {exp}</span>
               <button
                 type="button"
                 onClick={() => toggleExpectation(exp)}
-                className="p-0.5 hover:bg-black/10 rounded-full transition-colors"
+                className="p-0.5 hover:bg-white/20 rounded-full transition-colors"
               >
                 <X className="h-3 w-3" />
               </button>
