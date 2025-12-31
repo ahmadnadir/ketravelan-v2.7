@@ -1029,7 +1029,7 @@ export function TripExpenses() {
               <Card className="p-3 sm:p-4 border-border/50">
                 <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Spending by Category</h3>
                 <div className="space-y-2 sm:space-y-3">
-                  {[...categoryBreakdown].sort((a, b) => b.amount - a.amount).map((item) => (
+                  {[...categoryBreakdown].sort((a, b) => b.amount - a.amount).map((item, index) => (
                     <div key={item.category} className="space-y-1 sm:space-y-1.5">
                       <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
                         <span className="text-foreground truncate flex items-center gap-1.5">
@@ -1042,8 +1042,11 @@ export function TripExpenses() {
                       </div>
                       <div className="h-1.5 sm:h-2 bg-secondary rounded-full overflow-hidden">
                         <div
-                          className={`h-full ${item.color} rounded-full`}
-                          style={{ width: `${item.percentage}%` }}
+                          className={`h-full ${item.color} rounded-full transition-all duration-700 ease-out`}
+                          style={{ 
+                            width: `${item.percentage}%`,
+                            animation: `growWidth 0.7s ease-out ${200 + index * 100}ms both`
+                          }}
                         />
                       </div>
                     </div>
@@ -1095,7 +1098,7 @@ export function TripExpenses() {
                   const sortedContributions = Object.entries(contributions)
                     .sort(([, a], [, b]) => b.amount - a.amount);
                   
-                  return sortedContributions.map(([name, { amount: contribution, imageUrl }]) => {
+                  return sortedContributions.map(([name, { amount: contribution, imageUrl }], index) => {
                     const percentage = totalCost > 0 ? Math.round((contribution / totalCost) * 100) : 0;
                     return (
                       <div key={name} className="space-y-1 sm:space-y-1.5">
@@ -1118,8 +1121,11 @@ export function TripExpenses() {
                         {/* Full-width progress bar below */}
                         <div className="h-1.5 sm:h-2 bg-secondary rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-foreground/70 rounded-full transition-all"
-                            style={{ width: `${percentage}%` }}
+                            className="h-full bg-foreground/70 rounded-full transition-all duration-700 ease-out"
+                            style={{ 
+                              width: `${percentage}%`,
+                              animation: `growWidth 0.7s ease-out ${400 + index * 100}ms both`
+                            }}
                           />
                         </div>
                       </div>
