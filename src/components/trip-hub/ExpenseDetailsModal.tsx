@@ -545,7 +545,7 @@ export function ExpenseDetailsModal({
                             {member.name.split(" ").map(n => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
-                        <p className="flex-1 min-w-0 text-[15px] sm:text-sm font-medium text-foreground truncate">{member.name}</p>
+                        <p className="flex-1 min-w-0 text-[15px] sm:text-sm font-medium text-foreground">{member.name}</p>
                         <p className="text-[15px] sm:text-sm font-semibold text-foreground whitespace-nowrap">
                           RM {amount.toFixed(2)}
                         </p>
