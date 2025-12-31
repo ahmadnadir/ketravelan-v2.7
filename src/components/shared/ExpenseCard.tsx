@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getCategoryById, getCategoryFromTitle } from "@/lib/expenseCategories";
 import { cn } from "@/lib/utils";
+import { formatDisplayDate } from "@/lib/dateUtils";
 
 // User role types for expense actions
 type ExpenseRole = "payer" | "owes" | "settled";
@@ -144,7 +145,7 @@ export function ExpenseCard({
             <div className="min-w-0">
               <h4 className="font-semibold text-sm sm:text-base text-foreground truncate">{title}</h4>
               <p className="text-xs text-muted-foreground">
-                Paid by {paidBy} · {date}
+                Paid by {paidBy} · {formatDisplayDate(date)}
               </p>
             </div>
             <div className="flex items-start gap-1 shrink-0">

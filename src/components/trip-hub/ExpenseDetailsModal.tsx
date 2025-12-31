@@ -20,6 +20,7 @@ import { mockMembers, ExpensePayment } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import { PaymentReviewModal } from "./PaymentReviewModal";
 import { ReceiptsFromOthersModal } from "./ReceiptsFromOthersModal";
+import { formatDisplayDate } from "@/lib/dateUtils";
 
 type TabType = "overview" | "payments";
 
@@ -374,7 +375,7 @@ export function ExpenseDetailsModal({
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground">Paid by</p>
                   <p className="font-medium text-foreground truncate">{expense.paidBy}</p>
-                  <p className="text-xs text-muted-foreground">{expense.date}</p>
+                  <p className="text-xs text-muted-foreground">{formatDisplayDate(expense.date)}</p>
                 </div>
                 
                 <div className="text-right shrink-0 flex items-center">
