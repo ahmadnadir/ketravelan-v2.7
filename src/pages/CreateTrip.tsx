@@ -36,6 +36,7 @@ import { RouteBuilder } from "@/components/create-trip/RouteBuilder";
 import { BudgetSection } from "@/components/create-trip/BudgetSection";
 import { ItinerarySection } from "@/components/create-trip/ItinerarySection";
 import { RequirementsSection } from "@/components/create-trip/RequirementsSection";
+import { OptionCard } from "@/components/create-trip/OptionCard";
 import {
   Dialog,
   DialogContent,
@@ -308,87 +309,53 @@ export default function CreateTrip() {
             </div>
             
             <div className="grid gap-3">
-              <Card
-                className={cn(
-                  "p-4 cursor-pointer transition-all border hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
-                  draft.visibility === "public" ? "border-primary/50" : "border-border/50"
-                )}
+              <OptionCard
+                icon={<Globe className="h-6 w-6" />}
+                title="Public Trip"
+                description={
+                  <ul className="space-y-1 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <span className="text-primary">•</span>
+                      Open to everyone
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-primary">•</span>
+                      Discoverable in feed
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-primary">•</span>
+                      Anyone can request to join
+                    </li>
+                  </ul>
+                }
+                selected={draft.visibility === "public"}
                 onClick={() => updateDraft("visibility", "public")}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl shrink-0 bg-secondary">
-                    <Globe className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground">Public Trip</h3>
-                    <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">•</span>
-                        Open to everyone
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">•</span>
-                        Discoverable in feed
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">•</span>
-                        Anyone can request to join
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={cn(
-                    "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
-                    draft.visibility === "public"
-                      ? "border-primary bg-primary"
-                      : "border-muted-foreground/30"
-                  )}>
-                    {draft.visibility === "public" && (
-                      <Check className="h-3 w-3 text-primary-foreground animate-scale-in" />
-                    )}
-                  </div>
-                </div>
-              </Card>
+                iconSize="md"
+              />
 
-              <Card
-                className={cn(
-                  "p-4 cursor-pointer transition-all border hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
-                  draft.visibility === "private" ? "border-primary/50" : "border-border/50"
-                )}
+              <OptionCard
+                icon={<Lock className="h-6 w-6" />}
+                title="Friends / Private"
+                description={
+                  <ul className="space-y-1 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <span className="text-primary">•</span>
+                      Invite-only
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-primary">•</span>
+                      Hidden from discovery
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-primary">•</span>
+                      Shareable private link
+                    </li>
+                  </ul>
+                }
+                selected={draft.visibility === "private"}
                 onClick={() => updateDraft("visibility", "private")}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl shrink-0 bg-secondary">
-                    <Lock className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground">Friends / Private</h3>
-                    <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">•</span>
-                        Invite-only
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">•</span>
-                        Hidden from discovery
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">•</span>
-                        Shareable private link
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={cn(
-                    "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
-                    draft.visibility === "private"
-                      ? "border-primary bg-primary"
-                      : "border-muted-foreground/30"
-                  )}>
-                    {draft.visibility === "private" && (
-                      <Check className="h-3 w-3 text-primary-foreground animate-scale-in" />
-                    )}
-                  </div>
-                </div>
-              </Card>
+                iconSize="md"
+              />
             </div>
           </div>
         )}
