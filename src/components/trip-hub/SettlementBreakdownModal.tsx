@@ -35,6 +35,7 @@ interface SettlementBreakdownModalProps {
   onMarkAllPaid?: () => void;
   onSendReminder?: () => void;
   onViewQR?: () => void;
+  onViewReceipts?: () => void;
 }
 
 export function SettlementBreakdownModal({
@@ -53,6 +54,7 @@ export function SettlementBreakdownModal({
   onMarkAllPaid,
   onSendReminder,
   onViewQR,
+  onViewReceipts,
 }: SettlementBreakdownModalProps) {
   const isViewerOwing = fromUser.id === currentUserId;
   const isViewerReceiving = toUser.id === currentUserId;
@@ -317,7 +319,9 @@ export function SettlementBreakdownModal({
                 <Button 
                   variant="outline"
                   className="flex-1 h-10 text-sm"
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => {
+                    onViewReceipts?.();
+                  }}
                 >
                   <Receipt className="h-4 w-4 mr-2" />
                   View Receipts
