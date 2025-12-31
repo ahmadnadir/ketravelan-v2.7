@@ -704,32 +704,15 @@ export function ExpenseDetailsModal({
             ) : (
               /* Case A: I owe others - Show my payment status and upload */
               <div className="space-y-4">
-                {/* Your Payment Status */}
-                <Card className="p-4 border-border/50">
-                  <div className="flex items-center gap-2 mb-3">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-sm font-semibold text-foreground">Your Payment Status</h3>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Amount Owed</p>
-                      <p className="text-xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
-                    </div>
-                    <Badge 
-                      variant={currentUserPayment?.status === "settled" ? "default" : currentUserPayment?.status === "submitted" ? "secondary" : "outline"}
-                      className={currentUserPayment?.status === "settled" ? "bg-stat-green text-stat-green-foreground" : currentUserPayment?.status === "submitted" ? "bg-blue-500/10 text-blue-600" : "text-yellow-600 border-yellow-500/30 bg-yellow-500/10"}
-                    >
-                      {currentUserPayment?.status === "settled" ? "Settled" : 
-                       currentUserPayment?.status === "submitted" ? "Pending Verification" : "Pending"}
-                    </Badge>
-                  </div>
-                </Card>
+                {/* Amount Display - Clean centered design */}
+                <div className="bg-muted/50 rounded-2xl p-6 text-center">
+                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                  <p className="text-3xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
+                </div>
 
                 {/* Upload Payment Proof Section */}
                 {currentUserPayment?.status !== "settled" && (
                   <div className="space-y-4">
-                    <Separator />
                     
                     {/* Optional Note - Always Visible */}
                     <div className="space-y-2">
