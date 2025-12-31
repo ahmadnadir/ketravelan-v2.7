@@ -200,6 +200,7 @@ export interface ExpensePayment {
   receiptUrl?: string;
   uploadedAt?: string;
   payerNote?: string;
+  confirmedByPayer?: boolean;
 }
 
 // Enhanced expense data with payments tracking

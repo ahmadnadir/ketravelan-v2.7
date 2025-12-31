@@ -104,6 +104,7 @@ export function ExpenseDetailsModal({
           receiptUrl: p.receiptUrl,
           uploadedAt: p.uploadedAt,
           payerNote: p.payerNote,
+          confirmedByPayer: p.confirmedByPayer ?? false,
         })));
       } else {
         setMemberPayments(splitMembers.map(memberId => ({

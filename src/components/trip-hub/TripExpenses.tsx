@@ -769,15 +769,16 @@ export function TripExpenses() {
           status: "pending" as const
         }));
         
-        // Update the specific member's payment to "submitted"
+        // Update the specific member's payment to "settled" (awaiting payer confirmation)
         const updatedPayments = existingPayments.map(p => 
           p.memberId === memberId 
             ? { 
                 ...p, 
-                status: "submitted" as const,
+                status: "settled" as const,
                 receiptUrl,
                 payerNote,
-                uploadedAt
+                uploadedAt,
+                confirmedByPayer: false
               } 
             : p
         );
@@ -793,7 +794,7 @@ export function TripExpenses() {
         ...prev,
         payments: (prev.payments || prev.splitWith.map(id => ({ memberId: id, status: "pending" as const }))).map(p => 
           p.memberId === memberId 
-            ? { ...p, status: "submitted" as const, receiptUrl, payerNote, uploadedAt } 
+            ? { ...p, status: "settled" as const, receiptUrl, payerNote, uploadedAt, confirmedByPayer: false } 
             : p
         )
       } : null);
@@ -813,9 +814,9 @@ export function TripExpenses() {
   // Handle confirming payment settled (with verification)
   const handleConfirmPaymentSettled = (expenseId: string, memberId: string) => {
     setExpenses(prev => prev.map(expense => {
-      if (expense.id === expenseId && expense.payments) {
+    if (expense.id === expenseId && expense.payments) {
         const updatedPayments = expense.payments.map(p => 
-          p.memberId === memberId ? { ...p, status: "settled" as const } : p
+          p.memberId === memberId ? { ...p, status: "settled" as const, confirmedByPayer: true } : p
         );
         // Calculate progress based on amounts
         const settledAmount = updatedPayments
