@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ChevronDown, X } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -68,15 +68,6 @@ export function SettlementConfirmModal({
       <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
         {/* Header */}
         <DialogHeader className="flex-none p-4 pb-4 border-b border-border/50">
-          {/* Close button */}
-          <button
-            onClick={() => onOpenChange(false)}
-            className="absolute right-4 top-4 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors focus:outline-none"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </button>
-
           <DialogTitle className="text-xl sm:text-lg font-semibold text-center">
             Confirm Settlement
           </DialogTitle>
