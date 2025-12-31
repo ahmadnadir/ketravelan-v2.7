@@ -110,10 +110,8 @@ export function ExpenseCard({
 
   const personalShare = calculatePersonalShare();
 
-  // Dynamic button label based on personal status
+  // CTA label based on personal share status only (binary)
   const getButtonLabel = (): string => {
-    if (role === "settled") return "View Details";
-    if (role === "payer") return "View Payments";
     if (personalShare.status === "pending") return "View & Settle";
     return "View Details";
   };
@@ -173,26 +171,34 @@ export function ExpenseCard({
             </div>
           </div>
 
-          {/* Status Section - Always show progress bar */}
+          {/* Group Settlement Progress - Informational, not alarming */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className={`text-xs font-medium ${
-                isFullySettled ? "text-stat-green" : paymentProgress === 0 ? "text-destructive" : "text-yellow-600"
-              }`}>
-                {paymentProgress}% settled
+              <span className={cn(
+                "text-xs font-medium",
+                isFullySettled ? "text-stat-green" : "text-muted-foreground"
+              )}>
+                Group settlement: {paymentProgress}%
               </span>
             </div>
-            <Progress value={paymentProgress} className="h-1.5" />
+            <Progress 
+              value={paymentProgress} 
+              className={cn(
+                "h-1.5",
+                isFullySettled ? "[&>div]:bg-stat-green" : "[&>div]:bg-amber-500/70"
+              )} 
+            />
           </div>
 
-          {/* Personal Share Row */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-            <span>Your share:</span>
-            <span className="font-medium">
+          {/* Personal Impact Row - Primary Focus */}
+          <div className="flex items-center justify-between text-sm pt-1">
+            <span className="font-medium text-foreground">Your share:</span>
+            <span className="font-semibold">
               {formatCurrency(personalShare.amount, currency)} · {" "}
               <span className={cn(
+                "capitalize",
                 personalShare.status === "settled" && "text-stat-green",
-                personalShare.status === "pending" && "text-yellow-600"
+                personalShare.status === "pending" && "text-amber-600"
               )}>
                 {personalShare.status === "settled" ? "Settled" : "Pending"}
               </span>
