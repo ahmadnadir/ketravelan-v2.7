@@ -504,10 +504,19 @@ export default function TripDetails() {
             <AvatarRow avatars={mockMembers} max={4} />
 
             {/* Tags */}
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {tripData.tags.map((tag) => (
-                <PillChip key={tag} label={tag} />
-              ))}
+            <div className="flex flex-wrap gap-2">
+              {tripData.tags.map((tag) => {
+                const category = tripCategories.find(c => c.label === tag);
+                return (
+                  <span
+                    key={tag}
+                    className="px-3 py-2 text-sm rounded-full border bg-white border-border text-muted-foreground flex items-center gap-2"
+                  >
+                    {category?.icon && <span>{category.icon}</span>}
+                    {tag}
+                  </span>
+                );
+              })}
             </div>
           </div>
 
