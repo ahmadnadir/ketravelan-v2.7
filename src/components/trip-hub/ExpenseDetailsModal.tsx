@@ -310,28 +310,42 @@ export function ExpenseDetailsModal({
           <Tabs value={activeTab} className="w-full">
             {/* Overview Tab */}
             <TabsContent value="overview" className="p-4 space-y-4 mt-0">
-            {/* Combined: Amount + Paid by */}
+            {/* Total Amount with Status Badge */}
             <Card className="p-4 border-border/50">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 shrink-0">
-                  <AvatarImage src={payerMember?.imageUrl} alt={expense.paidBy} />
-                  <AvatarFallback>{expense.paidBy.split(" ").map(n => n[0]).join("")}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate">{expense.paidBy}</p>
-                  <p className="text-xs text-muted-foreground">{expense.date}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Amount</p>
+                  <p className="text-2xl font-bold text-foreground">RM {expense.amount.toLocaleString()}</p>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="text-lg font-bold text-foreground">RM {expense.amount.toLocaleString()}</p>
-                  <Badge 
-                    variant={getStatusBadgeVariant()}
-                    className={`text-[10px] ${expense.paymentProgress === 100 ? "bg-stat-green text-stat-green-foreground" : ""}`}
-                  >
-                    {getPaymentStatus()}
-                  </Badge>
-                </div>
+                <Badge 
+                  variant={getStatusBadgeVariant()}
+                  className={expense.paymentProgress === 100 ? "bg-stat-green text-stat-green-foreground" : ""}
+                >
+                  {getPaymentStatus()}
+                </Badge>
               </div>
             </Card>
+
+            {/* Paid By Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <User className="h-3.5 w-3.5 text-muted-foreground" />
+                <h3 className="text-xs font-medium text-muted-foreground">Paid by</h3>
+              </div>
+              <Card className="p-3 border-border/50">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={payerMember?.imageUrl} alt={expense.paidBy} />
+                    <AvatarFallback>{expense.paidBy.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{expense.paidBy}</p>
+                    <p className="text-xs text-muted-foreground">{expense.date}</p>
+                  </div>
+                  <p className="font-semibold text-foreground">RM {expense.amount.toLocaleString()}</p>
+                </div>
+              </Card>
+            </div>
 
             {/* Receipts Section (elevated priority) */}
             <div className="mt-4">
@@ -404,38 +418,39 @@ export function ExpenseDetailsModal({
                           </div>
                         </>
                       ) : (
-                        /* Thumbnail View - Larger, image fits without cropping */
+                        /* Thumbnail View */
                         <div className="relative">
                           <img
                             src={receipt.url}
                             alt="Receipt thumbnail"
-                            className="w-full h-64 object-contain bg-secondary/30"
+                            className="w-full h-40 object-cover"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                           <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-2">
                               <div>
-                                <p className="text-xs text-foreground/90 font-medium">{receipt.uploadedBy}</p>
+                                <p className="text-[11px] text-foreground/80">{receipt.uploadedBy}</p>
                                 <p className="text-[11px] text-muted-foreground">{receipt.uploadedAt}</p>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => setShowFullReceipt(true)}
-                                  className="h-7 text-xs"
-                                >
-                                  Expand
-                                </Button>
-                                <Button
-                                  variant="secondary"
-                                  size="icon"
-                                  onClick={handleDownload}
-                                  className="h-7 w-7"
-                                >
-                                  <Download className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setShowFullReceipt(true)}
+                                className="h-7 text-xs gap-1.5 flex-1"
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                                View
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="icon"
+                                onClick={handleDownload}
+                                className="h-7 w-7"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                              </Button>
                             </div>
                           </div>
                         </div>
