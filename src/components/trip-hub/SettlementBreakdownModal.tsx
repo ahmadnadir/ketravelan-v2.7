@@ -296,7 +296,7 @@ export function SettlementBreakdownModal({
                 </Button>
               )}
 
-              {onViewReceipts && (
+              {isViewerReceiving && onViewReceipts && (
                 <Button 
                   variant="outline"
                   className="flex-1 h-10 text-sm"
