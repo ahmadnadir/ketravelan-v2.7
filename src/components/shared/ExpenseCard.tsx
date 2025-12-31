@@ -2,7 +2,6 @@ import { MoreVertical } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +11,7 @@ import {
 import { getCategoryById, getCategoryFromTitle } from "@/lib/expenseCategories";
 import { cn } from "@/lib/utils";
 import { formatDisplayDate } from "@/lib/dateUtils";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 // User role types for expense actions
 type ExpenseRole = "payer" | "owes" | "settled";
@@ -201,17 +201,10 @@ export function ExpenseCard({
             <span className="text-[13px] sm:text-xs font-medium text-foreground">Your share:</span>
             <div className="flex items-center gap-1.5">
               <span className="text-[14px] sm:text-xs font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
-              <Badge 
-                variant="status"
-                className={cn(
-                  "text-[12px] sm:text-[10px] px-2.5 sm:px-2 py-1 sm:py-0.5 font-medium",
-                  personalShare.status === "settled" 
-                    ? "bg-stat-green/10 text-stat-green border-stat-green/30" 
-                    : "bg-amber-500/10 text-amber-600 border-amber-500/30"
-                )}
-              >
-                {personalShare.status === "settled" ? "Settled" : "Pending"}
-              </Badge>
+              <StatusBadge 
+                status={personalShare.status} 
+                className="text-[12px] sm:text-[10px] px-2.5 sm:px-2 py-1 sm:py-0.5"
+              />
             </div>
           </div>
 

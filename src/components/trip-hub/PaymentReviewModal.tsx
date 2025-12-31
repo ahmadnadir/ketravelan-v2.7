@@ -8,10 +8,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ExpensePayment } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 interface Member {
   id: string;
@@ -57,22 +57,9 @@ export function PaymentReviewModal({
     }
   };
 
-  const getStatusBadge = () => {
-    switch (payment.status) {
-      case "settled":
-        return (
-          <Badge className="bg-stat-green/10 text-stat-green border border-stat-green/30">
-            Settled
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">
-            Pending
-          </Badge>
-        );
-    }
-  };
+  const getStatusBadge = () => (
+    <StatusBadge status={payment.status === "settled" ? "settled" : "pending"} size="md" />
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

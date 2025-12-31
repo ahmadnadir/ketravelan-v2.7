@@ -21,6 +21,7 @@ import { toast } from "@/hooks/use-toast";
 import { PaymentReviewModal } from "./PaymentReviewModal";
 import { ReceiptsFromOthersModal } from "./ReceiptsFromOthersModal";
 import { formatDisplayDate } from "@/lib/dateUtils";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 type TabType = "overview" | "payments";
 
@@ -541,12 +542,10 @@ export function ExpenseDetailsModal({
                         <p className="text-sm font-semibold text-foreground whitespace-nowrap">
                           RM {amount.toFixed(2)}
                         </p>
-                        <Badge 
-                          variant="status"
-                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green/10 text-stat-green border-stat-green/30" : "bg-amber-500/10 text-amber-600 border-amber-500/30"}`}
-                        >
-                          {isPaid ? "Settled" : "Pending"}
-                        </Badge>
+                        <StatusBadge 
+                          status={isPaid ? "settled" : "pending"} 
+                          className="shrink-0"
+                        />
                       </div>
                     </Card>
                   );
@@ -609,9 +608,7 @@ export function ExpenseDetailsModal({
                           
                           {/* Status + View Receipt Row */}
                           <div className="flex items-center justify-between mt-3 ml-13">
-                            <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border-stat-green/30">
-                              Settled
-                            </Badge>
+                            <StatusBadge status="settled" />
                             <Button
                               variant="ghost"
                               size="sm"
@@ -677,20 +674,9 @@ export function ExpenseDetailsModal({
                       const isSettled = memberPayment?.status === "settled";
 
                       // Get status badge with updated styling
-                      const getStatusBadge = () => {
-                        if (isSettled) {
-                          return (
-                            <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border border-stat-green/30">
-                              Settled
-                            </Badge>
-                          );
-                        }
-                        return (
-                          <Badge variant="outline" className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-600 border-amber-500/30">
-                            Pending
-                          </Badge>
-                        );
-                      };
+                      const getStatusBadge = () => (
+                        <StatusBadge status={isSettled ? "settled" : "pending"} />
+                      );
 
                       return (
                         <Card key={memberId} className="p-4 border-border/50">

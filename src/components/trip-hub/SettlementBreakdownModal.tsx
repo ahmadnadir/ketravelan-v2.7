@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { getCategoryById } from "@/lib/expenseCategories";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 export interface SettlementExpense {
   expenseId: string;
@@ -60,22 +60,9 @@ export function SettlementBreakdownModal({
   const isViewerOwing = fromUser.id === currentUserId;
   const isViewerReceiving = toUser.id === currentUserId;
   
-  const getStatusBadge = (expenseStatus: SettlementExpense["status"]) => {
-    switch (expenseStatus) {
-      case "pending":
-        return (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full border bg-amber-500/10 text-amber-600 border-amber-500/30">
-            Pending
-          </span>
-        );
-      case "settled":
-        return (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full border bg-stat-green/10 text-stat-green border-stat-green/30">
-            Settled
-          </span>
-        );
-    }
-  };
+  const getStatusBadge = (expenseStatus: SettlementExpense["status"]) => (
+    <StatusBadge status={expenseStatus} />
+  );
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
