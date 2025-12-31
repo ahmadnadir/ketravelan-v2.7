@@ -185,7 +185,7 @@ export function SettlementReceiptsModal({
                       </div>
                       <div className="mt-2">
                         <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                          Pending Verification
+                          Pending
                         </span>
                       </div>
                     </div>

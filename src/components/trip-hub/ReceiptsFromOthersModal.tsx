@@ -15,7 +15,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface MemberPayment {
   memberId: string;
-  status: "pending" | "submitted" | "settled";
+  status: "pending" | "settled";
   receiptUrl?: string;
   uploadedAt?: string;
   payerNote?: string;
@@ -71,15 +71,8 @@ export function ReceiptsFromOthersModal({
         </Badge>
       );
     }
-    if (payment?.status === "submitted") {
-      return (
-        <Badge className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-600 border-amber-500/30">
-          Pending Verification
-        </Badge>
-      );
-    }
     return (
-      <Badge variant="outline" className="text-xs px-2 py-0.5 text-yellow-600 border-yellow-500/30 bg-yellow-500/10">
+      <Badge variant="outline" className="text-xs px-2 py-0.5 text-amber-600 border-amber-500/30 bg-amber-500/10">
         Pending
       </Badge>
     );
@@ -114,13 +107,12 @@ export function ReceiptsFromOthersModal({
           ) : (
             pendingMembers.map(({ member, amount, payment }) => {
               const isSettled = payment?.status === "settled";
-              const isSubmitted = payment?.status === "submitted";
               const hasReceipt = !!payment?.receiptUrl;
               const isExpanded = expandedReceipt === member.id;
 
-              // Mock receipt for submitted payments in demo
+              // Use provided receipt URL or mock for demo
               const receiptUrl = payment?.receiptUrl || 
-                (isSubmitted ? "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop" : undefined);
+                (hasReceipt ? "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop" : undefined);
 
               return (
                 <Card key={member.id} className="border-border/50 overflow-hidden">
@@ -268,7 +260,7 @@ export function ReceiptsFromOthersModal({
                           size="sm"
                           onClick={() => onMarkAsReceived(member.id)}
                           className="flex-1 text-xs gap-1.5"
-                          disabled={!isSubmitted && !hasReceipt}
+                          disabled={!hasReceipt}
                         >
                           <CheckCircle className="h-3.5 w-3.5" />
                           Mark as Settled
