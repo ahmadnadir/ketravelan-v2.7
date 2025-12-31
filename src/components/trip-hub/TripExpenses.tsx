@@ -1125,7 +1125,7 @@ export function TripExpenses() {
                         {/* Top row: Avatar + Name on left, Amount + % on right */}
                         <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
                           <span className="text-foreground truncate flex items-center gap-1.5 sm:gap-2">
-                            <Avatar className={`h-5 w-5 sm:h-6 sm:w-6 shrink-0 ring-2 ${memberColor.ring} ring-offset-1 ring-offset-background transition-all duration-300 group-hover:ring-offset-2`}>
+                            <Avatar className="h-5 w-5 sm:h-6 sm:w-6 shrink-0">
                               <AvatarImage src={imageUrl} alt={name} />
                               <AvatarFallback className="text-[10px] sm:text-xs bg-secondary text-muted-foreground">
                                 {name.split(' ').map(n => n[0]).join('')}
