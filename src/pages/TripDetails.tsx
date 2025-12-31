@@ -122,6 +122,7 @@ export default function TripDetails() {
   const [showJoinConfirmModal, setShowJoinConfirmModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [initialMessage, setInitialMessage] = useState("");
+  const [joinNote, setJoinNote] = useState("");
 
   // Try to load from published trips first, then fall back to mock data
   const publishedTrip = useMemo(() => id ? getPublishedTripById(id) : null, [id]);
@@ -753,49 +754,28 @@ export default function TripDetails() {
           </DialogHeader>
           
           <div className="p-4 space-y-4">
-            {/* Steps */}
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-semibold text-primary">1</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Submit your request</p>
-                  <p className="text-xs text-muted-foreground">
-                    The trip organizer will receive your join request
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-semibold text-primary">2</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Wait for approval</p>
-                  <p className="text-xs text-muted-foreground">
-                    The organizer will review your request and respond within 24-48 hours
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-semibold text-primary">3</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Get access to Trip Hub</p>
-                  <p className="text-xs text-muted-foreground">
-                    Once approved, you'll have full access to chat, itinerary, and expense splitting
-                  </p>
-                </div>
-              </div>
+            {/* Message input */}
+            <div className="space-y-2">
+              <label htmlFor="join-note" className="text-sm font-medium">
+                Introduce yourself <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <textarea
+                id="join-note"
+                value={joinNote}
+                onChange={(e) => setJoinNote(e.target.value.slice(0, 300))}
+                placeholder={`Hi! I'd love to join your ${tripData.destination} trip. A bit about me...`}
+                className="w-full min-h-[80px] p-3 rounded-xl border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                maxLength={300}
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {joinNote.length}/300
+              </p>
             </div>
             
             {/* Info note */}
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground">
-                No payment is required at this stage. You can discuss payment details with the group after joining.
+                No payment is required at this stage. The organizer will review your request and respond within 24-48 hours.
               </p>
             </div>
             
@@ -803,7 +783,10 @@ export default function TripDetails() {
             <div className="grid grid-cols-2 gap-3 pt-2">
               <Button 
                 variant="outline" 
-                onClick={() => setShowJoinConfirmModal(false)}
+                onClick={() => {
+                  setShowJoinConfirmModal(false);
+                  setJoinNote("");
+                }}
                 className="rounded-xl"
               >
                 Cancel
@@ -811,12 +794,16 @@ export default function TripDetails() {
               <Button 
                 onClick={() => {
                   setShowJoinConfirmModal(false);
-                  navigate(`/trip/${id}/hub`);
+                  const noteParam = joinNote.trim() 
+                    ? `?note=${encodeURIComponent(joinNote.trim())}` 
+                    : "";
+                  navigate(`/trip/${id}/hub${noteParam}`);
+                  setJoinNote("");
                 }}
                 className="rounded-xl gap-2"
               >
                 <UserPlus className="h-4 w-4" />
-                Continue
+                Send Request
               </Button>
             </div>
           </div>
