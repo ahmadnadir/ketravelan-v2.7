@@ -250,9 +250,19 @@ export function ExpenseDetailsModal({
     
     const member = getMemberById(memberId);
     
-    // Calculate new progress
-    const settledCount = memberPayments.filter(p => p.status === "settled").length + 1;
-    const newProgress = Math.round((settledCount / memberCount) * 100);
+    // Calculate new progress based on amounts
+    const getMemberShare = (mId: string) => {
+      if (expense?.splitType === "custom" && expense?.customSplitAmounts) {
+        return expense.customSplitAmounts.find(c => c.memberId === mId)?.amount || 0;
+      }
+      return (expense?.amount || 0) / memberCount;
+    };
+    
+    const currentSettledAmount = memberPayments
+      .filter(p => p.status === "settled")
+      .reduce((sum, p) => sum + getMemberShare(p.memberId), 0);
+    const newSettledAmount = currentSettledAmount + getMemberShare(memberId);
+    const newProgress = Math.round((newSettledAmount / (expense?.amount || 1)) * 100);
     
     // Call the new confirmation handler if provided
     if (onConfirmPaymentReceived && expense) {
