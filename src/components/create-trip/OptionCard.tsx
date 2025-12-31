@@ -6,11 +6,12 @@ import { cn } from '@/lib/utils';
 interface OptionCardProps {
   icon: ReactNode;
   title: string;
-  description: string;
+  description: ReactNode;
   selected: boolean;
   onClick: () => void;
   recommended?: boolean;
   children?: ReactNode;
+  iconSize?: 'sm' | 'md';
 }
 
 export function OptionCard({
@@ -21,6 +22,7 @@ export function OptionCard({
   onClick,
   recommended,
   children,
+  iconSize = 'sm',
 }: OptionCardProps) {
   return (
     <Card
@@ -33,20 +35,30 @@ export function OptionCard({
     >
       <div className="flex items-start gap-3">
         <div
-          className="p-2 rounded-xl shrink-0 bg-secondary text-muted-foreground"
+          className={cn(
+            "rounded-xl shrink-0 bg-secondary text-muted-foreground",
+            iconSize === 'md' ? "p-3" : "p-2"
+          )}
         >
           {icon}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="font-medium text-foreground text-sm">{title}</h4>
+            <h4 className={cn(
+              "font-medium text-foreground",
+              iconSize === 'md' ? "font-semibold" : "text-sm"
+            )}>{title}</h4>
             {recommended && (
               <span className="text-[10px] font-medium px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">
                 Recommended
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+          {typeof description === 'string' ? (
+            <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+          ) : (
+            <div className="mt-1">{description}</div>
+          )}
         </div>
         <div
           className={cn(
