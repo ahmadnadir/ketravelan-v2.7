@@ -29,12 +29,14 @@ import { mockExpenses as initialMockExpenses, mockMembers } from "@/data/mockDat
 import { toast } from "@/hooks/use-toast";
 import { getCategoryFromTitle } from "@/lib/expenseCategories";
 
-const categoryBreakdown = [
-  { category: "Transport", amount: 770, percentage: 30, color: "bg-stat-blue", emoji: "🚗" },
-  { category: "Food & Drinks", amount: 560, percentage: 22, color: "bg-stat-orange", emoji: "🍴" },
-  { category: "Accommodation", amount: 1200, percentage: 47, color: "bg-purple-500", emoji: "🏨" },
-  { category: "Activities", amount: 180, percentage: 7, color: "bg-stat-green", emoji: "🎫" },
-];
+const categoryConfig: Record<string, { color: string; emoji: string }> = {
+  "Transport": { color: "bg-stat-blue", emoji: "🚗" },
+  "Food & Drinks": { color: "bg-stat-orange", emoji: "🍴" },
+  "Accommodation": { color: "bg-purple-500", emoji: "🏨" },
+  "Activities": { color: "bg-stat-green", emoji: "🎫" },
+  "Shopping": { color: "bg-pink-500", emoji: "🛍️" },
+  "Other": { color: "bg-secondary", emoji: "📦" },
+};
 
 // Helper function for consistent currency formatting
 const formatCurrency = (amount: number): string => {
@@ -255,6 +257,33 @@ export function TripExpenses() {
     
     return result;
   }, [expenses, sortOrder, filterPayer, filterCategory]);
+
+  // Calculate visible totals for filtered expenses
+  const visibleTotals = useMemo(() => {
+    const totalSpend = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const yourShare = filteredExpenses.reduce((sum, expense) => {
+      return sum + calculateUserShare(expense, CURRENT_USER_ID);
+    }, 0);
+    return { totalSpend, yourShare, count: filteredExpenses.length };
+  }, [filteredExpenses]);
+
+  // Dynamic category breakdown calculated from actual expenses
+  const categoryBreakdown = useMemo(() => {
+    const categoryTotals: Record<string, number> = {};
+    
+    expenses.forEach(expense => {
+      const category = getCategoryFromTitle(expense.title) || "Other";
+      categoryTotals[category] = (categoryTotals[category] || 0) + expense.amount;
+    });
+    
+    return Object.entries(categoryTotals).map(([category, amount]) => ({
+      category,
+      amount,
+      percentage: totalCost > 0 ? Math.round((amount / totalCost) * 100) : 0,
+      color: categoryConfig[category]?.color || "bg-secondary",
+      emoji: categoryConfig[category]?.emoji || "📦",
+    }));
+  }, [expenses, totalCost]);
 
   // Filter settlements based on direction and status filters
   const filteredSettlements = useMemo(() => {
@@ -899,7 +928,7 @@ export function TripExpenses() {
                   <SelectValue placeholder="Paid by" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border">
-                  <SelectItem value="all">All members</SelectItem>
+                  <SelectItem value="all">All payers</SelectItem>
                   {uniquePayers.map((payer) => (
                     <SelectItem key={payer} value={payer}>{payer}</SelectItem>
                   ))}
@@ -920,6 +949,21 @@ export function TripExpenses() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Visible Summary - Shows totals for filtered list */}
+            {(filterPayer !== "all" || filterCategory !== "all") && (
+              <Card className="p-3 bg-secondary/50 border-border/30">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <span className="text-muted-foreground">
+                    Showing {visibleTotals.count} expense{visibleTotals.count !== 1 ? 's' : ''}
+                  </span>
+                  <div className="flex gap-3 text-foreground">
+                    <span>Total: <span className="font-medium">{formatCurrency(visibleTotals.totalSpend)}</span></span>
+                    <span>Your share: <span className="font-medium">{formatCurrency(visibleTotals.yourShare)}</span></span>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Expense Cards */}
             <div className="space-y-2 sm:space-y-3">
