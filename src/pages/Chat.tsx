@@ -16,8 +16,8 @@ export default function Chat() {
     );
   }, [chatFilter]);
 
-  const tripCount = mockChats.filter((c) => c.type === "trip").length;
-  const directCount = mockChats.filter((c) => c.type === "direct").length;
+  const tripsHaveUnread = mockChats.some((c) => c.type === "trip" && c.unread > 0);
+  const directHaveUnread = mockChats.some((c) => c.type === "direct" && c.unread > 0);
 
   return (
     <AppLayout>
@@ -27,8 +27,8 @@ export default function Chat() {
         {/* Tabs */}
         <SegmentedControl
           options={[
-            { label: "Trips", value: "trips", count: tripCount },
-            { label: "Direct", value: "direct", count: directCount },
+            { label: "DIY Trips", value: "trips", hasUnread: tripsHaveUnread },
+            { label: "Direct Messages", value: "direct", hasUnread: directHaveUnread },
           ]}
           value={chatFilter}
           onChange={(value) => setChatFilter(value as "trips" | "direct")}
@@ -73,16 +73,9 @@ export default function Chat() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-medium text-foreground truncate">
-                        {chat.name}
-                      </h4>
-                      {chat.unread > 0 && (
-                        <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center shrink-0">
-                          {chat.unread}
-                        </span>
-                      )}
-                    </div>
+                    <h4 className="font-medium text-foreground truncate">
+                      {chat.name}
+                    </h4>
                     <p
                       className={cn(
                         "text-sm truncate",
@@ -94,6 +87,11 @@ export default function Chat() {
                       {chat.lastMessage}
                     </p>
                   </div>
+                  {chat.unread > 0 && (
+                    <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white text-xs font-medium flex items-center justify-center shrink-0 self-center">
+                      {chat.unread}
+                    </span>
+                  )}
                 </div>
               </Card>
             </Link>
