@@ -357,6 +357,7 @@ export function TripExpenses() {
             shareAmount,
             status,
             category: getCategoryFromTitle(expense.title),
+            paidBy: expense.paidBy,
           });
         }
       }
@@ -379,6 +380,7 @@ export function TripExpenses() {
             shareAmount,
             status,
             category: getCategoryFromTitle(expense.title),
+            paidBy: expense.paidBy,
           });
         }
       }
