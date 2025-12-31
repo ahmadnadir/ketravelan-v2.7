@@ -282,17 +282,14 @@ export function ExpenseDetailsModal({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-lg font-semibold text-foreground truncate">{expense.title}</p>
+                {/* Progress bar with amount - under title */}
+                <div className="mt-1.5 space-y-1.5">
+                  <span className={`text-sm font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : "text-yellow-600"}`}>
+                    {expense.paymentProgress}% settled · RM {settledAmount.toFixed(0)}/{expense.amount}
+                  </span>
+                  <Progress value={expense.paymentProgress} className="h-2" />
+                </div>
               </div>
-            </div>
-            
-            {/* Progress bar with amount */}
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className={`font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : "text-yellow-600"}`}>
-                  {expense.paymentProgress}% settled · RM {settledAmount.toFixed(0)}/{expense.amount}
-                </span>
-              </div>
-              <Progress value={expense.paymentProgress} className="h-2" />
             </div>
           </DialogHeader>
 
