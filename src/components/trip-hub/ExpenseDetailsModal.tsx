@@ -284,7 +284,7 @@ export function ExpenseDetailsModal({
                 <p className="text-lg font-semibold text-foreground truncate">{expense.title}</p>
                 {/* Progress bar with amount - under title */}
                 <div className="mt-1.5 space-y-1.5">
-                  <span className={`text-sm font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : "text-yellow-600"}`}>
+                  <span className={`text-sm font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : expense.paymentProgress === 0 ? "text-destructive" : "text-yellow-600"}`}>
                     {expense.paymentProgress}% settled · RM {settledAmount.toFixed(0)}/{expense.amount}
                   </span>
                   <Progress value={expense.paymentProgress} className="h-2" />
