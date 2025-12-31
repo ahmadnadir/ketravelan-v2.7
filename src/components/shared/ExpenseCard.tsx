@@ -121,7 +121,7 @@ export function ExpenseCard({
     if (role === "settled") return "View Details";
     if (role === "payer") return "View Payments";
     if (personalShare.status === "pending") return "View & Settle";
-    if (personalShare.status === "paid") return "View Details";
+    if (personalShare.status === "paid") return "Awaiting Confirmation";
     return "View Details";
   };
 
