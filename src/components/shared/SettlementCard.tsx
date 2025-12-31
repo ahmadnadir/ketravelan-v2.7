@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, QrCode, FileText, Upload } from "lucide-react";
+import { ArrowRight, QrCode, FileText, Upload, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -159,6 +159,7 @@ export function SettlementCard({
             className="w-full h-10 text-sm bg-foreground text-background hover:bg-foreground/90"
             onClick={(e) => { e.stopPropagation(); onMarkPaid?.(); }}
           >
+            <CheckCircle2 className="h-4 w-4 mr-2" />
             Mark as Paid
           </Button>
         )}
