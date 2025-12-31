@@ -187,6 +187,24 @@ export function ExpenseDetailsModal({
   };
 
   const handleSubmitProof = () => {
+    // Capture the preview and note before resetting
+    const savedPreview = uploadPreview;
+    const savedNote = uploadNote;
+    
+    // Update the current user's payment status to "submitted" and store receipt
+    setMemberPayments(prev => 
+      prev.map(p => p.memberId === currentUserId 
+        ? { 
+            ...p, 
+            status: "submitted" as const,
+            receiptUrl: savedPreview || undefined,
+            payerNote: savedNote || undefined,
+            uploadedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          } 
+        : p
+      )
+    );
+    
     onUploadProof?.(uploadedFile || undefined, uploadNote);
     
     toast({
@@ -194,7 +212,7 @@ export function ExpenseDetailsModal({
       description: `${expense.paidBy} will be notified to confirm your payment.`,
     });
     
-    // Reset upload state
+    // Reset upload form state (but payment data is now saved in memberPayments)
     setUploadedFile(null);
     setUploadPreview(null);
     setUploadNote("");
@@ -696,8 +714,9 @@ export function ExpenseDetailsModal({
                   <p className="text-3xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
                 </div>
 
-                {/* Upload Payment Proof Section */}
-                {currentUserPayment?.status !== "settled" && (
+                {/* Payment Status or Upload Form */}
+                {currentUserPayment?.status === "pending" ? (
+                  /* Upload Payment Proof Section - Show when pending */
                   <div className="space-y-4">
                     
                     {/* Optional Note - Always Visible */}
@@ -783,7 +802,75 @@ export function ExpenseDetailsModal({
                       {expense.paidBy} will be notified to confirm your payment.
                     </p>
                   </div>
-                )}
+                ) : currentUserPayment?.status === "submitted" ? (
+                  /* Awaiting Confirmation Status - Show after submission */
+                  <div className="space-y-4">
+                    {/* Status Badge - centered, grey */}
+                    <div className="flex justify-center">
+                      <Badge className="px-4 py-2 text-sm bg-muted text-muted-foreground border-border">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Awaiting Confirmation
+                      </Badge>
+                    </div>
+
+                    {/* My Uploaded Receipt */}
+                    {currentUserPayment.receiptUrl && (
+                      <Card className="p-4 border-border/50">
+                        <h4 className="text-sm font-medium text-muted-foreground mb-3">My Payment Receipt</h4>
+                        <img
+                          src={currentUserPayment.receiptUrl}
+                          alt="My payment receipt"
+                          className="w-full h-64 object-contain rounded-xl border border-border"
+                        />
+                        {currentUserPayment.payerNote && (
+                          <p className="text-sm text-muted-foreground mt-3 italic">
+                            "{currentUserPayment.payerNote}"
+                          </p>
+                        )}
+                        {currentUserPayment.uploadedAt && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Uploaded {currentUserPayment.uploadedAt}
+                          </p>
+                        )}
+                      </Card>
+                    )}
+
+                    <p className="text-xs text-muted-foreground text-center">
+                      {expense.paidBy} has been notified to confirm your payment.
+                    </p>
+                  </div>
+                ) : currentUserPayment?.status === "settled" ? (
+                  /* Settled Status - Show green badge */
+                  <div className="space-y-4">
+                    <div className="flex justify-center">
+                      <Badge className="px-4 py-2 text-sm bg-stat-green/10 text-stat-green border-stat-green/30">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Settled
+                      </Badge>
+                    </div>
+
+                    {/* Show receipt if available */}
+                    {currentUserPayment.receiptUrl && (
+                      <Card className="p-4 border-border/50">
+                        <h4 className="text-sm font-medium text-muted-foreground mb-3">My Payment Receipt</h4>
+                        <img
+                          src={currentUserPayment.receiptUrl}
+                          alt="My payment receipt"
+                          className="w-full h-64 object-contain rounded-xl border border-border"
+                        />
+                        {currentUserPayment.payerNote && (
+                          <p className="text-sm text-muted-foreground mt-3 italic">
+                            "{currentUserPayment.payerNote}"
+                          </p>
+                        )}
+                      </Card>
+                    )}
+
+                    <p className="text-xs text-muted-foreground text-center">
+                      Payment confirmed by {expense.paidBy}.
+                    </p>
+                  </div>
+                ) : null}
               </div>
             )}
           </TabsContent>
