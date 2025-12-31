@@ -120,6 +120,7 @@ export default function TripDetails() {
 
   // Join confirmation modal state
   const [showJoinConfirmModal, setShowJoinConfirmModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
 
   // Try to load from published trips first, then fall back to mock data
   const publishedTrip = useMemo(() => id ? getPublishedTripById(id) : null, [id]);
@@ -724,7 +725,12 @@ export default function TripDetails() {
               <UserPlus className="h-4 w-4" />
               Request to Join
             </Button>
-            <Button size="lg" variant="outline" className="w-full rounded-xl text-sm sm:text-base gap-2">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="w-full rounded-xl text-sm sm:text-base gap-2"
+              onClick={() => setShowMessageModal(true)}
+            >
               <MessageCircle className="h-4 w-4" />
               Message
             </Button>
@@ -810,6 +816,88 @@ export default function TripDetails() {
               >
                 <UserPlus className="h-4 w-4" />
                 Continue
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Message Organizer Modal */}
+      <Dialog open={showMessageModal} onOpenChange={setShowMessageModal}>
+        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-3 border-b border-border/50">
+            <DialogTitle>Message Trip Organizer</DialogTitle>
+            <DialogDescription>
+              Start a conversation with {organizer.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="p-4 space-y-4">
+            {/* Organizer preview */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
+              <img 
+                src={organizer.imageUrl} 
+                alt={organizer.name} 
+                className="h-12 w-12 rounded-full object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm text-foreground">{organizer.name}</p>
+                <p className="text-xs text-muted-foreground">Trip Organizer</p>
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MessageCircle className="h-3 w-3 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Ask questions about the trip</p>
+                  <p className="text-xs text-muted-foreground">
+                    Get details about itinerary, budget, or travel plans
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="h-3 w-3 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Learn about the group</p>
+                  <p className="text-xs text-muted-foreground">
+                    Find out who else is joining and the group vibe
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Info note */}
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground">
+                Messages are private between you and the organizer. They typically respond within a few hours.
+              </p>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowMessageModal(false)}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowMessageModal(false);
+                  navigate(`/chat/${organizer.id}`);
+                }}
+                className="rounded-xl gap-2"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Start Chat
               </Button>
             </div>
           </div>
