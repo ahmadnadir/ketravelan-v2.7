@@ -43,6 +43,8 @@ interface ExpenseCardProps {
   // Management callbacks
   onEdit?: () => void;
   onDelete?: () => void;
+  // Visual feedback for bulk settlement
+  isHighlighted?: boolean;
 }
 
 // Format currency helper
@@ -68,6 +70,7 @@ export function ExpenseCard({
   onPrimaryAction,
   onEdit,
   onDelete,
+  isHighlighted = false,
 }: ExpenseCardProps) {
   // Get category info - use provided category or derive from title
   const categoryId = category || getCategoryFromTitle(title);
@@ -130,7 +133,10 @@ export function ExpenseCard({
 
   return (
     <Card 
-      className="group p-3 sm:p-4 border-border/50 cursor-pointer hover:bg-secondary/20 hover:shadow-md transition-all duration-150"
+      className={cn(
+        "group p-3 sm:p-4 border-border/50 cursor-pointer hover:bg-secondary/20 hover:shadow-md transition-all duration-150",
+        isHighlighted && "ring-2 ring-stat-green/50 animate-settle-pulse"
+      )}
       onClick={handleCardClick}
     >
       <div className="flex items-start gap-3">
