@@ -330,7 +330,8 @@ export function ExpenseDetailsModal({
                   </span>
                   <Progress 
                     value={expense.paymentProgress} 
-                    className={`h-2 max-w-[200px] mx-auto ${expense.paymentProgress === 100 ? "[&>div]:bg-stat-green" : "[&>div]:bg-amber-500/70"}`}
+                    className="h-2 max-w-[200px] mx-auto"
+                    autoVariant
                     animate 
                   />
                 </div>

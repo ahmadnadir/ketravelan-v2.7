@@ -183,10 +183,8 @@ export function ExpenseCard({
             </div>
             <Progress 
               value={paymentProgress} 
-              className={cn(
-                "h-1.5",
-                isFullySettled ? "[&>div]:bg-stat-green" : "[&>div]:bg-amber-500/70"
-              )} 
+              className="h-1.5"
+              autoVariant
             />
           </div>
 
