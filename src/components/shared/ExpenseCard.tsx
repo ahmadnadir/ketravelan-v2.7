@@ -195,7 +195,7 @@ export function ExpenseCard({
             <div className="flex items-center gap-1.5">
               <span className="font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
               <Badge 
-                variant="outline"
+                variant="status"
                 className={cn(
                   "text-[10px] px-2 py-0.5 font-medium",
                   personalShare.status === "settled" 
