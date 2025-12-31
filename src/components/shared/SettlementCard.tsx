@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, QrCode, Bell, FileText } from "lucide-react";
+import { ArrowRight, QrCode, Bell, FileText, Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -111,17 +111,27 @@ export function SettlementCard({
 
       {/* Actions - Role-based at bottom */}
       <div className="flex flex-col gap-2 pt-3 border-t border-border/50">
-        {/* If I OWE someone: Show View QR to see their payment QR */}
+        {/* If I OWE someone: Show View QR and Upload Receipts */}
         {isUserPayer && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full h-10 text-sm"
-            onClick={(e) => { e.stopPropagation(); onViewPayment?.(); }}
-          >
-            <QrCode className="h-4 w-4 mr-2" />
-            View QR
-          </Button>
+          <>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full h-10 text-sm"
+              onClick={(e) => { e.stopPropagation(); onViewPayment?.(); }}
+            >
+              <QrCode className="h-4 w-4 mr-2" />
+              View QR
+            </Button>
+            <Button 
+              size="sm" 
+              className="w-full h-10 text-sm bg-foreground text-background hover:bg-foreground/90"
+              onClick={(e) => { e.stopPropagation(); onCardClick?.(); }}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Receipts
+            </Button>
+          </>
         )}
         
         {/* If someone owes ME: Show View Details */}
