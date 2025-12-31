@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Receipt, Users, User, Upload, CheckCircle, Download, Eye, ZoomIn, ZoomOut, Clock, ImageIcon, Bell, Camera, X, Check, Pencil } from "lucide-react";
 import {
   Dialog,
@@ -88,7 +88,30 @@ export function ExpenseDetailsModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Reset state when modal opens with new expense or initial tab
+  // Sync memberPayments with expense.payments when expense prop updates
+  useEffect(() => {
+    if (open && expense) {
+      const splitMembers = expense.splitWith || mockMembers.map(m => m.id);
+      const payerMember = mockMembers.find(m => m.name === expense.paidBy);
+      
+      if (expense.payments && expense.payments.length > 0) {
+        setMemberPayments(expense.payments.map(p => ({
+          memberId: p.memberId,
+          status: p.status,
+          receiptUrl: p.receiptUrl,
+          uploadedAt: p.uploadedAt,
+          payerNote: p.payerNote,
+        })));
+      } else {
+        setMemberPayments(splitMembers.map(memberId => ({
+          memberId,
+          status: memberId === payerMember?.id ? "settled" : "pending",
+        })));
+      }
+    }
+  }, [expense?.id, expense?.payments, open]);
+
+  // Reset UI state when modal opens
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && expense) {
       setActiveTab(initialTab);
@@ -98,27 +121,8 @@ export function ExpenseDetailsModal({
       setZoom(1);
       setShowFullReceipt(false);
       setReviewingPayment(null);
-      
-      // Initialize member payments from expense data if available
-      const splitMembers = expense.splitWith || mockMembers.map(m => m.id);
-      const payerMember = mockMembers.find(m => m.name === expense.paidBy);
-      
-      if (expense.payments && expense.payments.length > 0) {
-        // Use existing payment data from expense
-        setMemberPayments(expense.payments.map(p => ({
-          memberId: p.memberId,
-          status: p.status,
-          receiptUrl: p.receiptUrl,
-          uploadedAt: p.uploadedAt,
-          payerNote: p.payerNote,
-        })));
-      } else {
-        // Create default payments
-        setMemberPayments(splitMembers.map(memberId => ({
-          memberId,
-          status: memberId === payerMember?.id ? "settled" : "pending",
-        })));
-      }
+      setIsEditingNote(false);
+      setIsEditingReceipt(false);
     }
     onOpenChange(newOpen);
   };
