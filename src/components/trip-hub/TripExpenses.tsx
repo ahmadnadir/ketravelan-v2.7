@@ -569,7 +569,7 @@ export function TripExpenses() {
       setRecentlySettledIds(uniqueIds);
       
       // Stay on settlements tab after confirming
-      setSubTab("settlements");
+      setSubTab("settle");
       
       // Clear highlight after 3 seconds
       setTimeout(() => setRecentlySettledIds([]), 3000);
