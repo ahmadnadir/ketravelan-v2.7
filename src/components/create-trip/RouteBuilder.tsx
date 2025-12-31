@@ -125,7 +125,7 @@ export function RouteBuilder({ stops, onChange, primaryDestination }: RouteBuild
               <div className="p-1 touch-none opacity-50 group-hover:opacity-100">
                 <GripVertical className="h-4 w-4 text-muted-foreground" />
               </div>
-              <span className="flex-1 text-sm font-medium text-white">{stop}</span>
+              <span className="flex-1 text-sm font-medium text-black">{stop}</span>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   type="button"
