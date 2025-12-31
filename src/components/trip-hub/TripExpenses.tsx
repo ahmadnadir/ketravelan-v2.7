@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, ArrowUpDown, User, QrCode, Layers } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, QrCode, SlidersHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StatCard } from "@/components/shared/StatCard";
@@ -26,6 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { mockExpenses as initialMockExpenses, mockMembers } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import { getCategoryFromTitle } from "@/lib/expenseCategories";
@@ -146,6 +152,7 @@ export function TripExpenses() {
   const [filterPayer, setFilterPayer] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<"all" | "awaiting" | "settled" | "pending">("all");
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   
   // Settlement filters
   const [directionFilter, setDirectionFilter] = useState<"all" | "owesMe" | "iOwe">("all");
@@ -282,6 +289,24 @@ export function TripExpenses() {
     
     return result;
   }, [expenses, sortOrder, filterPayer, filterCategory, filterStatus]);
+
+  // Active filter count for badge
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (sortOrder !== "latest") count++;
+    if (filterPayer !== "all") count++;
+    if (filterCategory !== "all") count++;
+    if (filterStatus !== "all") count++;
+    return count;
+  }, [sortOrder, filterPayer, filterCategory, filterStatus]);
+
+  // Clear all filters handler
+  const handleClearAllFilters = () => {
+    setSortOrder("latest");
+    setFilterPayer("all");
+    setFilterCategory("all");
+    setFilterStatus("all");
+  };
 
   // Filter settlements based on direction and status filters
   const filteredSettlements = useMemo(() => {
@@ -938,57 +963,32 @@ export function TripExpenses() {
         {/* Expenses Tab */}
         {subTab === "expenses" && (
           <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
-            {/* Filter Row */}
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              <Select value={sortOrder} onValueChange={(value: "latest" | "oldest") => setSortOrder(value)}>
-                <SelectTrigger className="flex-1 min-w-[100px] h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
-                  <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border-border">
-                  <SelectItem value="latest">Latest first</SelectItem>
-                  <SelectItem value="oldest">Oldest first</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Filter Trigger Button */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="h-9 px-3 text-xs sm:text-sm rounded-lg bg-secondary border-0"
+                onClick={() => setFilterDrawerOpen(true)}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
+                Filter & Sort
+                {activeFilterCount > 0 && (
+                  <Badge className="ml-2 h-5 min-w-5 px-1.5 flex items-center justify-center text-xs bg-primary text-primary-foreground">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
               
-              <Select value={filterPayer} onValueChange={setFilterPayer}>
-                <SelectTrigger className="flex-1 min-w-[100px] h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
-                  <User className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue placeholder="Paid by" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border-border">
-                  <SelectItem value="all">All members</SelectItem>
-                  {uniquePayers.map((payer) => (
-                    <SelectItem key={payer} value={payer}>{payer}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="flex-1 min-w-[100px] h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
-                  <Layers className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border-border">
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="Transport">Transport</SelectItem>
-                  <SelectItem value="Food & Drinks">Food & Drinks</SelectItem>
-                  <SelectItem value="Accommodation">Accommodation</SelectItem>
-                  <SelectItem value="Activities">Activities</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={filterStatus} onValueChange={(value: "all" | "awaiting" | "settled" | "pending") => setFilterStatus(value)}>
-                <SelectTrigger className="flex-1 min-w-[100px] h-9 text-xs sm:text-sm rounded-lg bg-secondary border-0">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border-border">
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="awaiting">Awaiting Confirmation</SelectItem>
-                  <SelectItem value="pending">Pending Payment</SelectItem>
-                  <SelectItem value="settled">Settled</SelectItem>
-                </SelectContent>
-              </Select>
+              {activeFilterCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 text-xs text-muted-foreground"
+                  onClick={handleClearAllFilters}
+                >
+                  Clear
+                </Button>
+              )}
             </div>
 
             {/* Expense Cards */}
@@ -1344,6 +1344,120 @@ export function TripExpenses() {
           onConfirm={handleConfirmSettlement}
         />
       )}
+
+      {/* Filter & Sort Drawer */}
+      <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader className="text-left">
+            <DrawerTitle>Filter & Sort Expenses</DrawerTitle>
+            <DrawerDescription>
+              {activeFilterCount > 0 
+                ? `${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} active` 
+                : 'Customize your expense view'}
+            </DrawerDescription>
+          </DrawerHeader>
+          
+          <ScrollArea className="flex-1 px-4 max-h-[50vh]">
+            <div className="space-y-6 pb-4">
+              {/* Sort Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-foreground">Sort Order</h4>
+                <RadioGroup value={sortOrder} onValueChange={(v) => setSortOrder(v as "latest" | "oldest")}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="latest" id="latest" />
+                    <Label htmlFor="latest">Latest first</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="oldest" id="oldest" />
+                    <Label htmlFor="oldest">Oldest first</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <Separator />
+              
+              {/* Member Filter Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-foreground">Paid By</h4>
+                <RadioGroup value={filterPayer} onValueChange={setFilterPayer}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="all-members" />
+                    <Label htmlFor="all-members">All members</Label>
+                  </div>
+                  {uniquePayers.map((payer) => (
+                    <div key={payer} className="flex items-center space-x-2">
+                      <RadioGroupItem value={payer} id={`payer-${payer}`} />
+                      <Label htmlFor={`payer-${payer}`}>{payer}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+              
+              <Separator />
+              
+              {/* Category Filter Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-foreground">Category</h4>
+                <RadioGroup value={filterCategory} onValueChange={setFilterCategory}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="all-categories" />
+                    <Label htmlFor="all-categories">All Categories</Label>
+                  </div>
+                  {["Transport", "Food & Drinks", "Accommodation", "Activities"].map((cat) => (
+                    <div key={cat} className="flex items-center space-x-2">
+                      <RadioGroupItem value={cat} id={`cat-${cat}`} />
+                      <Label htmlFor={`cat-${cat}`}>{cat}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+              
+              <Separator />
+              
+              {/* Status Filter Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-foreground">Status</h4>
+                <RadioGroup value={filterStatus} onValueChange={(v) => setFilterStatus(v as "all" | "awaiting" | "settled" | "pending")}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="all-status" />
+                    <Label htmlFor="all-status">All Status</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="awaiting" id="awaiting" />
+                    <Label htmlFor="awaiting">Awaiting Confirmation</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pending" id="pending" />
+                    <Label htmlFor="pending">Pending Payment</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="settled" id="settled" />
+                    <Label htmlFor="settled">Settled</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+          </ScrollArea>
+          
+          <DrawerFooter className="border-t">
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={handleClearAllFilters}
+              >
+                Clear All
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={() => setFilterDrawerOpen(false)}
+              >
+                Apply Filters
+              </Button>
+            </div>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
