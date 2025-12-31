@@ -150,6 +150,24 @@ const calculateNetSettlements = (
 const CURRENT_USER = "Ahmad Razak";
 const CURRENT_USER_ID = "1";
 
+// Historical settled settlements for UI demonstration
+const SETTLED_SETTLEMENTS: Settlement[] = [
+  {
+    id: "settled-1",
+    fromUser: { id: "2", name: "Sarah Tan", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" },
+    toUser: { id: "1", name: "Ahmad Razak", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200" },
+    amount: 64,
+    status: "settled" as const,
+  },
+  {
+    id: "settled-2", 
+    fromUser: { id: "1", name: "Ahmad Razak", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200" },
+    toUser: { id: "3", name: "Lisa Wong", imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200" },
+    amount: 56,
+    status: "settled" as const,
+  },
+];
+
 // Calculate a user's share for a single expense
 const calculateUserShare = (expense: ExpenseData, userId: string): number => {
   // Check if user is part of this expense's split
@@ -242,12 +260,15 @@ export function TripExpenses() {
     return calculateNetSettlements(expenses, mockMembers, CURRENT_USER_ID);
   }, [expenses]);
 
-  // Merge calculated settlements with local status overrides
+  // Merge calculated settlements with local status overrides and historical settled settlements
   const settlements = useMemo(() => {
-    return calculatedSettlements.map(s => ({
+    const pendingWithOverrides = calculatedSettlements.map(s => ({
       ...s,
       status: settlementStatuses[s.id] || s.status
     }));
+    
+    // Combine with historical settled settlements
+    return [...pendingWithOverrides, ...SETTLED_SETTLEMENTS];
   }, [calculatedSettlements, settlementStatuses]);
 
   const totalCost = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -259,17 +280,17 @@ export function TripExpenses() {
     }, 0);
   }, [expenses]);
 
-  // Calculate NET amount current user owes others (from settlements)
+  // Calculate NET amount current user owes others (only pending settlements)
   const youOwe = useMemo(() => {
     return settlements
-      .filter(s => s.fromUser.id === CURRENT_USER_ID)
+      .filter(s => s.fromUser.id === CURRENT_USER_ID && s.status === "pending")
       .reduce((sum, s) => sum + s.amount, 0);
   }, [settlements]);
 
-  // Calculate NET amount others owe current user (from settlements)
+  // Calculate NET amount others owe current user (only pending settlements)
   const owedToYou = useMemo(() => {
     return settlements
-      .filter(s => s.toUser.id === CURRENT_USER_ID)
+      .filter(s => s.toUser.id === CURRENT_USER_ID && s.status === "pending")
       .reduce((sum, s) => sum + s.amount, 0);
   }, [settlements]);
 
