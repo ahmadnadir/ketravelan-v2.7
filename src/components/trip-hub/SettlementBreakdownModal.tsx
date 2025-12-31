@@ -96,7 +96,7 @@ export function SettlementBreakdownModal({
                   </span>
                 )}
               </div>
-              <span className="text-sm font-medium text-foreground">{fromUser.name}</span>
+              <span className="text-[15px] sm:text-sm font-medium text-foreground">{fromUser.name}</span>
             </div>
 
             {/* Arrow */}
@@ -115,13 +115,13 @@ export function SettlementBreakdownModal({
                   </span>
                 )}
               </div>
-              <span className="text-sm font-medium text-foreground">{toUser.name}</span>
+              <span className="text-[15px] sm:text-sm font-medium text-foreground">{toUser.name}</span>
             </div>
           </div>
 
           {/* Total Amount */}
           <DialogTitle className="text-center mt-3">
-            <span className="text-muted-foreground text-sm font-normal">Total Outstanding</span>
+            <span className="text-muted-foreground text-[15px] sm:text-sm font-normal">Total Outstanding</span>
             <span className="block text-2xl font-bold text-foreground mt-0.5">
               RM {totalAmount.toLocaleString()}
             </span>
@@ -132,7 +132,7 @@ export function SettlementBreakdownModal({
         <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide p-4 space-y-4">
           {/* Section: What fromUser owes toUser */}
           <div>
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            <h3 className="text-[13px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
               {isViewerOwing ? "You owe" : `${fromUser.name.split(' ')[0]} owes`} {isViewerReceiving ? "You" : toUser.name.split(' ')[0]}
             </h3>
 
@@ -149,14 +149,14 @@ export function SettlementBreakdownModal({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <p className="font-medium text-foreground text-sm truncate">
+                              <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">
                                 {expense.title}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
+                              <p className="text-[13px] sm:text-xs text-muted-foreground mt-0.5">
                                 {formatDate(expense.date)} · Paid by {expense.paidBy}
                               </p>
                             </div>
-                            <p className="font-semibold text-foreground text-sm shrink-0">
+                            <p className="font-semibold text-foreground text-[15px] sm:text-sm shrink-0">
                               RM {expense.shareAmount.toFixed(2)}
                             </p>
                           </div>
@@ -170,8 +170,8 @@ export function SettlementBreakdownModal({
                 })}
                 {grossOwed !== undefined && (
                   <div className="flex justify-between items-center pt-2 px-1">
-                    <span className="text-sm text-muted-foreground">Subtotal</span>
-                    <span className="font-semibold text-foreground">RM {grossOwed.toFixed(2)}</span>
+                    <span className="text-[15px] sm:text-sm text-muted-foreground">Subtotal</span>
+                    <span className="font-semibold text-foreground text-[15px] sm:text-sm">RM {grossOwed.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -185,7 +185,7 @@ export function SettlementBreakdownModal({
           {/* Section: Offset (reverse direction) */}
           {reverseExpenses.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+              <h3 className="text-[13px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 Less: {isViewerReceiving ? "You owe" : `${toUser.name.split(' ')[0]} owes`} {isViewerOwing ? "You" : fromUser.name.split(' ')[0]}
               </h3>
               <div className="space-y-2">
@@ -200,14 +200,14 @@ export function SettlementBreakdownModal({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <p className="font-medium text-foreground text-sm truncate">
+                              <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">
                                 {expense.title}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
+                              <p className="text-[13px] sm:text-xs text-muted-foreground mt-0.5">
                                 {formatDate(expense.date)} · Paid by {expense.paidBy}
                               </p>
                             </div>
-                            <p className="font-semibold text-stat-red text-sm shrink-0">
+                            <p className="font-semibold text-stat-red text-[15px] sm:text-sm shrink-0">
                               -RM {expense.shareAmount.toFixed(2)}
                             </p>
                           </div>
@@ -221,8 +221,8 @@ export function SettlementBreakdownModal({
                 })}
                 {grossOffset !== undefined && (
                   <div className="flex justify-between items-center pt-2 px-1">
-                    <span className="text-sm text-muted-foreground">Offset</span>
-                    <span className="font-semibold text-stat-red">-RM {grossOffset.toFixed(2)}</span>
+                    <span className="text-[15px] sm:text-sm text-muted-foreground">Offset</span>
+                    <span className="font-semibold text-stat-red text-[15px] sm:text-sm">-RM {grossOffset.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -233,7 +233,7 @@ export function SettlementBreakdownModal({
         {/* Sticky Footer Actions */}
         <div className="flex-none p-4 pt-3 border-t border-border/50 space-y-3">
           {/* Total Confirmation */}
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-[15px] sm:text-sm">
             <span className="text-muted-foreground">Total</span>
             <span className="font-bold text-foreground text-lg">RM {totalAmount.toLocaleString()}</span>
           </div>
@@ -244,7 +244,7 @@ export function SettlementBreakdownModal({
             {status === "pending" && (
               isViewerOwing ? (
                 <Button 
-                  className="w-full h-11 text-sm bg-foreground text-background hover:bg-foreground/90"
+                  className="w-full h-11 text-[15px] sm:text-sm bg-foreground text-background hover:bg-foreground/90"
                   onClick={() => {
                     onUploadProof?.();
                     onOpenChange(false);
@@ -255,7 +255,7 @@ export function SettlementBreakdownModal({
                 </Button>
               ) : isViewerReceiving ? (
                 <Button 
-                  className="w-full h-11 text-sm bg-foreground text-background hover:bg-foreground/90"
+                  className="w-full h-11 text-[15px] sm:text-sm bg-foreground text-background hover:bg-foreground/90"
                   onClick={() => {
                     onMarkAllPaid?.();
                     onOpenChange(false);
@@ -272,7 +272,7 @@ export function SettlementBreakdownModal({
               {isViewerReceiving && status === "pending" && (
                 <Button 
                   variant="outline"
-                  className="flex-1 h-10 text-sm"
+                  className="flex-1 h-10 text-[15px] sm:text-sm"
                   onClick={() => {
                     onSendReminder?.();
                     onOpenChange(false);
@@ -286,7 +286,7 @@ export function SettlementBreakdownModal({
               {isViewerOwing && (
                 <Button 
                   variant="outline"
-                  className="flex-1 h-10 text-sm"
+                  className="flex-1 h-10 text-[15px] sm:text-sm"
                   onClick={() => {
                     onViewQR?.();
                     onOpenChange(false);
@@ -299,7 +299,7 @@ export function SettlementBreakdownModal({
               {isViewerReceiving && onViewReceipts && (
                 <Button 
                   variant="outline"
-                  className="flex-1 h-10 text-sm"
+                  className="flex-1 h-10 text-[15px] sm:text-sm"
                   onClick={() => {
                     onViewReceipts?.();
                   }}

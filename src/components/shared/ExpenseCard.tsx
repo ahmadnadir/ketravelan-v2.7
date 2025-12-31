@@ -189,9 +189,9 @@ export function ExpenseCard({
 
           {/* Personal Impact Row - Primary Focus */}
           <div className="flex items-center justify-between pt-1">
-            <span className="text-[13px] sm:text-xs font-medium text-foreground">Your share:</span>
+            <span className="text-[14px] sm:text-xs font-medium text-foreground">Your share:</span>
             <div className="flex items-center gap-1.5">
-              <span className="text-[14px] sm:text-xs font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
+              <span className="text-[15px] sm:text-xs font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
               <StatusBadge 
                 status={personalShare.status} 
                 className="text-[12px] sm:text-[10px] px-2.5 sm:px-2 py-1 sm:py-0.5"
@@ -209,7 +209,7 @@ export function ExpenseCard({
                 onPrimaryAction();
               }}
               className={cn(
-                "w-full h-9 text-xs font-medium transition-all duration-150",
+                "w-full h-9 text-[14px] sm:text-xs font-medium transition-all duration-150",
                 "border-border/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
               )}
             >
