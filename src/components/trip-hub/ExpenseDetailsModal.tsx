@@ -77,6 +77,10 @@ export function ExpenseDetailsModal({
   // Receipts from others modal state
   const [showReceiptsModal, setShowReceiptsModal] = useState(false);
 
+  // Refs for file inputs
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
   // Reset state when modal opens with new expense or initial tab
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && expense) {
@@ -196,9 +200,6 @@ export function ExpenseDetailsModal({
     setUploadNote("");
   };
 
-  // Refs for file inputs
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Handle marking a member's payment as settled
   const handleMarkMemberSettled = (memberId: string) => {
