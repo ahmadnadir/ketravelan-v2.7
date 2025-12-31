@@ -83,7 +83,7 @@ export default function Chat() {
           onChange={(value) => setChatFilter(value as "trips" | "direct")}
         />
 
-        <div className="space-y-2">
+        <div className="space-y-0">
           {filteredChats.map((chat) => (
             <SwipeableChatItem
               key={chat.id}
