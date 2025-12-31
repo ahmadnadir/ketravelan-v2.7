@@ -121,6 +121,7 @@ export default function TripDetails() {
   // Join confirmation modal state
   const [showJoinConfirmModal, setShowJoinConfirmModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [initialMessage, setInitialMessage] = useState("");
 
   // Try to load from published trips first, then fall back to mock data
   const publishedTrip = useMemo(() => id ? getPublishedTripById(id) : null, [id]);
@@ -846,31 +847,22 @@ export default function TripDetails() {
               </div>
             </div>
 
-            {/* Info */}
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <MessageCircle className="h-3 w-3 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Ask questions about the trip</p>
-                  <p className="text-xs text-muted-foreground">
-                    Get details about itinerary, budget, or travel plans
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="h-3 w-3 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Learn about the group</p>
-                  <p className="text-xs text-muted-foreground">
-                    Find out who else is joining and the group vibe
-                  </p>
-                </div>
-              </div>
+            {/* Message input */}
+            <div className="space-y-2">
+              <label htmlFor="initial-message" className="text-sm font-medium">
+                Your message
+              </label>
+              <textarea
+                id="initial-message"
+                value={initialMessage}
+                onChange={(e) => setInitialMessage(e.target.value.slice(0, 500))}
+                placeholder={`Hi ${organizer.name}, I'm interested in joining your ${tripData.destination} trip...`}
+                className="w-full min-h-[100px] p-3 rounded-xl border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                maxLength={500}
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {initialMessage.length}/500
+              </p>
             </div>
             
             {/* Info note */}
@@ -884,7 +876,10 @@ export default function TripDetails() {
             <div className="grid grid-cols-2 gap-3 pt-2">
               <Button 
                 variant="outline" 
-                onClick={() => setShowMessageModal(false)}
+                onClick={() => {
+                  setShowMessageModal(false);
+                  setInitialMessage("");
+                }}
                 className="rounded-xl"
               >
                 Cancel
@@ -892,12 +887,17 @@ export default function TripDetails() {
               <Button 
                 onClick={() => {
                   setShowMessageModal(false);
-                  navigate(`/chat/${organizer.id}`);
+                  const messageParam = initialMessage.trim() 
+                    ? `?message=${encodeURIComponent(initialMessage.trim())}` 
+                    : "";
+                  navigate(`/chat/${organizer.id}${messageParam}`);
+                  setInitialMessage("");
                 }}
+                disabled={!initialMessage.trim()}
                 className="rounded-xl gap-2"
               >
                 <MessageCircle className="h-4 w-4" />
-                Start Chat
+                Send Message
               </Button>
             </div>
           </div>
