@@ -451,9 +451,17 @@ export function TripExpenses() {
           return existing || { memberId, status: "pending" as const };
         });
         
-        // Recalculate payment progress
-        const settledCount = updatedPayments.filter(p => p.status === "settled").length;
-        const newProgress = Math.round((settledCount / updatedPayments.length) * 100);
+        // Recalculate payment progress based on amounts
+        const settledAmount = updatedPayments
+          .filter(p => p.status === "settled")
+          .reduce((sum, p) => {
+            if (expense.splitType === "custom" && expense.customSplitAmounts) {
+              const customAmount = expense.customSplitAmounts.find(c => c.memberId === p.memberId);
+              return sum + (customAmount?.amount || 0);
+            }
+            return sum + (expense.amount / updatedPayments.length);
+          }, 0);
+        const newProgress = Math.round((settledAmount / expense.amount) * 100);
         
         return { ...expense, payments: updatedPayments, paymentProgress: newProgress };
       }
@@ -793,8 +801,17 @@ export function TripExpenses() {
         const updatedPayments = expense.payments.map(p => 
           p.memberId === memberId ? { ...p, status: "settled" as const } : p
         );
-        const settledCount = updatedPayments.filter(p => p.status === "settled").length;
-        const newProgress = Math.round((settledCount / updatedPayments.length) * 100);
+        // Calculate progress based on amounts
+        const settledAmount = updatedPayments
+          .filter(p => p.status === "settled")
+          .reduce((sum, p) => {
+            if (expense.splitType === "custom" && expense.customSplitAmounts) {
+              const customAmount = expense.customSplitAmounts.find(c => c.memberId === p.memberId);
+              return sum + (customAmount?.amount || 0);
+            }
+            return sum + (expense.amount / updatedPayments.length);
+          }, 0);
+        const newProgress = Math.round((settledAmount / expense.amount) * 100);
         
         return { 
           ...expense, 

@@ -227,7 +227,7 @@ export const mockExpenses: ExpenseData[] = [
     paidBy: "Ahmad Razak", 
     date: "Jan 15, 2025", 
     hasReceipt: true, 
-    paymentProgress: 75, 
+    paymentProgress: 75, // 3/4 settled = 75%
     category: "Accommodation", 
     splitType: "equal" as const, 
     splitWith: ["1", "2", "3", "4"],
@@ -245,7 +245,7 @@ export const mockExpenses: ExpenseData[] = [
     paidBy: "Sarah Tan", 
     date: "Jan 15, 2025", 
     hasReceipt: true, 
-    paymentProgress: 100, 
+    paymentProgress: 100, // 5/5 settled = 100%
     category: "Transport", 
     splitType: "equal" as const, 
     splitWith: ["1", "2", "3", "4", "5"],
@@ -264,7 +264,7 @@ export const mockExpenses: ExpenseData[] = [
     paidBy: "Ahmad Razak", 
     date: "Jan 15, 2025", 
     hasReceipt: false, 
-    paymentProgress: 50, 
+    paymentProgress: 67, // RM300/RM450 settled = 67%
     category: "Transport", 
     splitType: "custom" as const, 
     splitWith: ["1", "2", "3"], 
@@ -282,7 +282,7 @@ export const mockExpenses: ExpenseData[] = [
     paidBy: "Lisa Wong", 
     date: "Jan 16, 2025", 
     hasReceipt: true, 
-    paymentProgress: 25, 
+    paymentProgress: 40, // 2/5 settled = 40%
     category: "Food & Drinks", 
     splitType: "equal" as const, 
     splitWith: ["1", "2", "3", "4", "5"], 
@@ -302,7 +302,7 @@ export const mockExpenses: ExpenseData[] = [
     paidBy: "John Lee",
     date: "Jan 17, 2025", 
     hasReceipt: true, 
-    paymentProgress: 0, 
+    paymentProgress: 25, // 1/4 settled = 25%
     category: "Activities", 
     splitType: "equal" as const, 
     splitWith: ["1", "2", "3", "4"],
@@ -320,7 +320,7 @@ export const mockExpenses: ExpenseData[] = [
     paidBy: "Priya Kumar",
     date: "Jan 17, 2025", 
     hasReceipt: true, 
-    paymentProgress: 50, 
+    paymentProgress: 50, // 1/2 settled = 50%
     category: "Activities", 
     splitType: "equal" as const, 
     splitWith: ["1", "5"],
