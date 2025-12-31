@@ -409,7 +409,7 @@ export function ExpenseDetailsModal({
                           <img
                             src={receipt.url}
                             alt="Receipt thumbnail"
-                            className="w-full h-40 object-cover"
+                            className="w-full h-64 object-contain"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                           <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -724,7 +724,7 @@ export function ExpenseDetailsModal({
                           <img
                             src={uploadPreview}
                             alt="Receipt preview"
-                            className="w-full h-40 object-cover rounded-xl border border-border"
+                            className="w-full h-64 object-contain rounded-xl border border-border"
                           />
                           <button
                             onClick={handleRemoveFile}
