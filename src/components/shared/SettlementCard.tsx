@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, QrCode, Bell } from "lucide-react";
+import { ArrowRight, QrCode, Bell, FileText } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,9 +10,11 @@ interface SettlementCardProps {
   amount: number;
   currency?: string;
   status: "pending" | "paid";
+  currentUserId?: string;
   showReminder?: boolean;
   onCardClick?: () => void;
   onViewPayment?: () => void;
+  onViewDetails?: () => void;
   onSendReminder?: () => void;
   onMarkPaid?: () => void;
 }
@@ -23,12 +25,17 @@ export function SettlementCard({
   amount,
   currency = "RM",
   status,
+  currentUserId,
   showReminder,
   onCardClick,
   onViewPayment,
+  onViewDetails,
   onSendReminder,
   onMarkPaid,
 }: SettlementCardProps) {
+  // Determine user's role in this settlement
+  const isUserPayer = currentUserId === fromUser.id;  // I owe someone
+  const isUserReceiver = currentUserId === toUser.id; // Someone owes me
   return (
     <Card 
       className="p-4 border-border/50 cursor-pointer hover:bg-muted/30 transition-colors active:scale-[0.99]"
@@ -102,21 +109,36 @@ export function SettlementCard({
         </span>
       </div>
 
-      {/* Actions - Stacked at bottom */}
+      {/* Actions - Role-based at bottom */}
       <div className="flex flex-col gap-2 pt-3 border-t border-border/50">
-        {/* View QR - Always visible */}
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full h-10 text-sm"
-          onClick={(e) => { e.stopPropagation(); onViewPayment?.(); }}
-        >
-          <QrCode className="h-4 w-4 mr-2" />
-          View QR
-        </Button>
+        {/* If I OWE someone: Show View QR to see their payment QR */}
+        {isUserPayer && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full h-10 text-sm"
+            onClick={(e) => { e.stopPropagation(); onViewPayment?.(); }}
+          >
+            <QrCode className="h-4 w-4 mr-2" />
+            View QR
+          </Button>
+        )}
         
-        {/* Send Reminder - Ghost style, only when pending and showReminder */}
-        {showReminder && status === "pending" && (
+        {/* If someone owes ME: Show View Details */}
+        {isUserReceiver && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full h-10 text-sm"
+            onClick={(e) => { e.stopPropagation(); onViewDetails?.(); }}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            View Details
+          </Button>
+        )}
+        
+        {/* Send Reminder - Only when someone owes ME and pending */}
+        {showReminder && status === "pending" && isUserReceiver && (
           <Button 
             variant="outline" 
             size="sm" 
@@ -128,8 +150,8 @@ export function SettlementCard({
           </Button>
         )}
         
-        {/* Mark as Paid - Primary, only when pending */}
-        {status === "pending" && (
+        {/* Mark as Paid - Only when someone owes ME and pending */}
+        {status === "pending" && isUserReceiver && (
           <Button 
             size="sm" 
             className="w-full h-10 text-sm bg-foreground text-background hover:bg-foreground/90"
