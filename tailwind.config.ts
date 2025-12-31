@@ -83,6 +83,16 @@ export default {
           inactive: "hsl(var(--nav-inactive))",
           active: "hsl(var(--nav-active))",
         },
+        member: {
+          coral: "hsl(var(--member-coral))",
+          teal: "hsl(var(--member-teal))",
+          violet: "hsl(var(--member-violet))",
+          sky: "hsl(var(--member-sky))",
+          rose: "hsl(var(--member-rose))",
+          amber: "hsl(var(--member-amber))",
+          mint: "hsl(var(--member-mint))",
+          indigo: "hsl(var(--member-indigo))",
+        },
       },
       borderRadius: {
         "2xl": "1rem",

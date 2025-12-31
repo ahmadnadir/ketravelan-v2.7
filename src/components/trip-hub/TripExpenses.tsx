@@ -44,6 +44,25 @@ const categoryBreakdown = [
   { category: "Activities", amount: 180, percentage: 7, color: "bg-stat-green", emoji: "🎫" },
 ];
 
+// Member color palette for contribution charts
+const MEMBER_COLORS = [
+  { bg: "bg-member-coral", ring: "ring-member-coral", cssVar: "--member-coral" },
+  { bg: "bg-member-teal", ring: "ring-member-teal", cssVar: "--member-teal" },
+  { bg: "bg-member-violet", ring: "ring-member-violet", cssVar: "--member-violet" },
+  { bg: "bg-member-sky", ring: "ring-member-sky", cssVar: "--member-sky" },
+  { bg: "bg-member-rose", ring: "ring-member-rose", cssVar: "--member-rose" },
+  { bg: "bg-member-amber", ring: "ring-member-amber", cssVar: "--member-amber" },
+  { bg: "bg-member-mint", ring: "ring-member-mint", cssVar: "--member-mint" },
+  { bg: "bg-member-indigo", ring: "ring-member-indigo", cssVar: "--member-indigo" },
+];
+
+// Deterministic color assignment based on member name for consistent colors
+const getMemberColor = (memberName: string, index: number): typeof MEMBER_COLORS[0] => {
+  const hash = memberName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const colorIndex = (hash + index) % MEMBER_COLORS.length;
+  return MEMBER_COLORS[colorIndex];
+};
+
 // Helper function for consistent currency formatting
 const formatCurrency = (amount: number): string => {
   return `RM${amount.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -1100,12 +1119,13 @@ export function TripExpenses() {
                   
                   return sortedContributions.map(([name, { amount: contribution, imageUrl }], index) => {
                     const percentage = totalCost > 0 ? Math.round((contribution / totalCost) * 100) : 0;
+                    const memberColor = getMemberColor(name, index);
                     return (
-                      <div key={name} className="space-y-1 sm:space-y-1.5">
+                      <div key={name} className="space-y-1 sm:space-y-1.5 group cursor-default">
                         {/* Top row: Avatar + Name on left, Amount + % on right */}
                         <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
                           <span className="text-foreground truncate flex items-center gap-1.5 sm:gap-2">
-                            <Avatar className="h-5 w-5 sm:h-6 sm:w-6 shrink-0">
+                            <Avatar className={`h-5 w-5 sm:h-6 sm:w-6 shrink-0 ring-2 ${memberColor.ring} ring-offset-1 ring-offset-background transition-all duration-300 group-hover:ring-offset-2`}>
                               <AvatarImage src={imageUrl} alt={name} />
                               <AvatarFallback className="text-[10px] sm:text-xs bg-secondary text-muted-foreground">
                                 {name.split(' ').map(n => n[0]).join('')}
@@ -1118,13 +1138,14 @@ export function TripExpenses() {
                           </span>
                         </div>
                         
-                        {/* Full-width progress bar below */}
+                        {/* Full-width colorful progress bar */}
                         <div className="h-1.5 sm:h-2 bg-secondary rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-foreground/70 rounded-full transition-all duration-700 ease-out"
+                            className={`h-full ${memberColor.bg} rounded-full transition-all duration-300 ease-out group-hover:brightness-110`}
                             style={{ 
                               width: `${percentage}%`,
-                              animation: `growWidth 0.7s ease-out ${400 + index * 100}ms both`
+                              animation: `growWidth 0.7s ease-out ${400 + index * 100}ms both`,
+                              boxShadow: `0 2px 8px hsl(var(${memberColor.cssVar}) / 0.35)`
                             }}
                           />
                         </div>
