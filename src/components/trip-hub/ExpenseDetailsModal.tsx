@@ -613,7 +613,7 @@ export function ExpenseDetailsModal({
                           <div className="flex items-center justify-between mt-3 ml-13">
                             <StatusBadge status="settled" />
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               onClick={() => {
                                 setReviewingPayment({
@@ -703,7 +703,7 @@ export function ExpenseDetailsModal({
                           <div className="flex items-center justify-between mt-3 ml-13">
                             {getStatusBadge()}
                             <Button
-                              variant={isSettled ? "ghost" : "outline"}
+                              variant="outline"
                               size="sm"
                               onClick={() => setReviewingPayment({
                                 member,
