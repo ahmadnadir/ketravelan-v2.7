@@ -1077,7 +1077,10 @@ export function TripExpenses() {
             {/* Category Breakdown - Sorted by amount (highest first) */}
             <div ref={categoryBreakdownRef}>
               <Card className="p-3 sm:p-4 border-border/50">
-                <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Spending by Category</h3>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">Spending by Category</h3>
+                <p className="text-xs text-muted-foreground mt-1 mb-3 sm:mb-4">
+                  Shows how total trip expenses are distributed across different categories.
+                </p>
                 <div className="space-y-2 sm:space-y-3">
                   {[...categoryBreakdown].sort((a, b) => b.amount - a.amount).map((item, index) => (
                     <div key={item.category} className="space-y-1 sm:space-y-1.5">
@@ -1111,7 +1114,7 @@ export function TripExpenses() {
                 Paid on Behalf of the Group
               </h3>
               <p className="text-xs text-muted-foreground mt-1 mb-4">
-                Shows how much each member has paid upfront for shared expenses. Others can help balance upcoming costs.
+                Shows how much each member has paid upfront for shared expenses.
               </p>
               
               {/* Total Group Expense */}
