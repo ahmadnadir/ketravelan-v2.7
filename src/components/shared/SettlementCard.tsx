@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, QrCode, Bell, FileText, Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 interface SettlementCardProps {
   fromUser: { id: string; name: string; imageUrl?: string };
@@ -97,16 +97,7 @@ export function SettlementCard({
 
       {/* Status Badge - Centered */}
       <div className="flex justify-center mb-3">
-        <span
-          className={cn(
-            "text-[13px] sm:text-xs font-medium px-3.5 sm:px-3 py-1.5 sm:py-1 rounded-full border",
-            status === "settled"
-              ? "bg-stat-green/10 text-stat-green border-stat-green/30"
-              : "bg-amber-500/10 text-amber-600 border-amber-500/30"
-          )}
-        >
-          {status === "settled" ? "Settled" : "Pending"}
-        </span>
+        <StatusBadge status={status} size="md" className="text-[13px] sm:text-xs px-3.5 sm:px-3 py-1.5 sm:py-1" />
       </div>
 
       {/* Actions - Role-based at bottom */}
