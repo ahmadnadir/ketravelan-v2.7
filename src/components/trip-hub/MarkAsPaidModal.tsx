@@ -15,6 +15,8 @@ interface MarkAsPaidModalProps {
   recipientName: string;
   amount: number;
   currency?: string;
+  /** If true, this is confirming payment FROM someone (receiver view) */
+  isReceiver?: boolean;
   onConfirm: (note?: string, receiptFile?: File) => void;
 }
 
@@ -24,6 +26,7 @@ export function MarkAsPaidModal({
   recipientName,
   amount,
   currency = "RM",
+  isReceiver = false,
   onConfirm,
 }: MarkAsPaidModalProps) {
   const [note, setNote] = useState("");
@@ -68,7 +71,9 @@ export function MarkAsPaidModal({
         {/* Fixed Header */}
         <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
           <DialogTitle className="text-lg">
-            Confirm Payment to {recipientName}
+            {isReceiver 
+              ? `Confirm Payment from ${recipientName}` 
+              : `Confirm Payment to ${recipientName}`}
           </DialogTitle>
         </DialogHeader>
 

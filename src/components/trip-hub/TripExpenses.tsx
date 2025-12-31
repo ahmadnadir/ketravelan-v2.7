@@ -1192,7 +1192,7 @@ export function TripExpenses() {
 
             {/* Settlements */}
             <div className="space-y-2 sm:space-y-3">
-              {filteredSettlements.length > 0 ? (
+                {filteredSettlements.length > 0 ? (
                 filteredSettlements.map((settlement) => (
                   <SettlementCard
                     key={settlement.id}
@@ -1200,9 +1200,11 @@ export function TripExpenses() {
                     toUser={settlement.toUser}
                     amount={settlement.amount}
                     status={settlement.status}
+                    currentUserId={CURRENT_USER_ID}
                     showReminder={canShowReminder(settlement)}
                     onCardClick={() => handleSettlementCardClick(settlement)}
                     onViewPayment={() => handleViewQR(settlement)}
+                    onViewDetails={() => handleSettlementCardClick(settlement)}
                     onSendReminder={() => handleSendReminder(settlement)}
                     onMarkPaid={() => handleMarkPaid(settlement)}
                   />
@@ -1348,8 +1350,11 @@ export function TripExpenses() {
       <MarkAsPaidModal
         open={markPaidOpen}
         onOpenChange={setMarkPaidOpen}
-        recipientName={selectedSettlement?.toUser.name || ""}
+        recipientName={selectedSettlement?.toUser.id === CURRENT_USER_ID 
+          ? selectedSettlement?.fromUser.name || "" 
+          : selectedSettlement?.toUser.name || ""}
         amount={selectedSettlement?.amount || 0}
+        isReceiver={selectedSettlement?.toUser.id === CURRENT_USER_ID}
         onConfirm={handleConfirmPayment}
       />
 
