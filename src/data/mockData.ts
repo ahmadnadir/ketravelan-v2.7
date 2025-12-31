@@ -298,8 +298,8 @@ export const mockExpenses: ExpenseData[] = [
   { 
     id: "5", 
     title: "Sky Bridge tickets", 
-    amount: 180, 
-    paidBy: "John Lee", 
+    amount: 176, 
+    paidBy: "John Lee",
     date: "Jan 17, 2025", 
     hasReceipt: true, 
     paymentProgress: 0, 
