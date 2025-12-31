@@ -234,4 +234,16 @@
       display: none; /* Chrome, Safari, Opera */
     }
   }
+
+  /* Chart bar grow animation */
+  @keyframes growWidth {
+    from {
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+    to {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
 }
