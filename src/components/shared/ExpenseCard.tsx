@@ -180,11 +180,12 @@ export function ExpenseCard({
                 Group settlement: {paymentProgress}%
               </span>
             </div>
-            <Progress 
-              value={paymentProgress} 
-              className="h-1.5"
-              autoVariant
-            />
+                <Progress 
+                  value={paymentProgress} 
+                  className="h-1.5"
+                  autoVariant
+                  animate
+                />
           </div>
 
           {/* Personal Impact Row - Primary Focus */}
