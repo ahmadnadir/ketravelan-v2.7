@@ -18,6 +18,7 @@ import {
   Sparkles,
   Copy,
   Check,
+  UserPlus,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
@@ -709,14 +710,16 @@ export default function TripDetails() {
       {/* Sticky CTA Bar */}
       <div className="fixed bottom-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Link to={`/trip/${id}/hub`} className="flex-1">
-              <Button size="lg" className="w-full rounded-xl text-sm sm:text-base">
+          <div className="grid grid-cols-2 gap-3">
+            <Link to={`/trip/${id}/hub`}>
+              <Button size="lg" className="w-full rounded-xl text-sm sm:text-base gap-2">
+                <UserPlus className="h-4 w-4" />
                 Request to Join
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="rounded-xl shrink-0 h-11 w-11 p-0">
-              <MessageCircle className="h-5 w-5" />
+            <Button size="lg" variant="outline" className="w-full rounded-xl text-sm sm:text-base gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Message
             </Button>
           </div>
           <p className="text-[10px] sm:text-xs text-muted-foreground text-center mt-1.5">
