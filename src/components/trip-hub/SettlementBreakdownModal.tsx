@@ -17,6 +17,7 @@ export interface SettlementExpense {
   shareAmount: number;
   status: "pending" | "submitted" | "settled";
   category: string;
+  paidBy: string;
 }
 
 interface SettlementBreakdownModalProps {
@@ -152,7 +153,7 @@ export function SettlementBreakdownModal({
           {/* Section: What fromUser owes toUser */}
           <div>
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              {fromUser.name.split(' ')[0]} owes {toUser.name.split(' ')[0]}
+              {isViewerOwing ? "You owe" : `${fromUser.name.split(' ')[0]} owes`} {isViewerReceiving ? "You" : toUser.name.split(' ')[0]}
             </h3>
 
             {contributingExpenses.length > 0 ? (
@@ -172,7 +173,7 @@ export function SettlementBreakdownModal({
                                 {expense.title}
                               </p>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                {formatDate(expense.date)}
+                                {formatDate(expense.date)} · Paid by {expense.paidBy}
                               </p>
                             </div>
                             <p className="font-semibold text-foreground text-sm shrink-0">
@@ -205,7 +206,7 @@ export function SettlementBreakdownModal({
           {reverseExpenses.length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                Less: {toUser.name.split(' ')[0]} owes {fromUser.name.split(' ')[0]}
+                Less: {isViewerReceiving ? "You owe" : `${toUser.name.split(' ')[0]} owes`} {isViewerOwing ? "You" : fromUser.name.split(' ')[0]}
               </h3>
               <div className="space-y-2">
                 {reverseExpenses.map((expense) => {
@@ -223,7 +224,7 @@ export function SettlementBreakdownModal({
                                 {expense.title}
                               </p>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                {formatDate(expense.date)}
+                                {formatDate(expense.date)} · Paid by {expense.paidBy}
                               </p>
                             </div>
                             <p className="font-semibold text-stat-red text-sm shrink-0">
