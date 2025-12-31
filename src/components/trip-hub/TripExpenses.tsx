@@ -997,63 +997,67 @@ export function TripExpenses() {
 
             {/* Tablet/Desktop: Inline Dropdown Filters */}
             {!isMobile && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "latest" | "oldest")}>
-                  <SelectTrigger className="w-[130px] h-9 text-sm rounded-lg bg-secondary border-0">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="latest">Latest first</SelectItem>
-                    <SelectItem value="oldest">Oldest first</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-4 gap-2">
+                  <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "latest" | "oldest")}>
+                    <SelectTrigger className="w-full h-9 text-sm rounded-lg bg-secondary border-0">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="latest">Latest first</SelectItem>
+                      <SelectItem value="oldest">Oldest first</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <Select value={filterPayer} onValueChange={setFilterPayer}>
-                  <SelectTrigger className="w-[130px] h-9 text-sm rounded-lg bg-secondary border-0">
-                    <SelectValue placeholder="Paid by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Members</SelectItem>
-                    {uniquePayers.map((payer) => (
-                      <SelectItem key={payer} value={payer}>{payer}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select value={filterPayer} onValueChange={setFilterPayer}>
+                    <SelectTrigger className="w-full h-9 text-sm rounded-lg bg-secondary border-0">
+                      <SelectValue placeholder="Paid by">{filterPayer === "all" ? "Paid by" : filterPayer}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Paid by</SelectItem>
+                      {uniquePayers.map((payer) => (
+                        <SelectItem key={payer} value={payer}>{payer}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="w-[140px] h-9 text-sm rounded-lg bg-secondary border-0">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="Transport">Transport</SelectItem>
-                    <SelectItem value="Food & Drinks">Food & Drinks</SelectItem>
-                    <SelectItem value="Accommodation">Accommodation</SelectItem>
-                    <SelectItem value="Activities">Activities</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="w-full h-9 text-sm rounded-lg bg-secondary border-0">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="Transport">Transport</SelectItem>
+                      <SelectItem value="Food & Drinks">Food & Drinks</SelectItem>
+                      <SelectItem value="Accommodation">Accommodation</SelectItem>
+                      <SelectItem value="Activities">Activities</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as "all" | "awaiting" | "settled" | "pending")}>
-                  <SelectTrigger className="w-[170px] h-9 text-sm rounded-lg bg-secondary border-0">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="awaiting">Awaiting Confirmation</SelectItem>
-                    <SelectItem value="pending">Pending Payment</SelectItem>
-                    <SelectItem value="settled">Settled</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as "all" | "awaiting" | "settled" | "pending")}>
+                    <SelectTrigger className="w-full h-9 text-sm rounded-lg bg-secondary border-0">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="awaiting">Awaiting Confirmation</SelectItem>
+                      <SelectItem value="pending">Pending Payment</SelectItem>
+                      <SelectItem value="settled">Settled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {activeFilterCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-9 text-sm text-muted-foreground"
-                    onClick={handleClearAllFilters}
-                  >
-                    Clear ({activeFilterCount})
-                  </Button>
+                  <div className="flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-sm text-muted-foreground"
+                      onClick={handleClearAllFilters}
+                    >
+                      Clear ({activeFilterCount})
+                    </Button>
+                  </div>
                 )}
               </div>
             )}
