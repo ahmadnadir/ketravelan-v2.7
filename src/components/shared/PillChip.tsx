@@ -3,6 +3,7 @@ import { Check, X } from "lucide-react";
 
 interface PillChipProps {
   label: string;
+  icon?: string;
   variant?: "default" | "primary" | "success" | "warning" | "destructive";
   size?: "sm" | "md";
   onClick?: () => void;
@@ -22,6 +23,7 @@ const variantStyles = {
 
 export function PillChip({
   label,
+  icon,
   variant = "default",
   size = "md",
   onClick,
@@ -44,6 +46,7 @@ export function PillChip({
       {selected && showCheckmark && (
         <Check className="h-3 w-3" />
       )}
+      {icon && <span>{icon}</span>}
       {label}
       {removable && (
         <X className="h-3 w-3 ml-0.5" />
