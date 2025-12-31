@@ -50,13 +50,13 @@ export function OptionCard({
         </div>
         <div
           className={cn(
-            "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
+            "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
             selected
-              ? "border-primary bg-primary"
-              : "border-muted-foreground/30"
+              ? "border-primary bg-primary scale-100"
+              : "border-muted-foreground/30 scale-100"
           )}
         >
-          {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+          {selected && <Check className="h-3 w-3 text-primary-foreground animate-scale-in" />}
         </div>
       </div>
       
