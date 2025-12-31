@@ -45,6 +45,8 @@ interface ExpenseCardProps {
   onDelete?: () => void;
   // Visual feedback for bulk settlement
   isHighlighted?: boolean;
+  // Staggered animation delay for progress bar (in ms)
+  animationDelay?: number;
 }
 
 // Format currency helper
@@ -71,6 +73,7 @@ export function ExpenseCard({
   onEdit,
   onDelete,
   isHighlighted = false,
+  animationDelay = 300,
 }: ExpenseCardProps) {
 
   // Determine user's role for this expense
@@ -185,6 +188,7 @@ export function ExpenseCard({
                   className="h-1.5"
                   autoVariant
                   animate
+                  animationDelay={animationDelay}
                 />
           </div>
 

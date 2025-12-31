@@ -1234,7 +1234,7 @@ export function TripExpenses() {
             {/* Expense Cards */}
             <div className="space-y-2 sm:space-y-3">
               {filteredExpenses.length > 0 ? (
-                filteredExpenses.map((expense) => (
+                filteredExpenses.map((expense, index) => (
                   <ExpenseCard
                     key={expense.id}
                     id={expense.id}
@@ -1255,6 +1255,7 @@ export function TripExpenses() {
                     onEdit={() => openEditExpense(expense)}
                     onDelete={() => openDeleteExpense(expense)}
                     isHighlighted={recentlySettledIds.includes(expense.id)}
+                    animationDelay={200 + index * 100}
                   />
                 ))
               ) : (
