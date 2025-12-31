@@ -377,14 +377,8 @@ export function ExpenseDetailsModal({
                   <p className="text-xs text-muted-foreground">{expense.date}</p>
                 </div>
                 
-                <div className="text-right shrink-0">
+                <div className="text-right shrink-0 flex items-center">
                   <p className="text-xl font-bold text-foreground">RM {expense.amount.toLocaleString()}</p>
-                  <Badge 
-                    variant={getStatusBadgeVariant()}
-                    className={`text-[10px] ${expense.paymentProgress === 100 ? "bg-stat-green text-stat-green-foreground" : ""}`}
-                  >
-                    {getPaymentStatus()}
-                  </Badge>
                 </div>
               </div>
             </Card>
