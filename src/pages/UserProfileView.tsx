@@ -39,11 +39,14 @@ export default function UserProfileView() {
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
           <div className="flex items-center gap-3 h-14">
-            <button onClick={() => navigate(-1)}>
-              <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center">
-                <ChevronLeft className="h-5 w-5 text-foreground" />
-              </div>
-            </button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9 rounded-full bg-secondary"
+              onClick={() => navigate(-1)}
+            >
+              <ChevronLeft className="h-5 w-5 text-foreground" />
+            </Button>
             <h1 className="font-semibold text-foreground">Profile</h1>
           </div>
         </div>
