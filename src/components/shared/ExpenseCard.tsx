@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 // User role types for expense actions
 type ExpenseRole = "payer" | "owes" | "settled";
-type PaymentStatus = "pending" | "submitted" | "settled";
+type PaymentStatus = "pending" | "settled";
 
 interface Payment {
   memberId: string;
@@ -84,7 +84,7 @@ export function ExpenseCard({
   const role = getExpenseRole();
 
   // Calculate user's personal share
-  const calculatePersonalShare = (): { amount: number; status: "pending" | "paid" | "settled" } => {
+  const calculatePersonalShare = (): { amount: number; status: "pending" | "settled" } => {
     const memberCount = splitWith?.length || 1;
     
     // Calculate amount
@@ -103,13 +103,7 @@ export function ExpenseCard({
     
     // Determine status from payments array
     const userPayment = payments?.find(p => p.memberId === currentUserId);
-    let status: "pending" | "paid" | "settled" = "pending";
-    
-    if (userPayment?.status === "settled") {
-      status = "settled";
-    } else if (userPayment?.status === "submitted") {
-      status = "paid";
-    }
+    const status: "pending" | "settled" = userPayment?.status === "settled" ? "settled" : "pending";
     
     return { amount: shareAmount, status };
   };
@@ -121,7 +115,6 @@ export function ExpenseCard({
     if (role === "settled") return "View Details";
     if (role === "payer") return "View Payments";
     if (personalShare.status === "pending") return "View & Settle";
-    if (personalShare.status === "paid") return "Awaiting Confirmation";
     return "View Details";
   };
 
@@ -199,12 +192,9 @@ export function ExpenseCard({
               {formatCurrency(personalShare.amount, currency)} · {" "}
               <span className={cn(
                 personalShare.status === "settled" && "text-stat-green",
-                personalShare.status === "paid" && "text-foreground",
                 personalShare.status === "pending" && "text-yellow-600"
               )}>
-                {personalShare.status === "settled" ? "Settled" : 
-                 personalShare.status === "paid" ? "Paid" : 
-                 "Pending"}
+                {personalShare.status === "settled" ? "Settled" : "Pending"}
               </span>
             </span>
           </div>

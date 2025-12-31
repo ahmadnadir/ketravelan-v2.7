@@ -55,7 +55,7 @@ interface Settlement {
   fromUser: { id: string; name: string; imageUrl?: string };
   toUser: { id: string; name: string; imageUrl?: string; qrCodeUrl?: string };
   amount: number;
-  status: "pending" | "paid";
+  status: "pending" | "settled";
   receiptUrl?: string;
 }
 
@@ -159,7 +159,7 @@ export function TripExpenses() {
   
   // Settlement filters
   const [directionFilter, setDirectionFilter] = useState<"all" | "owesMe" | "iOwe">("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "settled">("all");
   
   // QR Codes sub-view toggle
   const [qrSubView, setQrSubView] = useState<"myqr" | "others">("myqr");
@@ -203,7 +203,7 @@ export function TripExpenses() {
   const [expenses, setExpenses] = useState<ExpenseData[]>(initialMockExpenses);
 
   // Track settlement status overrides (when user marks as paid)
-  const [settlementStatuses, setSettlementStatuses] = useState<Record<string, "pending" | "paid">>({});
+  const [settlementStatuses, setSettlementStatuses] = useState<Record<string, "pending" | "settled">>({});
 
   // Generate settlements dynamically from expense data
   const calculatedSettlements = useMemo(() => {
@@ -249,13 +249,12 @@ export function TripExpenses() {
 
   // Filter and sort expenses
   // Helper to determine user's payment status for an expense
-  const getUserPaymentStatus = (expense: ExpenseData): "settled" | "awaiting" | "pending" | "payer" => {
+  const getUserPaymentStatus = (expense: ExpenseData): "settled" | "pending" | "payer" => {
     const isPayer = expense.paidBy.toLowerCase().includes(CURRENT_USER.toLowerCase());
     if (isPayer) return "payer";
     
     const userPayment = expense.payments?.find(p => p.memberId === CURRENT_USER_ID);
     if (userPayment?.status === "settled") return "settled";
-    if (userPayment?.status === "submitted") return "awaiting";
     return "pending";
   };
 
@@ -276,7 +275,6 @@ export function TripExpenses() {
     if (filterStatus !== "all") {
       result = result.filter(e => {
         const status = getUserPaymentStatus(e);
-        if (filterStatus === "awaiting") return status === "awaiting";
         if (filterStatus === "settled") return status === "settled" || e.paymentProgress === 100;
         if (filterStatus === "pending") return status === "pending";
         return true;
@@ -351,9 +349,7 @@ export function TripExpenses() {
         const memberPayment = expense.payments?.find(p => p.memberId === settlement.fromUser.id);
         const status: SettlementExpense["status"] = memberPayment?.status === "settled" 
           ? "settled" 
-          : memberPayment?.status === "submitted" 
-            ? "submitted" 
-            : "pending";
+          : "pending";
         
         if (status !== "settled") {
           owedToReceiver.push({
@@ -374,9 +370,7 @@ export function TripExpenses() {
         const memberPayment = expense.payments?.find(p => p.memberId === settlement.toUser.id);
         const status: SettlementExpense["status"] = memberPayment?.status === "settled" 
           ? "settled" 
-          : memberPayment?.status === "submitted" 
-            ? "submitted" 
-            : "pending";
+          : "pending";
         
         if (status !== "settled") {
           owedToDebtor.push({
@@ -527,7 +521,7 @@ export function TripExpenses() {
     const { owedToReceiver } = getContributingExpenses(settlement);
     
     return owedToReceiver
-      .filter(e => e.status === "submitted")
+      .filter(e => e.status === "pending")
       .map(e => {
         const expense = expenses.find(exp => exp.id === e.expenseId);
         const payment = expense?.payments?.find(p => p.memberId === settlement.fromUser.id);
@@ -1186,7 +1180,7 @@ export function TripExpenses() {
               {/* Status Filter Dropdown */}
               <Select 
                 value={statusFilter} 
-                onValueChange={(value: "all" | "pending" | "paid") => setStatusFilter(value)}
+                onValueChange={(value: "all" | "pending" | "settled") => setStatusFilter(value)}
               >
                 <SelectTrigger className="w-full h-9 text-xs rounded-full bg-secondary border-0 px-4">
                   <SelectValue placeholder="Status" />
@@ -1194,7 +1188,7 @@ export function TripExpenses() {
                 <SelectContent className="bg-background border-border">
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="settled">Settled</SelectItem>
                 </SelectContent>
               </Select>
             </div>

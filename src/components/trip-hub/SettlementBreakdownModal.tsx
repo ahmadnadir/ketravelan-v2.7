@@ -15,7 +15,7 @@ export interface SettlementExpense {
   title: string;
   date: string;
   shareAmount: number;
-  status: "pending" | "submitted" | "settled";
+  status: "pending" | "settled";
   category: string;
   paidBy: string;
 }
@@ -26,7 +26,7 @@ interface SettlementBreakdownModalProps {
   fromUser: { id: string; name: string; imageUrl?: string };
   toUser: { id: string; name: string; imageUrl?: string };
   totalAmount: number;
-  status: "pending" | "paid";
+  status: "pending" | "settled";
   contributingExpenses: SettlementExpense[];
   reverseExpenses?: SettlementExpense[];  // Expenses in reverse direction (offset)
   grossOwed?: number;                      // Total before netting
@@ -59,7 +59,6 @@ export function SettlementBreakdownModal({
 }: SettlementBreakdownModalProps) {
   const isViewerOwing = fromUser.id === currentUserId;
   const isViewerReceiving = toUser.id === currentUserId;
-  const hasReceipts = contributingExpenses.some(e => e.status === "submitted");
   
   const getStatusBadge = (expenseStatus: SettlementExpense["status"]) => {
     switch (expenseStatus) {
@@ -67,12 +66,6 @@ export function SettlementBreakdownModal({
         return (
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600">
             Pending
-          </span>
-        );
-      case "submitted":
-        return (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
-            Pending Verification
           </span>
         );
       case "settled":
@@ -316,7 +309,7 @@ export function SettlementBreakdownModal({
                 </Button>
               )}
 
-              {hasReceipts && (
+              {onViewReceipts && (
                 <Button 
                   variant="outline"
                   className="flex-1 h-10 text-sm"
