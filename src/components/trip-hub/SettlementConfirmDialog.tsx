@@ -1,16 +1,13 @@
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, Receipt } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { getCategoryFromTitle, getCategoryEmoji } from "@/lib/expenseCategories";
 
 interface AffectedExpense {
@@ -46,61 +43,84 @@ export function SettlementConfirmDialog({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <Check className="h-5 w-5 text-primary" />
-            Confirm Settlement
-          </AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div className="space-y-3">
-              <p>
-                Mark <span className="font-medium text-foreground">{formatCurrency(totalAmount)}</span> to{" "}
-                <span className="font-medium text-foreground">{recipientName}</span> as settled?
-              </p>
-              
-              {affectedExpenses.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">
-                    This will settle {affectedExpenses.length} expense{affectedExpenses.length > 1 ? "s" : ""}:
-                  </p>
-                  <ScrollArea className="max-h-48 rounded-lg border border-border bg-muted/30">
-                    <div className="p-2 space-y-1.5">
-                      {affectedExpenses.map((expense) => {
-                        const category = getCategoryFromTitle(expense.title);
-                        const emoji = getCategoryEmoji(category);
-                        return (
-                          <div
-                            key={expense.id}
-                            className="flex items-center justify-between py-1.5 px-2 rounded-md bg-background/50"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">{emoji}</span>
-                              <span className="text-sm text-foreground truncate max-w-[180px]">
-                                {expense.title}
-                              </span>
-                            </div>
-                            <Badge variant="secondary" className="text-xs font-medium">
-                              {formatCurrency(expense.shareAmount)}
-                            </Badge>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </ScrollArea>
-                </div>
-              )}
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="flex-none p-4 pb-4 border-b border-border/50">
+          {/* Close button */}
+          <button
+            onClick={() => onOpenChange(false)}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
+
+          <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Check className="h-4 w-4 text-primary" />
             </div>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm}>
             Confirm Settlement
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </DialogTitle>
+          
+          <p className="text-sm text-muted-foreground mt-2">
+            Mark <span className="font-medium text-foreground">{formatCurrency(totalAmount)}</span> to{" "}
+            <span className="font-medium text-foreground">{recipientName}</span> as settled?
+          </p>
+        </DialogHeader>
+
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-4">
+          {affectedExpenses.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">
+                This will settle {affectedExpenses.length} expense{affectedExpenses.length > 1 ? "s" : ""}:
+              </p>
+              <ScrollArea className="max-h-48">
+                <div className="space-y-2">
+                  {affectedExpenses.map((expense) => {
+                    const category = getCategoryFromTitle(expense.title);
+                    const emoji = getCategoryEmoji(category);
+                    return (
+                      <div
+                        key={expense.id}
+                        className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-muted/50 border border-border/50"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-base">{emoji}</span>
+                          <span className="text-sm font-medium text-foreground truncate max-w-[180px]">
+                            {expense.title}
+                          </span>
+                        </div>
+                        <Badge variant="secondary" className="text-xs font-semibold bg-background">
+                          {formatCurrency(expense.shareAmount)}
+                        </Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex-none p-4 pt-3 border-t border-border/50 space-y-2">
+          <Button 
+            onClick={handleConfirm} 
+            className="w-full h-11 rounded-xl font-medium"
+          >
+            Confirm Settlement
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="w-full h-11 rounded-xl font-medium"
+          >
+            Cancel
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
