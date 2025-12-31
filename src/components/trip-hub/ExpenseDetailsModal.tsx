@@ -33,6 +33,7 @@ interface ExpenseDetailsModalProps {
   onUploadProof?: (file: File, note?: string) => void;
   onUpdateProgress?: (newProgress: number) => void;
   onConfirmPaymentReceived?: (expenseId: string, memberId: string) => void;
+  onSubmitPayment?: (expenseId: string, memberId: string, receiptUrl?: string, payerNote?: string) => void;
 }
 
 // Mock payment data for each member
@@ -54,6 +55,7 @@ export function ExpenseDetailsModal({
   onUploadProof,
   onUpdateProgress,
   onConfirmPaymentReceived,
+  onSubmitPayment,
 }: ExpenseDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [zoom, setZoom] = useState(1);
@@ -187,6 +189,36 @@ export function ExpenseDetailsModal({
   };
 
   const handleSubmitProof = () => {
+    // Capture values before reset
+    const savedPreview = uploadPreview;
+    const savedNote = uploadNote;
+    const submittedAt = new Date().toLocaleDateString('en-US', { 
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit'
+    });
+    
+    // Update local state for immediate UI feedback
+    setMemberPayments(prev => 
+      prev.map(p => p.memberId === currentUserId 
+        ? { 
+            ...p, 
+            status: "submitted" as const,
+            receiptUrl: savedPreview || undefined,
+            payerNote: savedNote || undefined,
+            uploadedAt: submittedAt
+          } 
+        : p
+      )
+    );
+    
+    // Call parent callback to persist the payment status
+    onSubmitPayment?.(
+      expense.id, 
+      currentUserId || "", 
+      savedPreview || undefined, 
+      savedNote || undefined
+    );
+    
     onUploadProof?.(uploadedFile || undefined, uploadNote);
     
     toast({
@@ -194,7 +226,7 @@ export function ExpenseDetailsModal({
       description: `${expense.paidBy} will be notified to confirm your payment.`,
     });
     
-    // Reset upload state
+    // Reset upload form state
     setUploadedFile(null);
     setUploadPreview(null);
     setUploadNote("");

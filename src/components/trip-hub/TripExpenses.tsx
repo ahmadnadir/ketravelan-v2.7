@@ -722,6 +722,57 @@ export function TripExpenses() {
     console.log("Proof uploaded:", file, note);
   };
 
+  // Handle submitting payment proof from modal (user marks themselves as paid)
+  const handleSubmitPayment = (
+    expenseId: string, 
+    memberId: string, 
+    receiptUrl?: string, 
+    payerNote?: string
+  ) => {
+    const uploadedAt = new Date().toLocaleDateString('en-US', { 
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit'
+    });
+    
+    setExpenses(prev => prev.map(expense => {
+      if (expense.id === expenseId) {
+        // Ensure payments array exists
+        const existingPayments = expense.payments || expense.splitWith.map(id => ({
+          memberId: id,
+          status: "pending" as const
+        }));
+        
+        // Update the specific member's payment to "submitted"
+        const updatedPayments = existingPayments.map(p => 
+          p.memberId === memberId 
+            ? { 
+                ...p, 
+                status: "submitted" as const,
+                receiptUrl,
+                payerNote,
+                uploadedAt
+              } 
+            : p
+        );
+        
+        return { ...expense, payments: updatedPayments };
+      }
+      return expense;
+    }));
+    
+    // Also update the viewing expense details for immediate modal feedback
+    if (viewingExpenseDetails?.id === expenseId) {
+      setViewingExpenseDetails(prev => prev ? {
+        ...prev,
+        payments: (prev.payments || prev.splitWith.map(id => ({ memberId: id, status: "pending" as const }))).map(p => 
+          p.memberId === memberId 
+            ? { ...p, status: "submitted" as const, receiptUrl, payerNote, uploadedAt } 
+            : p
+        )
+      } : null);
+    }
+  };
+
   // Handle progress update from modal
   const handleUpdateProgress = (expenseId: string, newProgress: number) => {
     setExpenses(prev => prev.map(e => {
@@ -1341,6 +1392,7 @@ export function TripExpenses() {
           }
         }}
         onConfirmPaymentReceived={handleConfirmPaymentSettled}
+        onSubmitPayment={handleSubmitPayment}
       />
 
       {/* Settlement Breakdown Modal */}
