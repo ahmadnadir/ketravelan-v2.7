@@ -543,7 +543,7 @@ export function ExpenseDetailsModal({
                         </p>
                         <Badge 
                           variant="status"
-                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-green-500/10 text-green-600 border-green-500/30" : "text-amber-600 border-amber-500/30 bg-amber-500/10"}`}
+                          className={`shrink-0 text-[10px] px-2 py-0.5 ${isPaid ? "bg-stat-green/10 text-stat-green border-stat-green/30" : "bg-amber-500/10 text-amber-600 border-amber-500/30"}`}
                         >
                           {isPaid ? "Settled" : "Pending"}
                         </Badge>
@@ -680,13 +680,13 @@ export function ExpenseDetailsModal({
                       const getStatusBadge = () => {
                         if (isSettled) {
                           return (
-                            <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border-stat-green/30">
+                            <Badge className="text-xs px-2 py-0.5 bg-stat-green/10 text-stat-green border border-stat-green/30">
                               Settled
                             </Badge>
                           );
                         }
                         return (
-                          <Badge variant="outline" className="text-xs px-2 py-0.5 text-yellow-600 border-yellow-500/30 bg-yellow-500/10">
+                          <Badge variant="outline" className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-600 border-amber-500/30">
                             Pending
                           </Badge>
                         );

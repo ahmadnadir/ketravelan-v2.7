@@ -61,13 +61,13 @@ export function PaymentReviewModal({
     switch (payment.status) {
       case "settled":
         return (
-          <Badge className="bg-stat-green text-stat-green-foreground">
+          <Badge className="bg-stat-green/10 text-stat-green border border-stat-green/30">
             Settled
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline" className="text-yellow-600 border-yellow-500/30 bg-yellow-500/10">
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">
             Pending
           </Badge>
         );
