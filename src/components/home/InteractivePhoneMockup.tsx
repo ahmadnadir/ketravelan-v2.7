@@ -112,7 +112,7 @@ function MockChatContent() {
   return (
     <div className="flex flex-col h-full">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-2 py-2 space-y-2">
         {mockMessages.map((msg) => {
           const isOwn = msg.senderId === currentUserId;
           const isSystem = msg.type === "system";
@@ -204,7 +204,7 @@ function MockExpensesContent() {
   ];
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
+    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide">
       <div className="px-2 py-2 space-y-2">
         {/* Header */}
         <div>
@@ -409,7 +409,7 @@ function QRContent() {
 
 function MockNotesContent() {
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-2 py-2 space-y-2">
+    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide px-2 py-2 space-y-2">
       {/* Search & Add */}
       <div className="flex gap-1.5">
         <div className="flex-1 relative">
