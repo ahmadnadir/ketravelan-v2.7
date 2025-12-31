@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,12 @@ export default function DirectChat() {
   const user = mockUsers[id || "dm-1"] || { id: "1", name: "Unknown User" };
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom on mount
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView();
+  }, []);
 
   // Simulate typing indicator for demo
   useEffect(() => {
@@ -125,6 +131,9 @@ export default function DirectChat() {
         
         {/* Typing indicator */}
         {isTyping && <TypingIndicator />}
+        
+        {/* Scroll anchor */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* User Quick Actions Modal */}
