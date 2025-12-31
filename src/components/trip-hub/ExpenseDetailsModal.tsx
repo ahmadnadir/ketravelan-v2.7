@@ -317,18 +317,18 @@ export function ExpenseDetailsModal({
         <div className="flex-none">
           <DialogHeader className="p-4 pb-0">
             <DialogTitle className="sr-only">{expense.title} Details</DialogTitle>
-            <div className="flex items-start gap-3">
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${category.color.split(' ')[0]}`}>
-                <span className="text-xl">{category.emoji}</span>
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className={`h-14 w-14 rounded-xl flex items-center justify-center shrink-0 ${category.color.split(' ')[0]}`}>
+                <span className="text-2xl">{category.emoji}</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-lg font-semibold text-foreground truncate">{expense.title}</p>
+              <div className="w-full space-y-2">
+                <p className="text-lg font-semibold text-foreground">{expense.title}</p>
                 {/* Progress bar with amount - under title */}
-                <div className="mt-1.5 space-y-1.5">
-                  <span className={`text-sm font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : expense.paymentProgress === 0 ? "text-destructive" : "text-yellow-600"}`}>
+                <div className="space-y-2">
+                  <span className={`text-sm font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : "text-amber-600"}`}>
                     {expense.paymentProgress}% settled · RM {settledAmount.toFixed(0)}/{expense.amount}
                   </span>
-                  <Progress value={expense.paymentProgress} className="h-2" animate />
+                  <Progress value={expense.paymentProgress} className="h-2 max-w-[200px] mx-auto" animate />
                 </div>
               </div>
             </div>
