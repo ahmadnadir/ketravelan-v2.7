@@ -869,15 +869,15 @@ export default function CreateTrip() {
 
       {/* Share Modal */}
       <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-3 border-b border-border/50">
             <DialogTitle className="text-center">
               <span className="text-2xl">🎉</span>
               <br />
               Your trip is live!
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
+          <div className="p-4 space-y-4">
             <p className="text-center text-sm text-muted-foreground">
               Share it with friends or let others discover it
             </p>
