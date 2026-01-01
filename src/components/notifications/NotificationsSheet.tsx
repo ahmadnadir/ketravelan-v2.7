@@ -90,11 +90,11 @@ export function NotificationsSheet({ open, onOpenChange }: NotificationsSheetPro
               >
                 <div className={cn(
                   "p-1.5 sm:p-2 rounded-full shrink-0",
-                  notification.read ? "bg-muted" : "bg-primary/10"
+                  notification.read ? "bg-muted" : "bg-destructive/10"
                 )}>
                   <Icon className={cn(
                     "h-3.5 w-3.5 sm:h-4 sm:w-4",
-                    notification.read ? "text-muted-foreground" : "text-primary"
+                    notification.read ? "text-muted-foreground" : "text-destructive"
                   )} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -106,7 +106,7 @@ export function NotificationsSheet({ open, onOpenChange }: NotificationsSheetPro
                       {notification.title}
                     </p>
                     {!notification.read && (
-                      <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary shrink-0 mt-1 sm:mt-1.5" />
+                      <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-destructive shrink-0 mt-1 sm:mt-1.5" />
                     )}
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
