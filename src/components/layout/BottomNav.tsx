@@ -1,8 +1,7 @@
-import { Compass, PlusCircle, MessageCircle, Receipt } from "lucide-react";
+import { Compass, PlusCircle, MessageCircle, Receipt, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface NavItem {
   icon?: React.ComponentType<{ className?: string }>;
@@ -65,12 +64,8 @@ export function BottomNav({ inline = false }: BottomNavProps) {
               );
             }
 
-            // Profile item with avatar
+            // Profile item with icon
             if (item.isProfile) {
-              const initials = user?.name
-                ? user.name.split(' ').map(n => n.charAt(0)).join('').slice(0, 2).toUpperCase()
-                : "U";
-              
               return (
                 <Link
                   key={item.path}
@@ -82,15 +77,7 @@ export function BottomNav({ inline = false }: BottomNavProps) {
                       : "text-nav-inactive hover:text-foreground"
                   )}
                 >
-                  <Avatar className={cn(
-                    "h-6 w-6 sm:h-7 sm:w-7 border-2 transition-colors",
-                    isActive ? "border-primary" : "border-transparent"
-                  )}>
-                    <AvatarImage src={user?.avatar} alt={user?.name || "Profile"} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-[10px] sm:text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
+                  <User className={cn("h-6 w-6 sm:h-7 sm:w-7", isActive && "stroke-[2.5]")} />
                   <span className="text-xs sm:text-sm font-medium truncate">{item.label}</span>
                 </Link>
               );
