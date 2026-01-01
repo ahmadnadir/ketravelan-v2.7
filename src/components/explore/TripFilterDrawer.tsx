@@ -25,7 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
-import { BudgetTierSelector, type BudgetTier } from "./BudgetTierSelector";
+import { BudgetRangeSelector, isDefaultBudgetRange } from "./BudgetTierSelector";
 import { TravelStylePills } from "./TravelStylePills";
 import type { TripCategoryId } from "@/data/categories";
 
@@ -50,7 +50,7 @@ export interface FilterState {
   destination: string;
   dates: DateRange | undefined;
   flexibleDates: boolean;
-  budgetTier: BudgetTier;
+  budgetRange: [number, number];
   categories: TripCategoryId[];
 }
 
@@ -127,7 +127,7 @@ export function TripFilterDrawer({
       destination: "",
       dates: undefined,
       flexibleDates: false,
-      budgetTier: "any",
+      budgetRange: [0, 10000],
       categories: [],
     };
     setLocalFilters(resetState);
@@ -264,9 +264,9 @@ export function TripFilterDrawer({
         {/* Section 3: Budget */}
         <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "150ms", animationFillMode: "backwards" }}>
           <h3 className="text-sm font-semibold text-foreground">Budget</h3>
-          <BudgetTierSelector
-            value={localFilters.budgetTier}
-            onChange={(tier) => setLocalFilters((prev) => ({ ...prev, budgetTier: tier }))}
+          <BudgetRangeSelector
+            value={localFilters.budgetRange}
+            onChange={(range) => setLocalFilters((prev) => ({ ...prev, budgetRange: range }))}
           />
         </div>
 

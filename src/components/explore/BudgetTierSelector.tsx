@@ -1,72 +1,53 @@
 import { Slider } from "@/components/ui/slider";
 
-export type BudgetTier = "any" | "budget" | "midrange" | "comfort";
-
-interface BudgetTierOption {
-  id: BudgetTier;
-  label: string;
-  description: string;
-  range: [number, number];
+interface BudgetRangeSelectorProps {
+  value: [number, number];
+  onChange: (range: [number, number]) => void;
 }
 
-const budgetTiers: BudgetTierOption[] = [
-  { id: "any", label: "Any budget", description: "Show all trips", range: [0, 10000] },
-  { id: "budget", label: "Budget", description: "Under RM 1,500", range: [0, 1500] },
-  { id: "midrange", label: "Mid-range", description: "RM 1,500 – 3,000", range: [1500, 3000] },
-  { id: "comfort", label: "Comfort", description: "RM 3,000+", range: [3000, 10000] },
-];
-
-const tierToIndex = (tier: BudgetTier): number => {
-  const index = budgetTiers.findIndex((t) => t.id === tier);
-  return index >= 0 ? index : 0;
-};
-
-const indexToTier = (index: number): BudgetTier => {
-  return budgetTiers[index]?.id || "any";
-};
-
-interface BudgetTierSelectorProps {
-  value: BudgetTier;
-  onChange: (tier: BudgetTier) => void;
-}
-
-export function BudgetTierSelector({ value, onChange }: BudgetTierSelectorProps) {
-  const currentTier = budgetTiers.find((t) => t.id === value) || budgetTiers[0];
+export function BudgetRangeSelector({ value, onChange }: BudgetRangeSelectorProps) {
+  const formatPrice = (price: number) => {
+    if (price >= 10000) return "RM 10,000+";
+    return `RM ${price.toLocaleString()}`;
+  };
 
   return (
     <div className="space-y-4">
-      {/* Helper text showing selected tier */}
+      {/* Display selected range */}
       <p className="text-sm text-muted-foreground text-center">
-        {currentTier.label} — {currentTier.description}
+        {formatPrice(value[0])} – {formatPrice(value[1])}
       </p>
 
-      {/* Slider with 4 steps */}
+      {/* Dual-thumb slider */}
       <Slider
         min={0}
-        max={3}
-        step={1}
-        value={[tierToIndex(value)]}
-        onValueChange={(val) => onChange(indexToTier(val[0]))}
+        max={10000}
+        step={100}
+        value={value}
+        onValueChange={(val) => onChange([val[0], val[1]])}
         className="py-2"
       />
 
-      {/* Step labels */}
+      {/* Tick labels */}
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>Any</span>
-        <span>Budget</span>
-        <span>Mid-range</span>
-        <span>Comfort</span>
+        <span>RM 0</span>
+        <span>RM 2.5k</span>
+        <span>RM 5k</span>
+        <span>RM 7.5k</span>
+        <span>RM 10k+</span>
       </div>
     </div>
   );
 }
 
-export function getBudgetRangeFromTier(tier: BudgetTier): [number, number] {
-  const found = budgetTiers.find((t) => t.id === tier);
-  return found?.range || [0, 10000];
+export function formatBudgetRange(range: [number, number]): string {
+  const formatPrice = (price: number) => {
+    if (price >= 10000) return "RM 10,000+";
+    return `RM ${price.toLocaleString()}`;
+  };
+  return `${formatPrice(range[0])} – ${formatPrice(range[1])}`;
 }
 
-export function getBudgetTierLabel(tier: BudgetTier): string {
-  const found = budgetTiers.find((t) => t.id === tier);
-  return found?.label || "Any budget";
+export function isDefaultBudgetRange(range: [number, number]): boolean {
+  return range[0] === 0 && range[1] === 10000;
 }

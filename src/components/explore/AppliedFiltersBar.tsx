@@ -2,14 +2,14 @@ import { X } from "lucide-react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
-import { getBudgetTierLabel, type BudgetTier } from "./BudgetTierSelector";
+import { formatBudgetRange, isDefaultBudgetRange } from "./BudgetTierSelector";
 import type { TripCategoryId } from "@/data/categories";
 
 interface AppliedFiltersBarProps {
   destination: string;
   dates: DateRange | undefined;
   flexibleDates: boolean;
-  budgetTier: BudgetTier;
+  budgetRange: [number, number];
   categories: TripCategoryId[];
   onClear: () => void;
   onEdit: () => void;
@@ -19,12 +19,12 @@ export function AppliedFiltersBar({
   destination,
   dates,
   flexibleDates,
-  budgetTier,
+  budgetRange,
   categories,
   onClear,
   onEdit,
 }: AppliedFiltersBarProps) {
-  const hasFilters = destination || dates?.from || flexibleDates || budgetTier !== "any" || categories.length > 0;
+  const hasFilters = destination || dates?.from || flexibleDates || !isDefaultBudgetRange(budgetRange) || categories.length > 0;
 
   if (!hasFilters) return null;
 
@@ -44,8 +44,8 @@ export function AppliedFiltersBar({
     }
   }
 
-  if (budgetTier !== "any") {
-    chips.push(getBudgetTierLabel(budgetTier));
+  if (!isDefaultBudgetRange(budgetRange)) {
+    chips.push(formatBudgetRange(budgetRange));
   }
 
   if (categories.length > 0) {

@@ -11,13 +11,13 @@ import { cn } from "@/lib/utils";
 
 import { TripFilterDrawer, type FilterState } from "@/components/explore/TripFilterDrawer";
 import { AppliedFiltersBar } from "@/components/explore/AppliedFiltersBar";
-import { getBudgetRangeFromTier } from "@/components/explore/BudgetTierSelector";
+import { isDefaultBudgetRange, formatBudgetRange } from "@/components/explore/BudgetTierSelector";
 
 const defaultFilters: FilterState = {
   destination: "",
   dates: undefined,
   flexibleDates: false,
-  budgetTier: "any",
+  budgetRange: [0, 10000],
   categories: [],
 };
 
@@ -34,7 +34,7 @@ export default function Explore() {
     let count = 0;
     if (appliedFilters.destination) count++;
     if (appliedFilters.flexibleDates || appliedFilters.dates?.from) count++;
-    if (appliedFilters.budgetTier !== "any") count++;
+    if (!isDefaultBudgetRange(appliedFilters.budgetRange)) count++;
     count += appliedFilters.categories.length;
     return count;
   }, [appliedFilters]);
@@ -59,7 +59,7 @@ export default function Explore() {
         });
 
       // Budget match
-      const [minBudget, maxBudget] = getBudgetRangeFromTier(appliedFilters.budgetTier);
+      const [minBudget, maxBudget] = appliedFilters.budgetRange;
       const budgetMatch = trip.price >= minBudget && trip.price <= maxBudget;
 
       return destinationMatch && categoryMatch && budgetMatch;
@@ -133,7 +133,7 @@ export default function Explore() {
               destination={appliedFilters.destination}
               dates={appliedFilters.dates}
               flexibleDates={appliedFilters.flexibleDates}
-              budgetTier={appliedFilters.budgetTier}
+              budgetRange={appliedFilters.budgetRange}
               categories={appliedFilters.categories}
               onClear={handleReset}
               onEdit={() => setIsDrawerOpen(true)}

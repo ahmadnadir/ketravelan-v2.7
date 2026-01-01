@@ -27,9 +27,9 @@ export function TravelStylePills({ selected, onChange }: TravelStylePillsProps) 
             onClick={() => toggleCategory(category.id)}
             className={cn(
               "flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm transition-all",
-              isSelected
-                ? "bg-primary/10 text-primary border border-primary/30"
-                : "bg-secondary text-foreground hover:bg-secondary/80 border border-transparent"
+            isSelected
+              ? "bg-foreground text-background border border-foreground"
+              : "bg-secondary text-foreground hover:bg-secondary/80 border border-transparent"
             )}
           >
             {isSelected && <Check className="h-3.5 w-3.5" />}
