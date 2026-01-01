@@ -127,11 +127,11 @@ interface MockupCardProps {
 }
 
 const MockupCard = ({ title, description, children }: MockupCardProps) => (
-  <div className="min-w-[280px] sm:min-w-0 snap-start flex-shrink-0">
-    <Card className="overflow-hidden border-border/50">
+  <div className="min-w-[280px] sm:min-w-0 snap-start flex-shrink-0 sm:h-full">
+    <Card className="overflow-hidden border-border/50 sm:h-full sm:flex sm:flex-col">
       {/* Phone Mockup Frame */}
-      <div className="bg-muted/30 p-3 border-b border-border/30">
-        <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden">
+      <div className="bg-muted/30 p-3 border-b border-border/30 sm:flex-1 sm:flex sm:flex-col">
+        <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden sm:flex-1 sm:flex sm:flex-col">
           {/* Status Bar */}
           <div className="h-4 bg-muted/50 flex items-center justify-between px-3">
             <span className="text-[8px] text-muted-foreground">9:41</span>
@@ -141,12 +141,14 @@ const MockupCard = ({ title, description, children }: MockupCardProps) => (
             </div>
           </div>
           {/* App Content */}
-          {children}
+          <div className="sm:flex-1">
+            {children}
+          </div>
         </div>
       </div>
       
       {/* Card Footer */}
-      <div className="p-4 space-y-1">
+      <div className="p-4 space-y-1 sm:mt-auto">
         <h3 className="font-semibold text-base">{title}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
       </div>
