@@ -99,7 +99,7 @@ export default function Explore() {
         </h1>
 
         {/* Minimal Control Bar */}
-        <div className="space-y-3">
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
           {/* Search Bar Row */}
           <div className="flex gap-2">
             <button
