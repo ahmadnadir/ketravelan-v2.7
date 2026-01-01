@@ -20,52 +20,44 @@ const mockContributions = [
   { name: "Marcus Lee", initial: "ML", amount: 180, percentage: 8, colorIndex: 3 },
 ];
 
-// Mockup Card 1 - Trip Overview (Matches StatCard grid layout from TripExpenses)
+// Mockup Card 1 - Trip Overview (Matches Hero Section layout)
 const OverviewMockup = () => (
   <div className="p-2 space-y-1.5">
-    {/* 2x2 Grid matching StatCard layout */}
+    {/* Your Total Expenses - Full width card */}
+    <div className="border border-border/50 rounded-lg p-2">
+      <div className="space-y-0.5">
+        <div className="flex items-center gap-1">
+          <Wallet className="h-3 w-3 text-stat-green shrink-0" />
+          <p className="text-[9px] text-muted-foreground">Your Total Expenses</p>
+        </div>
+        <p className="text-sm font-bold text-foreground">RM 680</p>
+        <p className="text-[8px] text-muted-foreground">Your share of all trip costs</p>
+      </div>
+    </div>
+    
+    {/* Two column layout for Owed cards */}
     <div className="grid grid-cols-2 gap-1.5">
-      {/* Total Trip Spend - Blue */}
-      <div className="border border-border/50 rounded-lg p-2">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-1">
-            <DollarSign className="h-3 w-3 text-stat-blue shrink-0" />
-            <p className="text-[9px] text-muted-foreground">Total Trip Spend</p>
-          </div>
-          <p className="text-sm font-bold text-foreground">RM 2,530</p>
-        </div>
-      </div>
-      
-      {/* Your Expenses - Green */}
-      <div className="border border-border/50 rounded-lg p-2">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-1">
-            <Wallet className="h-3 w-3 text-stat-green shrink-0" />
-            <p className="text-[9px] text-muted-foreground">Your Expenses</p>
-          </div>
-          <p className="text-sm font-bold text-foreground">RM 680</p>
-        </div>
-      </div>
-      
-      {/* You're Owed - Orange */}
+      {/* You're Owed */}
       <div className="border border-border/50 rounded-lg p-2">
         <div className="space-y-0.5">
           <div className="flex items-center gap-1">
             <TrendingUp className="h-3 w-3 text-stat-orange shrink-0" />
             <p className="text-[9px] text-muted-foreground">You're Owed</p>
           </div>
-          <p className="text-sm font-bold text-foreground">RM 186</p>
+          <p className="text-sm font-bold text-foreground">RM 85</p>
+          <p className="text-[8px] text-muted-foreground">Net from others</p>
         </div>
       </div>
       
-      {/* You Owe - Red */}
+      {/* You Owe */}
       <div className="border border-border/50 rounded-lg p-2">
         <div className="space-y-0.5">
           <div className="flex items-center gap-1">
             <TrendingDown className="h-3 w-3 text-stat-red shrink-0" />
             <p className="text-[9px] text-muted-foreground">You Owe</p>
           </div>
-          <p className="text-sm font-bold text-foreground">RM 42</p>
+          <p className="text-sm font-bold text-foreground">RM 120</p>
+          <p className="text-[8px] text-muted-foreground">Net to others</p>
         </div>
       </div>
     </div>

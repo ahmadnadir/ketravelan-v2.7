@@ -662,8 +662,7 @@ function StatCardMini({
   return (
     <div className={cn(
       "bg-card border border-border/50 rounded-xl p-2 space-y-0.5",
-      variant === "highlight" && "bg-stat-green/5 border-stat-green/20",
-      variant === "summary" && "bg-stat-blue/5 border-stat-blue/20"
+      variant === "highlight" && "bg-stat-green/5 border-stat-green/20"
     )}>
       <div className="flex items-center gap-1">
         <Icon className={cn("h-3 w-3 shrink-0", iconColors[color])} />
