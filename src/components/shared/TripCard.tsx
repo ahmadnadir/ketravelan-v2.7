@@ -3,7 +3,7 @@ import { Calendar, MapPin, Users, Heart, Share2, Copy, MessageCircle, Check } fr
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PillChip } from "./PillChip";
+
 import { cn } from "@/lib/utils";
 import { TripType } from "@/data/mockData";
 import {
@@ -267,10 +267,20 @@ export function TripCard({
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-1 sm:gap-1.5">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {tags.slice(0, 3).map((tag) => (
-            <PillChip key={tag} label={tag} size="sm" />
+            <span
+              key={tag}
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+            >
+              {tag}
+            </span>
           ))}
+          {tags.length > 3 && (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground">
+              +{tags.length - 3} more
+            </span>
+          )}
         </div>
 
         {/* Footer */}
@@ -283,7 +293,7 @@ export function TripCard({
             <span className="text-base sm:text-lg font-bold text-foreground">
               {currency} {price.toLocaleString()}
             </span>
-            <span className="text-xs sm:text-sm text-muted-foreground">/pax</span>
+            <span className="text-xs text-muted-foreground ml-1">budget per person</span>
           </div>
         </div>
       </div>
