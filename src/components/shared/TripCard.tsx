@@ -3,9 +3,9 @@ import { Calendar, MapPin, Users, Heart, Share2, Copy, MessageCircle, Check } fr
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
 import { cn } from "@/lib/utils";
 import { TripType } from "@/data/mockData";
+import { tripCategories } from "@/data/categories";
 import {
   Dialog,
   DialogContent,
@@ -268,14 +268,22 @@ export function TripCard({
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          {tags.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
-            >
-              {tag}
-            </span>
-          ))}
+          {tags.slice(0, 3).map((tag) => {
+            // Find the emoji for this tag from categories
+            const category = tripCategories.find(
+              (c) => c.label.toLowerCase() === tag.toLowerCase()
+            );
+            const emoji = category?.icon || "";
+            return (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+              >
+                {emoji && <span>{emoji}</span>}
+                <span>{tag}</span>
+              </span>
+            );
+          })}
           {tags.length > 3 && (
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground">
               +{tags.length - 3} more
