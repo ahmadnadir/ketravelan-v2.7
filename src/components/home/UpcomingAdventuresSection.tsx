@@ -23,7 +23,7 @@ export function UpcomingAdventuresSection() {
       </div>
 
       {/* Trip Cards - Horizontal Scroll */}
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 snap-x snap-mandatory sm:mx-0 sm:px-0">
+      <div className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
         {diyTrips.length > 0 ? (
           diyTrips.map((trip) => (
             <TripCard
