@@ -1,9 +1,20 @@
-const diySteps = [
-  "Create or join a trip",
-  "Invite friends or meet travelers",
-  "Plan in group chat",
-  "Add expenses & split bills",
-  "Settle via QR & travel",
+const travelModes = [
+  {
+    id: "public",
+    badge: "The Social Explorer",
+    title: "Find a Travel Buddy",
+    description:
+      "Make your trip Public. It becomes discoverable so new friends can join, chat, and split the cost.",
+    image: "/placeholder.svg",
+  },
+  {
+    id: "private",
+    badge: "The Inner Circle",
+    title: "Close Friends Only",
+    description:
+      "Keep it Private. Not discoverable. Invite-only. Perfect for keeping your squad's itinerary and budget organized.",
+    image: "/placeholder.svg",
+  },
 ];
 
 export function GuidesSection() {
@@ -11,30 +22,40 @@ export function GuidesSection() {
     <section className="space-y-4 sm:space-y-6">
       {/* Header */}
       <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-        Ketravelan Guides
+        One App, Two Ways to Travel
       </h2>
 
-      {/* Horizontal Step Cards */}
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 snap-x snap-mandatory">
-        {diySteps.map((step, index) => (
+      {/* Swipeable Cards */}
+      <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2">
+        {travelModes.map((mode) => (
           <div
-            key={index}
-            className="shrink-0 snap-start w-[140px] sm:w-[160px] flex flex-col items-center text-center gap-3"
+            key={mode.id}
+            className="shrink-0 snap-start min-w-[85vw] sm:min-w-0 sm:w-full"
           >
-            {/* Numbered Circle */}
-            <div className="relative">
-              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg sm:text-xl font-bold">
-                {index + 1}
+            <div className="relative aspect-[3/2] rounded-xl overflow-hidden">
+              {/* Background Image */}
+              <img
+                src={mode.image}
+                alt={mode.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+
+              {/* Dark Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+              {/* Content Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
+                <span className="text-xs font-medium bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                  {mode.badge}
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold mt-3">
+                  {mode.title}
+                </h3>
+                <p className="text-sm text-white/90 mt-1.5 leading-relaxed">
+                  {mode.description}
+                </p>
               </div>
-              {/* Connector Line */}
-              {index < diySteps.length - 1 && (
-                <div className="absolute top-1/2 left-full w-[calc(140px-3rem)] sm:w-[calc(160px-3.5rem)] h-0.5 bg-border -translate-y-1/2 ml-1.5" />
-              )}
             </div>
-            {/* Step Text */}
-            <p className="text-xs sm:text-sm text-foreground font-medium leading-tight">
-              {step}
-            </p>
           </div>
         ))}
       </div>
