@@ -9,36 +9,46 @@ const faqs = [
   {
     question: "How do DIY trips work?",
     answer:
-      "With DIY trips, you create or join a trip with friends or like-minded travelers. You'll coordinate everything in a shared group chat, log expenses as you go, and split costs transparently. Everyone can see what's been paid and who owes what — then settle up easily via QR payment.",
-  },
-  {
-    question: "How do guided trips work?",
-    answer:
-      "Guided trips are hosted by verified trip organizers who curate the itinerary, handle logistics, and lead the experience. You pay a deposit to secure your spot, then complete payments based on milestones. Everything — payments, chat, documents — is managed in one place.",
-  },
-  {
-    question: "How do flexible deposits work?",
-    answer:
-      "For guided trips, you only need to pay a small deposit upfront to reserve your spot. The remaining balance is split into payment milestones leading up to the trip. This makes it easier to budget and commit without paying everything at once.",
+      "DIY trips are created by travelers, not agencies. Users can create a trip, make it public, allow others to join, chat together, plan activities, and manage shared expenses — all in one place.",
   },
   {
     question: "Can I join if I'm traveling solo?",
     answer:
-      "Absolutely! Ketravelan is built for solo travelers looking to connect. Whether you join a DIY trip to meet new travel buddies or book a guided trip with a group, you'll always have people to travel with.",
+      "Yes. Ketravelan is designed for solo travelers. You can join open trips, meet like-minded people, and travel together while keeping plans and costs transparent.",
+  },
+  {
+    question: "How does expense tracking work?",
+    answer:
+      "Any group member can log shared expenses. The system automatically calculates each person's share and clearly shows who paid upfront and who still owes.",
+  },
+  {
+    question: "What if someone pays upfront for the group?",
+    answer:
+      "Payments made on behalf of the group are tracked automatically. This keeps responsibilities clear and helps manage cash flow without awkward money conversations.",
+  },
+  {
+    question: "How does settlement work at the end of the trip?",
+    answer:
+      "All expenses are offset and consolidated into a single net amount. Each person settles once instead of paying line by line — simple, fair, and transparent.",
   },
   {
     question: "Does Ketravelan hold my money?",
     answer:
-      "For DIY trips, money flows directly between members — Ketravelan just helps you track and split expenses. For guided trips, payments go to the verified host through our secure payment system, with clear records of every transaction.",
+      "No. Ketravelan does not hold funds. Payments happen directly between travelers. The app only tracks and clarifies who owes what.",
   },
 ];
 
 export function FAQSection() {
   return (
     <section id="faq" className="space-y-4 sm:space-y-6">
-      <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-        Frequently Asked Questions
-      </h2>
+      <div className="space-y-1">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+          Frequently Asked Questions
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Everything you need to know before starting or joining a DIY trip.
+        </p>
+      </div>
 
       <Accordion type="single" collapsible className="space-y-2">
         {faqs.map((faq, index) => (
