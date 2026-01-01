@@ -1,13 +1,14 @@
-import { Bell } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
   onNotificationsClick?: () => void;
+  onMenuClick?: () => void;
 }
 
-export function Header({ onNotificationsClick }: HeaderProps) {
+export function Header({ onNotificationsClick, onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
@@ -25,16 +26,26 @@ export function Header({ onNotificationsClick }: HeaderProps) {
         {/* Right Actions - Conditional based on auth */}
         <div className="flex items-center gap-2 sm:gap-3">
           {isAuthenticated ? (
-            // Logged in: Show notifications only
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9 sm:h-10 sm:w-10 relative"
-              onClick={onNotificationsClick}
-            >
-              <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
-            </Button>
+            // Logged in: Show notifications and menu
+            <>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-9 w-9 sm:h-10 sm:w-10 relative"
+                onClick={onNotificationsClick}
+              >
+                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-9 w-9 sm:h-10 sm:w-10"
+                onClick={onMenuClick}
+              >
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+              </Button>
+            </>
           ) : (
             // Logged out: Show Sign Up / Log In buttons
             <>

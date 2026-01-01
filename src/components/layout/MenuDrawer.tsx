@@ -1,4 +1,4 @@
-import { Home, Map, FileText, Heart, Settings, LogOut } from "lucide-react";
+import { Home, Map, FileText, Heart, MessageSquare, Settings, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -20,6 +20,7 @@ const menuItems = [
   { icon: FileText, label: "Approvals & Requests", path: "/approvals" },
   { icon: FileText, label: "Draft Trips", path: "/my-trips?tab=draft" },
   { icon: Heart, label: "Favourites", path: "/favourites" },
+  { icon: MessageSquare, label: "Feedback", path: "/feedback" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
