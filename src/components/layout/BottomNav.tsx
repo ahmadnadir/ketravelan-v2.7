@@ -40,8 +40,8 @@ export function BottomNav({ inline = false }: BottomNavProps) {
                     : "text-nav-inactive hover:text-foreground"
                 )}
               >
-                <Icon className={cn("h-5 w-5 sm:h-6 sm:w-6", isActive && "stroke-[2.5]")} />
-                <span className="text-[10px] sm:text-xs font-medium truncate">{item.label}</span>
+                <Icon className={cn("h-6 w-6 sm:h-7 sm:w-7", isActive && "stroke-[2.5]")} />
+                <span className="text-xs sm:text-sm font-medium truncate">{item.label}</span>
               </Link>
             );
           })}
