@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { Slider } from "@/components/ui/slider";
 
 export type BudgetTier = "any" | "budget" | "midrange" | "comfort";
 
@@ -16,44 +16,47 @@ const budgetTiers: BudgetTierOption[] = [
   { id: "comfort", label: "Comfort", description: "RM 3,000+", range: [3000, 10000] },
 ];
 
+const tierToIndex = (tier: BudgetTier): number => {
+  const index = budgetTiers.findIndex((t) => t.id === tier);
+  return index >= 0 ? index : 0;
+};
+
+const indexToTier = (index: number): BudgetTier => {
+  return budgetTiers[index]?.id || "any";
+};
+
 interface BudgetTierSelectorProps {
   value: BudgetTier;
   onChange: (tier: BudgetTier) => void;
 }
 
 export function BudgetTierSelector({ value, onChange }: BudgetTierSelectorProps) {
+  const currentTier = budgetTiers.find((t) => t.id === value) || budgetTiers[0];
+
   return (
-    <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
-      {budgetTiers.map((tier) => (
-        <button
-          key={tier.id}
-          type="button"
-          onClick={() => onChange(tier.id)}
-          className={cn(
-            "w-full flex items-center justify-between px-4 py-3 transition-all",
-            value === tier.id
-              ? "bg-secondary"
-              : "bg-background hover:bg-secondary/50"
-          )}
-        >
-          <div className="text-left">
-            <p className="text-sm font-medium text-foreground">
-              {tier.label}
-            </p>
-            <p className="text-xs text-muted-foreground">{tier.description}</p>
-          </div>
-          <div className={cn(
-            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
-            value === tier.id
-              ? "border-primary bg-primary"
-              : "border-muted-foreground/40"
-          )}>
-            {value === tier.id && (
-              <div className="w-2 h-2 rounded-full bg-primary-foreground" />
-            )}
-          </div>
-        </button>
-      ))}
+    <div className="space-y-4">
+      {/* Helper text showing selected tier */}
+      <p className="text-sm text-muted-foreground text-center">
+        {currentTier.label} — {currentTier.description}
+      </p>
+
+      {/* Slider with 4 steps */}
+      <Slider
+        min={0}
+        max={3}
+        step={1}
+        value={[tierToIndex(value)]}
+        onValueChange={(val) => onChange(indexToTier(val[0]))}
+        className="py-2"
+      />
+
+      {/* Step labels */}
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>Any</span>
+        <span>Budget</span>
+        <span>Mid-range</span>
+        <span>Comfort</span>
+      </div>
     </div>
   );
 }

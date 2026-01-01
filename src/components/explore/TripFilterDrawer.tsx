@@ -144,7 +144,7 @@ export function TripFilterDrawer({
     <div className="flex-1 overflow-y-auto px-4">
       <div className="space-y-6 pb-6">
         {/* Section 1: Destination */}
-        <div className="space-y-3 animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "backwards" }}>
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "0ms", animationFillMode: "backwards" }}>
           <h3 className="text-sm font-semibold text-foreground">Destination</h3>
           
           {localFilters.destination ? (
@@ -215,7 +215,7 @@ export function TripFilterDrawer({
         </div>
 
         {/* Section 2: Dates */}
-        <div className="space-y-3 animate-fade-in" style={{ animationDelay: "75ms", animationFillMode: "backwards" }}>
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "75ms", animationFillMode: "backwards" }}>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Dates</h3>
             {!localFilters.flexibleDates && localFilters.dates?.from && (
@@ -262,7 +262,7 @@ export function TripFilterDrawer({
         </div>
 
         {/* Section 3: Budget */}
-        <div className="space-y-3 animate-fade-in" style={{ animationDelay: "150ms", animationFillMode: "backwards" }}>
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "150ms", animationFillMode: "backwards" }}>
           <h3 className="text-sm font-semibold text-foreground">Budget</h3>
           <BudgetTierSelector
             value={localFilters.budgetTier}
@@ -271,7 +271,7 @@ export function TripFilterDrawer({
         </div>
 
         {/* Section 4: Travel Style */}
-        <div className="space-y-3 animate-fade-in" style={{ animationDelay: "225ms", animationFillMode: "backwards" }}>
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "225ms", animationFillMode: "backwards" }}>
           <h3 className="text-sm font-semibold text-foreground">Travel Style</h3>
           <TravelStylePills
             selected={localFilters.categories}
@@ -285,7 +285,7 @@ export function TripFilterDrawer({
   const footer = (
     <div className="flex gap-3 p-4 border-t border-border bg-background">
       <Button
-        variant="ghost"
+        variant="outline"
         className="flex-1"
         onClick={handleReset}
       >
