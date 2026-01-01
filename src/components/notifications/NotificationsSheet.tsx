@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Bell, MessageCircle, UserPlus, DollarSign, Calendar } from "lucide-react";
 import {
   Sheet,
@@ -7,6 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SwipeableNotificationItem } from "./SwipeableNotificationItem";
 
 interface Notification {
   id: string;
@@ -17,7 +19,7 @@ interface Notification {
   read: boolean;
 }
 
-const mockNotifications: Notification[] = [
+const initialNotifications: Notification[] = [
   {
     id: "1",
     type: "join_request",
@@ -65,6 +67,24 @@ interface NotificationsSheetProps {
 }
 
 export function NotificationsSheet({ open, onOpenChange }: NotificationsSheetProps) {
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+
+  const handleDismiss = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(prev =>
+      prev.map(n => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const hasUnread = notifications.some(n => !n.read);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md px-4 sm:px-6">
@@ -76,56 +96,77 @@ export function NotificationsSheet({ open, onOpenChange }: NotificationsSheetPro
         </SheetHeader>
 
         <div className="mt-4 sm:mt-6 space-y-1.5 sm:space-y-2">
-          {mockNotifications.map((notification) => {
-            const Icon = iconMap[notification.type];
-            return (
-              <div
-                key={notification.id}
-                className={cn(
-                  "flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl transition-colors cursor-pointer",
-                  notification.read
-                    ? "bg-transparent hover:bg-muted/50"
-                    : "bg-accent/50 hover:bg-accent"
-                )}
-              >
-                <div className={cn(
-                  "p-1.5 sm:p-2 rounded-full shrink-0",
-                  notification.read ? "bg-muted" : "bg-destructive/10"
-                )}>
-                  <Icon className={cn(
-                    "h-3.5 w-3.5 sm:h-4 sm:w-4",
-                    notification.read ? "text-muted-foreground" : "text-destructive"
-                  )} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className={cn(
-                      "text-xs sm:text-sm",
-                      !notification.read && "font-medium"
-                    )}>
-                      {notification.title}
-                    </p>
-                    {!notification.read && (
-                      <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-destructive shrink-0 mt-1 sm:mt-1.5" />
+          {notifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Bell className="h-12 w-12 mb-3 opacity-50" />
+              <p className="text-sm">No notifications</p>
+              <p className="text-xs">You're all caught up!</p>
+            </div>
+          ) : (
+            notifications.map((notification) => {
+              const Icon = iconMap[notification.type];
+              return (
+                <SwipeableNotificationItem
+                  key={notification.id}
+                  onDismiss={() => handleDismiss(notification.id)}
+                  onMarkAsRead={() => handleMarkAsRead(notification.id)}
+                  isUnread={!notification.read}
+                >
+                  <div
+                    className={cn(
+                      "flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl transition-colors cursor-pointer",
+                      notification.read
+                        ? "bg-transparent hover:bg-muted/50"
+                        : "bg-accent/50 hover:bg-accent"
                     )}
+                  >
+                    <div className={cn(
+                      "p-1.5 sm:p-2 rounded-full shrink-0",
+                      notification.read ? "bg-muted" : "bg-destructive/10"
+                    )}>
+                      <Icon className={cn(
+                        "h-3.5 w-3.5 sm:h-4 sm:w-4",
+                        notification.read ? "text-muted-foreground" : "text-destructive"
+                      )} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className={cn(
+                          "text-xs sm:text-sm",
+                          !notification.read && "font-medium"
+                        )}>
+                          {notification.title}
+                        </p>
+                        {!notification.read && (
+                          <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-destructive shrink-0 mt-1 sm:mt-1.5" />
+                        )}
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
+                        {notification.description}
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
+                        {notification.time}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
-                    {notification.description}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                    {notification.time}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
+                </SwipeableNotificationItem>
+              );
+            })
+          )}
         </div>
 
-        <div className="mt-4 sm:mt-6 pb-4 sm:pb-0">
-          <Button variant="outline" className="w-full text-sm sm:text-base">
-            Mark all as read
-          </Button>
-        </div>
+        {notifications.length > 0 && (
+          <div className="mt-4 sm:mt-6 pb-4 sm:pb-0">
+            <Button
+              variant="outline"
+              className="w-full text-sm sm:text-base"
+              onClick={handleMarkAllAsRead}
+              disabled={!hasUnread}
+            >
+              Mark all as read
+            </Button>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
