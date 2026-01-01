@@ -29,7 +29,7 @@ export function GuidesSection() {
       </h2>
 
       {/* Swipeable Cards */}
-      <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 justify-center sm:justify-start">
+      <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 pl-[7.5vw] pr-4 pb-2 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2">
         {travelModes.map((mode) => (
           <div
             key={mode.id}
