@@ -1,23 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, TrendingDown, Wallet, DollarSign, FileText, CheckCircle2 } from "lucide-react";
-
-// Member color palette matching TripExpenses
-const MEMBER_COLORS = [
-  { bg: "bg-member-coral", shadow: "shadow-member-coral/30" },
-  { bg: "bg-member-teal", shadow: "shadow-member-teal/30" },
-  { bg: "bg-member-violet", shadow: "shadow-member-violet/30" },
-  { bg: "bg-member-sky", shadow: "shadow-member-sky/30" },
-];
+import { ArrowRight, TrendingUp, TrendingDown, Wallet, FileText, CheckCircle2 } from "lucide-react";
 
 // Mock data for previews - matching TripExpenses member contribution format
 const mockContributions = [
-  { name: "Ahmad Razak", initial: "AR", amount: 1200, percentage: 47, colorIndex: 0 },
-  { name: "Sarah Tan", initial: "ST", amount: 770, percentage: 30, colorIndex: 1 },
-  { name: "Lisa Wong", initial: "LW", amount: 380, percentage: 15, colorIndex: 2 },
-  { name: "Marcus Lee", initial: "ML", amount: 180, percentage: 8, colorIndex: 3 },
+  { name: "Ahmad Razak", initial: "AR", amount: 1200, percentage: 47 },
+  { name: "Sarah Tan", initial: "ST", amount: 770, percentage: 30 },
+  { name: "Lisa Wong", initial: "LW", amount: 380, percentage: 15 },
+  { name: "Marcus Lee", initial: "ML", amount: 180, percentage: 8 },
 ];
 
 // Mockup Card 1 - Trip Overview (Matches Hero Section layout)
@@ -79,31 +70,17 @@ const ContributionsMockup = () => (
       
       {/* Member contributions */}
       <div className="space-y-1.5">
-        {mockContributions.map((member) => {
-          const color = MEMBER_COLORS[member.colorIndex];
-          return (
-            <div key={member.name} className="space-y-0.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Avatar className="w-4 h-4">
-                    <AvatarFallback className="text-[6px] bg-muted">{member.initial}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-[8px] font-medium truncate max-w-[60px]">{member.name}</span>
-                </div>
-                <span className="text-[8px] font-semibold">RM {member.amount.toLocaleString()} <span className="text-muted-foreground font-normal">({member.percentage}%)</span></span>
-              </div>
-              {/* Progress bar with member color and glow effect */}
-              <div className="relative">
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full ${color.bg} transition-all`}
-                    style={{ width: `${member.percentage}%` }}
-                  />
-                </div>
-              </div>
+        {mockContributions.map((member) => (
+          <div key={member.name} className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Avatar className="w-4 h-4">
+                <AvatarFallback className="text-[6px] bg-muted">{member.initial}</AvatarFallback>
+              </Avatar>
+              <span className="text-[8px] font-medium truncate max-w-[60px]">{member.name}</span>
             </div>
-          );
-        })}
+            <span className="text-[8px] font-semibold">RM {member.amount.toLocaleString()} <span className="text-muted-foreground font-normal">({member.percentage}%)</span></span>
+          </div>
+        ))}
       </div>
     </div>
   </div>
@@ -177,14 +154,6 @@ const MockupCard = ({ title, description, children }: MockupCardProps) => (
       {/* Phone Mockup Frame */}
       <div className="bg-muted/30 p-3 border-b border-border/30 h-[200px] sm:h-auto sm:flex-1 flex flex-col">
         <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden flex-1 flex flex-col">
-          {/* Status Bar */}
-          <div className="h-4 bg-muted/50 flex items-center justify-between px-3 flex-shrink-0">
-            <span className="text-[8px] text-muted-foreground">9:41</span>
-            <div className="flex gap-1">
-              <div className="w-2.5 h-1.5 bg-muted-foreground/50 rounded-sm" />
-              <div className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full" />
-            </div>
-          </div>
           {/* App Content */}
           <div className="flex-1 overflow-hidden">
             {children}
