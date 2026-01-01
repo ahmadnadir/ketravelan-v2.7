@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { ChevronLeft, MapPin, Users } from "lucide-react";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,17 @@ import { GroupInfoModal } from "@/components/trip-hub/GroupInfoModal";
 
 export default function TripHub() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("chat");
   const [groupInfoOpen, setGroupInfoOpen] = useState(false);
+
+  // Read tab from URL query param on mount
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "expenses" || tabParam === "notes" || tabParam === "chat") {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
 

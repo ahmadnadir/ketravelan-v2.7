@@ -11,6 +11,7 @@ import TripHub from "./pages/TripHub";
 import CreateTrip from "./pages/CreateTrip";
 import MyTrips from "./pages/MyTrips";
 import Chat from "./pages/Chat";
+import Expenses from "./pages/Expenses";
 import DirectChat from "./pages/DirectChat";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/create" element={<CreateTrip />} />
           <Route path="/my-trips" element={<MyTrips />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/expenses" element={<Expenses />} />
           <Route path="/chat/:id" element={<DirectChat />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/edit" element={<EditProfile />} />
