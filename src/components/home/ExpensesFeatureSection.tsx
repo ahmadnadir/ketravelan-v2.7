@@ -1,9 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, TrendingDown, Wallet, DollarSign, FileText, CheckCircle2 } from "lucide-react";
-
+import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 // Member color palette matching TripExpenses
 const MEMBER_COLORS = [
   { bg: "bg-member-coral", shadow: "shadow-member-coral/30" },
@@ -109,58 +106,13 @@ const ContributionsMockup = () => (
   </div>
 );
 
-// Mockup Card 3 - Settlement (Matches SettlementCard component)
+// Mockup Card 3 - Settlement (Static image placeholder)
+// TODO: Replace with actual settlement mockup image when provided
 const SettlementMockup = () => (
-  <div className="p-2">
-    {/* Card wrapper matching SettlementCard */}
-    <div className="border border-border/50 rounded-lg p-2.5 space-y-2">
-      {/* From → To layout (horizontal row) */}
-      <div className="flex items-center justify-between gap-1">
-        {/* From User */}
-        <div className="flex items-center gap-1">
-          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
-            <span className="text-[8px] font-medium text-muted-foreground">ST</span>
-          </div>
-          <span className="text-[9px] font-medium text-foreground">Sarah</span>
-        </div>
-        
-        {/* Arrow */}
-        <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
-        
-        {/* To User */}
-        <div className="flex items-center gap-1">
-          <span className="text-[9px] font-medium text-foreground">Ahmad</span>
-          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
-            <span className="text-[8px] font-medium text-muted-foreground">AR</span>
-          </div>
-        </div>
-      </div>
-      
-      {/* Amount - centered */}
-      <div className="text-center py-1">
-        <p className="text-base font-bold text-foreground">RM 186</p>
-        <p className="text-[8px] text-muted-foreground">Net amount owed</p>
-      </div>
-      
-      {/* Status Badge - matching StatusBadge component */}
-      <div className="flex justify-center">
-        <span className="text-[8px] px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full font-medium">
-          Pending
-        </span>
-      </div>
-      
-      {/* Action buttons - matching SettlementCard */}
-      <div className="flex flex-col gap-1 pt-1.5 border-t border-border/50">
-        <Button variant="outline" size="sm" className="w-full h-6 text-[8px]">
-          <FileText className="h-2.5 w-2.5 mr-1" />
-          View Details
-        </Button>
-        <Button size="sm" className="w-full h-6 text-[8px] bg-foreground text-background hover:bg-foreground/90">
-          <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
-          Mark as Paid
-        </Button>
-      </div>
-    </div>
+  <div className="w-full h-full flex items-center justify-center bg-muted/20">
+    <p className="text-[10px] text-muted-foreground text-center px-4">
+      Settlement mockup image placeholder
+    </p>
   </div>
 );
 
@@ -173,10 +125,10 @@ interface MockupCardProps {
 
 const MockupCard = ({ title, description, children }: MockupCardProps) => (
   <div className="min-w-[85vw] max-w-[320px] sm:min-w-0 sm:max-w-none snap-start flex-shrink-0 h-full">
-    <Card className="overflow-hidden border-border/50 h-full flex flex-col min-h-[340px] sm:min-h-0">
-      {/* Phone Mockup Frame */}
-      <div className="bg-muted/30 p-3 border-b border-border/30 h-[200px] sm:h-auto sm:flex-1 flex flex-col">
-        <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden flex-1 flex flex-col">
+    <Card className="overflow-hidden border-border/50 flex flex-col h-full">
+      {/* Phone Mockup Frame - Standardized height */}
+      <div className="bg-muted/30 p-3 border-b border-border/30 flex flex-col">
+        <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden h-[240px] sm:h-[280px] flex flex-col">
           {/* Status Bar */}
           <div className="h-4 bg-muted/50 flex items-center justify-between px-3 flex-shrink-0">
             <span className="text-[8px] text-muted-foreground">9:41</span>
@@ -185,7 +137,7 @@ const MockupCard = ({ title, description, children }: MockupCardProps) => (
               <div className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full" />
             </div>
           </div>
-          {/* App Content */}
+          {/* App Content - Clipped */}
           <div className="flex-1 overflow-hidden">
             {children}
           </div>
