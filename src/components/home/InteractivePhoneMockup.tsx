@@ -214,12 +214,34 @@ function MockExpensesContent() {
           <p className="text-[8px] text-muted-foreground">See where the money went and who's settled.</p>
         </div>
 
-        {/* Stat Cards - Matches actual StatCard component styling */}
-        <div className="grid grid-cols-2 gap-1.5">
-          <StatCardMini icon={DollarSign} title="Total Trip Spend" value={`RM ${totalCost.toLocaleString()}`} color="blue" />
-          <StatCardMini icon={Wallet} title="You Paid" value="RM 680" color="green" />
-          <StatCardMini icon={TrendingUp} title="You're Owed" value="RM 85" color="orange" />
-          <StatCardMini icon={TrendingDown} title="You Owe" value="RM 120" color="red" />
+        {/* Stat Cards - matching actual TripHub layout: 1 full-width + 2 columns */}
+        <div className="space-y-1.5">
+          {/* Full width highlight card */}
+          <StatCardMini 
+            icon={Wallet} 
+            title="Your Total Expenses" 
+            value="RM 680" 
+            color="green" 
+            subtitle="Your share of all trip costs"
+            variant="highlight"
+          />
+          {/* Two column layout */}
+          <div className="grid grid-cols-2 gap-1.5">
+            <StatCardMini 
+              icon={TrendingUp} 
+              title="You're Owed" 
+              value="RM 85" 
+              color="orange" 
+              description="Net from others"
+            />
+            <StatCardMini 
+              icon={TrendingDown} 
+              title="You Owe" 
+              value="RM 120" 
+              color="red" 
+              description="Net to others"
+            />
+          </div>
         </div>
 
         {/* Sub Tabs - Matches ScrollableTabBar styling */}
@@ -604,7 +626,23 @@ function NoteCardMini({ note }: { note: { id: string; title: string; content: st
   );
 }
 
-function StatCardMini({ icon: Icon, title, value, color }: { icon: React.ElementType; title: string; value: string; color: "blue" | "green" | "orange" | "red" }) {
+function StatCardMini({ 
+  icon: Icon, 
+  title, 
+  value, 
+  color,
+  subtitle,
+  description,
+  variant
+}: { 
+  icon: React.ElementType; 
+  title: string; 
+  value: string; 
+  color: "blue" | "green" | "orange" | "red";
+  subtitle?: string;
+  description?: string;
+  variant?: "highlight";
+}) {
   const iconColors = {
     blue: "text-stat-blue",
     green: "text-stat-green",
@@ -613,14 +651,21 @@ function StatCardMini({ icon: Icon, title, value, color }: { icon: React.Element
   };
 
   return (
-    <div className="bg-card border border-border/50 rounded-xl p-2 space-y-0.5">
-      {/* Icon + Title row - Matches actual StatCard */}
+    <div className={cn(
+      "bg-card border border-border/50 rounded-xl p-2 space-y-0.5",
+      variant === "highlight" && "bg-stat-green/5 border-stat-green/20"
+    )}>
       <div className="flex items-center gap-1">
         <Icon className={cn("h-3 w-3 shrink-0", iconColors[color])} />
         <p className="text-[7px] text-muted-foreground truncate">{title}</p>
       </div>
-      {/* Value - Bold below */}
       <p className="text-[11px] font-bold text-foreground">{value}</p>
+      {subtitle && (
+        <p className="text-[6px] text-muted-foreground">{subtitle}</p>
+      )}
+      {description && (
+        <p className="text-[6px] text-muted-foreground">{description}</p>
+      )}
     </div>
   );
 }
