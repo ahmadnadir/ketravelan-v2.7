@@ -115,9 +115,7 @@ export function NotificationsSheet({ open, onOpenChange }: NotificationsSheetPro
                   <div
                     className={cn(
                       "flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl transition-colors cursor-pointer",
-                      notification.read
-                        ? "bg-transparent hover:bg-muted/50"
-                        : "bg-accent/50 hover:bg-accent"
+                      "bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-muted/50"
                     )}
                   >
                     <div className={cn(

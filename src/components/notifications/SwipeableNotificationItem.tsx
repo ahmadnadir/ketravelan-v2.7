@@ -78,7 +78,7 @@ export function SwipeableNotificationItem({
 
       {/* Main content */}
       <div
-        className="relative bg-background transition-transform duration-75"
+        className="relative bg-white dark:bg-card rounded-xl transition-transform duration-75"
         style={{ transform: `translateX(${offset}px)` }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
