@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, MapPin, Users, Search, Plus, Pin, DollarSign, TrendingUp, TrendingDown, Wallet, Paperclip, Send, MoreVertical } from "lucide-react";
+import { ChevronLeft, MapPin, Users, Search, Plus, Pin, DollarSign, TrendingUp, TrendingDown, Wallet, Paperclip, Send, MoreVertical } from "lucide-react";
+import duitnowQR from "@/assets/duitnow-sample-qr.png";
 import { mockMessages, mockMembers, mockExpenses } from "@/data/mockData";
 
 type TabType = "chat" | "expenses" | "notes";
@@ -220,28 +221,22 @@ function MockExpensesContent() {
           <StatCardMini icon={TrendingDown} title="You Owe" value="RM 120" color="red" />
         </div>
 
-        {/* Sub Tabs - matches ScrollableTabBar pill styling */}
-        <div className="relative">
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide p-0.5">
-            {subTabs.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setSubTab(tab.value)}
-                className={cn(
-                  "py-1 px-2.5 text-[8px] font-medium rounded-full whitespace-nowrap transition-all shrink-0",
-                  subTab === tab.value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          {/* Scroll hint */}
-          <div className="absolute right-0 top-0 bottom-0 w-6 pointer-events-none bg-gradient-to-l from-background to-transparent flex items-center justify-end pr-0.5">
-            <ChevronRight className="h-3 w-3 text-muted-foreground opacity-50" />
-          </div>
+        {/* Sub Tabs - equally distributed */}
+        <div className="flex w-full bg-secondary rounded-lg p-0.5">
+          {subTabs.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setSubTab(tab.value)}
+              className={cn(
+                "flex-1 py-1.5 px-1 text-[9px] font-medium rounded-md whitespace-nowrap transition-all text-center",
+                subTab === tab.value
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Sub Tab Content */}
@@ -376,13 +371,12 @@ function QRContent() {
       {/* Your QR */}
       <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
         <h3 className="text-[9px] font-semibold text-foreground">Your Payment QR</h3>
-        <div className="h-20 bg-secondary rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <div className="h-12 w-12 mx-auto bg-muted rounded-lg flex items-center justify-center mb-1">
-              <span className="text-[8px] text-muted-foreground">QR Code</span>
-            </div>
-            <button className="text-[8px] text-primary font-medium">Upload QR</button>
-          </div>
+        <div className="flex justify-center py-1">
+          <img 
+            src={duitnowQR} 
+            alt="DuitNow QR Code" 
+            className="h-24 w-24 rounded-lg object-contain"
+          />
         </div>
       </div>
 
