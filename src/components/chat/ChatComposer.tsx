@@ -27,7 +27,7 @@ export function ChatComposer({ onSend, placeholder = "Type a message..." }: Chat
 
   return (
     <>
-      <div className="fixed bottom-16 sm:bottom-[68px] left-0 right-0 glass z-40">
+      <div className="fixed bottom-above-nav left-0 right-0 glass z-40">
         {/* Input container with elevated padding */}
         <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-4 sm:pb-5">
           <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">

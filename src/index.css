@@ -266,4 +266,9 @@
       transform-origin: left;
     }
   }
+
+  /* Fixed element positioned above bottom nav with safe-area support */
+  .bottom-above-nav {
+    bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
 }
