@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { UpcomingAdventuresSection } from "@/components/home/UpcomingAdventuresSection";
 import { HowItWorksSection } from "@/components/home/HowItWorksSection";
 import { GuidesSection } from "@/components/home/GuidesSection";
+import { ExpensesFeatureSection } from "@/components/home/ExpensesFeatureSection";
 import { FAQSection } from "@/components/home/FAQSection";
 import { BottomCTASection } from "@/components/home/BottomCTASection";
 
@@ -16,6 +17,7 @@ export default function Home() {
         <UpcomingAdventuresSection />
         <HowItWorksSection />
         <GuidesSection />
+        <ExpensesFeatureSection />
         <FAQSection />
         <BottomCTASection />
       </div>
