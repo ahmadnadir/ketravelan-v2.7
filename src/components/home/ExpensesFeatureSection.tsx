@@ -213,7 +213,7 @@ export const ExpensesFeatureSection = () => {
           Expenses, Made Simple
         </h2>
         <p className="text-sm text-muted-foreground">
-          Track spending, upfront payments, and settlements — clearly and fairly.
+          No mental maths. No awkward reminders. Just clarity.
         </p>
       </div>
 

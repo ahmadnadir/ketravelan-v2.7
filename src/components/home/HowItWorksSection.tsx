@@ -1,29 +1,21 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
 const cards = [
   {
     emoji: "🚀",
-    title: "Create or Join",
-    description: "Start a trip or join one that fits you.",
+    title: "Create or Join a Trip",
+    description: "Start your own or hop into an open one.",
   },
   {
     emoji: "💬",
-    title: "Group Chat to communicate and plan",
-    description: "Chat, plan, and keep everything in one place.",
+    title: "Chat & Coordinate",
+    description: "Keep everyone aligned in one place.",
   },
   {
-    emoji: "💰",
-    title: "Transparent Cost Sharing",
-    description: "Track expenses and settle up automatically.",
+    emoji: "✅",
+    title: "Settle with One Tap",
+    description: "When it's time to pay, everything's ready.",
   },
 ];
-
-const ctaContent = {
-  primaryCta: { label: "Start a DIY Trip", link: "/create" },
-  secondaryCta: { label: "Browse DIY Trips", link: "/explore" },
-};
 
 export function HowItWorksSection() {
   return (
@@ -34,7 +26,7 @@ export function HowItWorksSection() {
           Your Trip, Simplified
         </h2>
         <p className="text-sm text-muted-foreground">
-          Plan together, track expenses, and settle fairly — all in one place.
+          Easy to start, effortless to manage, smooth to finish.
         </p>
       </div>
 
@@ -55,19 +47,6 @@ export function HowItWorksSection() {
         ))}
       </div>
 
-      {/* CTAs */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
-        <Link to={ctaContent.primaryCta.link} className="w-full sm:w-auto">
-          <Button className="rounded-full w-full sm:w-auto">
-            {ctaContent.primaryCta.label}
-          </Button>
-        </Link>
-        <Link to={ctaContent.secondaryCta.link} className="w-full sm:w-auto">
-          <Button variant="ghost" className="rounded-full w-full sm:w-auto">
-            {ctaContent.secondaryCta.label} →
-          </Button>
-        </Link>
-      </div>
     </section>
   );
 }
