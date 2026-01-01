@@ -163,17 +163,19 @@ interface MockupCardProps {
 
 const MockupCard = ({ title, description, children }: MockupCardProps) => (
   <div className="min-w-[85vw] max-w-[320px] sm:min-w-0 sm:max-w-none snap-start flex-shrink-0">
-    <Card className="overflow-hidden border-border/50 flex flex-col">
+    <Card className="overflow-hidden border-border/50 flex flex-col h-full">
       {/* Phone Mockup Frame */}
       <div className="bg-muted/30 p-3 border-b border-border/30">
-        <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden">
+        <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden h-[220px] sm:h-[240px]">
           {/* App Content */}
-          {children}
+          <div className="h-full overflow-auto">
+            {children}
+          </div>
         </div>
       </div>
       
       {/* Card Footer */}
-      <div className="p-4 space-y-1.5">
+      <div className="p-4 space-y-1.5 flex-1">
         <h3 className="font-semibold text-base leading-tight line-clamp-2 break-words">{title}</h3>
         <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 break-words">{description}</p>
       </div>
