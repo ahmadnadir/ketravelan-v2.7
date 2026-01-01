@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, MapPin, Users, Search, Plus, Pin, DollarSign, TrendingUp, TrendingDown, Wallet, Paperclip, Send, MoreVertical } from "lucide-react";
+import { ChevronLeft, MapPin, Users, Search, Plus, Pin, DollarSign, TrendingUp, TrendingDown, Wallet, Paperclip, Send, MoreVertical, ArrowRight, Upload, FileText, QrCode } from "lucide-react";
 import duitnowQR from "@/assets/duitnow-sample-qr.png";
 import { mockMessages, mockMembers, mockExpenses } from "@/data/mockData";
+import { Progress } from "@/components/ui/progress";
 
 type TabType = "chat" | "expenses" | "notes";
 type ExpenseSubTab = "breakdown" | "expenses" | "settle" | "qr";
@@ -213,7 +214,7 @@ function MockExpensesContent() {
           <p className="text-[8px] text-muted-foreground">See where the money went and who's settled.</p>
         </div>
 
-        {/* Stat Cards - with improved layout */}
+        {/* Stat Cards - Matches actual StatCard component styling */}
         <div className="grid grid-cols-2 gap-1.5">
           <StatCardMini icon={DollarSign} title="Total Trip Spend" value={`RM ${totalCost.toLocaleString()}`} color="blue" />
           <StatCardMini icon={Wallet} title="You Paid" value="RM 680" color="green" />
@@ -221,16 +222,16 @@ function MockExpensesContent() {
           <StatCardMini icon={TrendingDown} title="You Owe" value="RM 120" color="red" />
         </div>
 
-        {/* Sub Tabs - equally distributed */}
-        <div className="flex w-full bg-secondary rounded-lg p-0.5">
+        {/* Sub Tabs - Matches ScrollableTabBar styling */}
+        <div className="flex gap-1 p-1 bg-secondary rounded-xl">
           {subTabs.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setSubTab(tab.value)}
               className={cn(
-                "flex-1 py-1.5 px-1 text-[9px] font-medium rounded-md whitespace-nowrap transition-all text-center",
+                "flex-1 py-1.5 px-1 text-[8px] font-medium rounded-lg whitespace-nowrap transition-all text-center",
                 subTab === tab.value
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -295,23 +296,80 @@ function BreakdownContent({ totalCost }: { totalCost: number }) {
 }
 
 function ExpensesListContent() {
+  // Mock expense data with payment status - matches ExpenseCard
+  const expenses = mockExpenses.slice(0, 3).map((expense, i) => ({
+    ...expense,
+    paymentProgress: [100, 50, 25][i],
+    yourShare: Math.round(expense.amount / 4),
+    shareStatus: ["settled", "pending", "pending"][i] as "settled" | "pending",
+  }));
+
   return (
     <div className="space-y-1.5">
-      {mockExpenses.slice(0, 4).map((expense) => {
+      {expenses.map((expense) => {
         const emoji = categoryEmojiMap[expense.category] || "📦";
         return (
-          <div key={expense.id} className="bg-card border border-border/50 rounded-xl p-2 flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-sm">{emoji}</span>
+          <div key={expense.id} className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5 cursor-pointer hover:border-primary/50 transition-all">
+            {/* Header: Title and Amount */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <h4 className="text-[9px] font-semibold text-foreground truncate">{expense.title}</h4>
+                <p className="text-[7px] text-muted-foreground">Paid by {expense.paidBy} · {expense.date}</p>
+              </div>
+              <div className="flex items-center gap-0.5 shrink-0">
+                <span className="text-[10px] font-semibold text-foreground">RM {expense.amount}</span>
+                <MoreVertical className="h-3 w-3 text-muted-foreground" />
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-[9px] font-medium text-foreground truncate">{expense.title}</h4>
-              <p className="text-[7px] text-muted-foreground">Paid by {expense.paidBy}</p>
+
+            {/* Group Settlement Progress - Matches ExpenseCard */}
+            <div className="space-y-0.5">
+              <div className="flex items-center justify-between">
+                <span className={cn(
+                  "text-[7px] font-medium",
+                  expense.paymentProgress === 100 ? "text-stat-green" : "text-muted-foreground"
+                )}>
+                  Group settlement: {expense.paymentProgress}%
+                </span>
+              </div>
+              <Progress value={expense.paymentProgress} className="h-1" />
             </div>
-            <div className="text-right">
-              <p className="text-[10px] font-semibold text-foreground">RM {expense.amount}</p>
-              <p className="text-[7px] text-muted-foreground">{expense.category}</p>
+
+            {/* Personal Share Row - Matches ExpenseCard */}
+            <div className="flex items-center justify-between pt-0.5">
+              <span className="text-[7px] font-medium text-foreground">Your share:</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[8px] font-semibold">RM {expense.yourShare}</span>
+                <span className={cn(
+                  "text-[6px] px-1.5 py-0.5 rounded-full font-medium",
+                  expense.shareStatus === "settled" 
+                    ? "bg-success/10 text-success" 
+                    : "bg-warning/10 text-warning"
+                )}>
+                  {expense.shareStatus === "settled" ? "Settled" : "Pending"}
+                </span>
+              </div>
             </div>
+
+            {/* Action Button - Matches ExpenseCard */}
+            <button className={cn(
+              "w-full py-1.5 rounded-lg text-[8px] font-medium flex items-center justify-center gap-1 transition-all",
+              expense.shareStatus === "pending"
+                ? "bg-foreground text-background hover:bg-foreground/90"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            )}>
+              {expense.shareStatus === "pending" ? (
+                <>
+                  <Upload className="h-2.5 w-2.5" />
+                  View & Settle
+                </>
+              ) : (
+                <>
+                  <FileText className="h-2.5 w-2.5" />
+                  View Details
+                </>
+              )}
+            </button>
           </div>
         );
       })}
@@ -320,44 +378,81 @@ function ExpensesListContent() {
 }
 
 function SettleContent() {
+  // Settlement data matching SettlementCard component
   const settlements = [
-    { from: mockMembers[1], to: mockMembers[0], amount: 120, status: "pending" },
-    { from: mockMembers[0], to: mockMembers[2], amount: 85, status: "paid" },
-    { from: mockMembers[3], to: mockMembers[0], amount: 45, status: "pending" },
+    { from: mockMembers[1], to: mockMembers[0], amount: 120, status: "pending" as const },
+    { from: mockMembers[0], to: mockMembers[2], amount: 85, status: "settled" as const },
   ];
 
   return (
     <div className="space-y-1.5">
       {settlements.map((s, i) => (
-        <div key={i} className="bg-card border border-border/50 rounded-xl p-2 flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <div className="h-5 w-5 rounded-full bg-muted overflow-hidden">
-              {s.from.imageUrl ? (
-                <img src={s.from.imageUrl} alt={s.from.name} className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{s.from.name.charAt(0)}</div>
-              )}
+        <div key={i} className="bg-card border border-border/50 rounded-xl p-2 space-y-2 cursor-pointer hover:border-primary/50 transition-all">
+          {/* From → To - Matches SettlementCard layout */}
+          <div className="flex items-center justify-between gap-1.5">
+            {/* From User */}
+            <div className="flex items-center gap-1 min-w-0">
+              <div className="h-6 w-6 rounded-full bg-muted overflow-hidden shrink-0">
+                {s.from.imageUrl ? (
+                  <img src={s.from.imageUrl} alt={s.from.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{s.from.name.charAt(0)}</div>
+                )}
+              </div>
+              <span className="text-[7px] font-medium text-foreground truncate max-w-[50px]">{s.from.name}</span>
             </div>
-            <span className="text-[8px] text-muted-foreground">→</span>
-            <div className="h-5 w-5 rounded-full bg-muted overflow-hidden">
-              {s.to.imageUrl ? (
-                <img src={s.to.imageUrl} alt={s.to.name} className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{s.to.name.charAt(0)}</div>
-              )}
+
+            {/* Arrow */}
+            <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+
+            {/* To User */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="text-[7px] font-medium text-foreground truncate max-w-[50px] text-right">{s.to.name}</span>
+              <div className="h-6 w-6 rounded-full bg-muted overflow-hidden shrink-0">
+                {s.to.imageUrl ? (
+                  <img src={s.to.imageUrl} alt={s.to.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{s.to.name.charAt(0)}</div>
+                )}
+              </div>
             </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[8px] text-foreground truncate">{s.from.name} → {s.to.name}</p>
+
+          {/* Amount - Centered like SettlementCard */}
+          <div className="text-center">
+            <p className="text-base font-bold text-foreground">RM {s.amount}</p>
+            <p className="text-[7px] text-muted-foreground">Net amount owed</p>
           </div>
-          <div className="text-right">
-            <p className="text-[9px] font-semibold text-foreground">RM {s.amount}</p>
+
+          {/* Status Badge - Centered */}
+          <div className="flex justify-center">
             <span className={cn(
-              "text-[7px] px-1 py-0.5 rounded-full",
-              s.status === "paid" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+              "text-[7px] px-2 py-0.5 rounded-full font-medium",
+              s.status === "settled" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
             )}>
-              {s.status === "paid" ? "Paid" : "Pending"}
+              {s.status === "settled" ? "Settled" : "Pending"}
             </span>
+          </div>
+
+          {/* Actions - Matches SettlementCard */}
+          <div className="flex flex-col gap-1 pt-1.5 border-t border-border/50">
+            {s.status === "pending" ? (
+              <>
+                <button className="w-full py-1.5 rounded-lg text-[7px] font-medium flex items-center justify-center gap-1 border border-border bg-card hover:bg-secondary transition-all">
+                  <QrCode className="h-2.5 w-2.5" />
+                  View QR
+                </button>
+                <button className="w-full py-1.5 rounded-lg text-[7px] font-medium flex items-center justify-center gap-1 bg-foreground text-background hover:bg-foreground/90 transition-all">
+                  <Upload className="h-2.5 w-2.5" />
+                  Upload Receipt
+                </button>
+              </>
+            ) : (
+              <button className="w-full py-1.5 rounded-lg text-[7px] font-medium flex items-center justify-center gap-1 border border-border bg-card hover:bg-secondary transition-all">
+                <FileText className="h-2.5 w-2.5" />
+                View Details
+              </button>
+            )}
           </div>
         </div>
       ))}
@@ -366,37 +461,80 @@ function SettleContent() {
 }
 
 function QRContent() {
+  const [qrView, setQrView] = useState<"myqr" | "others">("myqr");
+
   return (
     <div className="space-y-2">
-      {/* Your QR */}
-      <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
-        <h3 className="text-[9px] font-semibold text-foreground">Your Payment QR</h3>
-        <div className="flex justify-center py-1">
-          <img 
-            src={duitnowQR} 
-            alt="DuitNow QR Code" 
-            className="h-24 w-24 rounded-lg object-contain"
-          />
-        </div>
+      {/* QR View Toggle - Matches actual SegmentedControl */}
+      <div className="flex p-0.5 bg-secondary rounded-xl">
+        <button
+          onClick={() => setQrView("myqr")}
+          className={cn(
+            "flex-1 py-1.5 px-2 text-[8px] font-medium rounded-lg transition-all text-center",
+            qrView === "myqr"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          My QR
+        </button>
+        <button
+          onClick={() => setQrView("others")}
+          className={cn(
+            "flex-1 py-1.5 px-2 text-[8px] font-medium rounded-lg transition-all text-center",
+            qrView === "others"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Others' QR
+        </button>
       </div>
 
-      {/* Members QR */}
-      <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
-        <h3 className="text-[9px] font-semibold text-foreground">Members' QR Codes</h3>
-        {mockMembers.slice(0, 3).map((member) => (
-          <div key={member.id} className="flex items-center gap-2 py-1 border-b border-border/30 last:border-0">
-            <div className="h-5 w-5 rounded-full bg-muted overflow-hidden">
-              {member.imageUrl ? (
-                <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{member.name.charAt(0)}</div>
-              )}
-            </div>
-            <span className="flex-1 text-[8px] text-foreground truncate">{member.name}</span>
-            <button className="text-[7px] text-primary font-medium">View</button>
+      {qrView === "myqr" ? (
+        /* Your QR - Matches YourQRSection */
+        <div className="bg-card border border-border/50 rounded-xl p-3">
+          <h3 className="text-[9px] font-semibold text-foreground flex items-center gap-1.5 mb-2">
+            <QrCode className="h-3 w-3" />
+            Your QR Code
+          </h3>
+          <div className="flex justify-center">
+            <img 
+              src={duitnowQR} 
+              alt="DuitNow QR Code" 
+              className="w-28 h-28 rounded-xl border border-border bg-white p-1 object-contain"
+            />
           </div>
-        ))}
-      </div>
+          <div className="flex gap-1.5 mt-2">
+            <button className="flex-1 py-1.5 rounded-lg text-[7px] font-medium border border-border bg-card hover:bg-secondary transition-all">
+              Replace
+            </button>
+            <button className="flex-1 py-1.5 rounded-lg text-[7px] font-medium border border-border bg-card hover:bg-secondary text-destructive transition-all">
+              Remove
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Members QR */
+        <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
+          <h3 className="text-[9px] font-semibold text-foreground">Members' QR Codes</h3>
+          {mockMembers.slice(0, 3).map((member) => (
+            <div key={member.id} className="flex items-center gap-2 py-1.5 border-b border-border/30 last:border-0">
+              <div className="h-6 w-6 rounded-full bg-muted overflow-hidden shrink-0">
+                {member.imageUrl ? (
+                  <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-[8px] font-medium">{member.name.charAt(0)}</div>
+                )}
+              </div>
+              <span className="flex-1 text-[8px] text-foreground font-medium truncate">{member.name}</span>
+              <button className="text-[7px] text-primary font-medium px-2 py-1 rounded-md hover:bg-primary/10 transition-all">
+                View QR
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -404,21 +542,21 @@ function QRContent() {
 function MockNotesContent() {
   return (
     <div className="flex flex-col h-full overflow-y-auto scrollbar-hide px-2 py-2 space-y-2">
-      {/* Search & Add */}
+      {/* Search & Add - Matches TripNotes */}
       <div className="flex gap-1.5">
         <div className="flex-1 relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground" />
-          <div className="w-full pl-6 pr-2 py-1 rounded-lg bg-secondary text-[9px] text-muted-foreground">
+          <div className="w-full pl-6 pr-2 py-1.5 rounded-xl bg-secondary text-[8px] text-muted-foreground">
             Search notes...
           </div>
         </div>
-        <button className="bg-primary text-primary-foreground px-2 py-1 rounded-lg flex items-center gap-0.5 text-[9px] font-medium">
+        <button className="bg-primary text-primary-foreground px-2 py-1.5 rounded-xl flex items-center gap-0.5 text-[8px] font-medium">
           <Plus className="h-2.5 w-2.5" />
           New
         </button>
       </div>
 
-      {/* Pinned Notes */}
+      {/* Pinned Notes - Matches TripNotes */}
       <div className="space-y-1.5">
         <h3 className="text-[8px] font-medium text-muted-foreground flex items-center gap-1">
           <Pin className="h-2.5 w-2.5" />
@@ -442,7 +580,7 @@ function MockNotesContent() {
 
 function NoteCardMini({ note }: { note: { id: string; title: string; content: string; pinned: boolean; time: string } }) {
   return (
-    <div className="bg-card border border-border/50 rounded-xl p-2 hover:border-primary/30 transition-all cursor-pointer">
+    <div className="bg-card border border-border/50 rounded-xl p-2 hover:border-primary/30 transition-all cursor-pointer active:scale-[0.99]">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
@@ -450,37 +588,39 @@ function NoteCardMini({ note }: { note: { id: string; title: string; content: st
               {note.title}
             </h4>
             {note.pinned && (
-              <Pin className="h-2 w-2 text-primary fill-primary shrink-0" />
+              <Pin className="h-2.5 w-2.5 text-primary fill-primary shrink-0" />
             )}
           </div>
-          <p className="text-[8px] text-muted-foreground line-clamp-2 mt-0.5">
+          <p className="text-[7px] text-muted-foreground line-clamp-2 mt-0.5">
             {note.content}
           </p>
           <p className="text-[6px] text-muted-foreground/70 mt-1">{note.time}</p>
         </div>
-        <MoreVertical className="h-3 w-3 text-muted-foreground shrink-0" />
+        <button className="h-5 w-5 rounded-md hover:bg-secondary flex items-center justify-center shrink-0">
+          <MoreVertical className="h-3 w-3 text-muted-foreground" />
+        </button>
       </div>
     </div>
   );
 }
 
 function StatCardMini({ icon: Icon, title, value, color }: { icon: React.ElementType; title: string; value: string; color: "blue" | "green" | "orange" | "red" }) {
-  const colorClasses = {
-    blue: "bg-stat-blue/10 text-stat-blue",
-    green: "bg-stat-green/10 text-stat-green",
-    orange: "bg-stat-orange/10 text-stat-orange",
-    red: "bg-stat-red/10 text-stat-red",
+  const iconColors = {
+    blue: "text-stat-blue",
+    green: "text-stat-green",
+    orange: "text-stat-orange",
+    red: "text-stat-red",
   };
 
   return (
-    <div className="bg-card border border-border/50 rounded-xl p-2 flex items-center gap-2">
-      <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", colorClasses[color])}>
-        <Icon className="h-3.5 w-3.5" />
-      </div>
-      <div className="min-w-0 flex-1">
+    <div className="bg-card border border-border/50 rounded-xl p-2 space-y-0.5">
+      {/* Icon + Title row - Matches actual StatCard */}
+      <div className="flex items-center gap-1">
+        <Icon className={cn("h-3 w-3 shrink-0", iconColors[color])} />
         <p className="text-[7px] text-muted-foreground truncate">{title}</p>
-        <p className="text-[10px] font-semibold text-foreground truncate">{value}</p>
       </div>
+      {/* Value - Bold below */}
+      <p className="text-[11px] font-bold text-foreground">{value}</p>
     </div>
   );
 }
