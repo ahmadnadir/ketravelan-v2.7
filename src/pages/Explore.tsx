@@ -16,6 +16,7 @@ import { getBudgetRangeFromTier } from "@/components/explore/BudgetTierSelector"
 const defaultFilters: FilterState = {
   destination: "",
   dates: undefined,
+  flexibleDates: false,
   budgetTier: "any",
   categories: [],
 };
@@ -32,7 +33,7 @@ export default function Explore() {
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (appliedFilters.destination) count++;
-    if (appliedFilters.dates?.from) count++;
+    if (appliedFilters.flexibleDates || appliedFilters.dates?.from) count++;
     if (appliedFilters.budgetTier !== "any") count++;
     count += appliedFilters.categories.length;
     return count;
@@ -131,6 +132,7 @@ export default function Explore() {
             <AppliedFiltersBar
               destination={appliedFilters.destination}
               dates={appliedFilters.dates}
+              flexibleDates={appliedFilters.flexibleDates}
               budgetTier={appliedFilters.budgetTier}
               categories={appliedFilters.categories}
               onClear={handleReset}

@@ -8,6 +8,7 @@ import type { TripCategoryId } from "@/data/categories";
 interface AppliedFiltersBarProps {
   destination: string;
   dates: DateRange | undefined;
+  flexibleDates: boolean;
   budgetTier: BudgetTier;
   categories: TripCategoryId[];
   onClear: () => void;
@@ -17,12 +18,13 @@ interface AppliedFiltersBarProps {
 export function AppliedFiltersBar({
   destination,
   dates,
+  flexibleDates,
   budgetTier,
   categories,
   onClear,
   onEdit,
 }: AppliedFiltersBarProps) {
-  const hasFilters = destination || dates?.from || budgetTier !== "any" || categories.length > 0;
+  const hasFilters = destination || dates?.from || flexibleDates || budgetTier !== "any" || categories.length > 0;
 
   if (!hasFilters) return null;
 
@@ -32,7 +34,9 @@ export function AppliedFiltersBar({
     chips.push(destination);
   }
 
-  if (dates?.from) {
+  if (flexibleDates) {
+    chips.push("Flexible dates");
+  } else if (dates?.from) {
     if (dates.to) {
       chips.push(`${format(dates.from, "MMM d")} – ${format(dates.to, "MMM d")}`);
     } else {

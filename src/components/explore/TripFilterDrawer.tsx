@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Search, X } from "lucide-react";
+import { MapPin, Search, X, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 
@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
+import { Switch } from "@/components/ui/switch";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ const mockDestinations = [
 export interface FilterState {
   destination: string;
   dates: DateRange | undefined;
+  flexibleDates: boolean;
   budgetTier: BudgetTier;
   categories: TripCategoryId[];
 }
@@ -124,6 +126,7 @@ export function TripFilterDrawer({
     const resetState: FilterState = {
       destination: "",
       dates: undefined,
+      flexibleDates: false,
       budgetTier: "any",
       categories: [],
     };
@@ -215,22 +218,47 @@ export function TripFilterDrawer({
         <div className="space-y-3 animate-fade-in" style={{ animationDelay: "75ms", animationFillMode: "backwards" }}>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Dates</h3>
-            {localFilters.dates?.from && (
+            {!localFilters.flexibleDates && localFilters.dates?.from && (
               <span className="text-xs text-primary font-medium">
                 {formatDateRange(localFilters.dates)}
               </span>
             )}
           </div>
-          <div className="flex justify-center">
-            <Calendar
-              mode="range"
-              selected={localFilters.dates}
-              onSelect={(dates) => setLocalFilters((prev) => ({ ...prev, dates }))}
-              numberOfMonths={1}
-              disabled={(date) => date < new Date()}
-              className="rounded-xl border border-border"
+          
+          {/* Flexible dates toggle */}
+          <div className="flex items-center justify-between p-3 bg-secondary rounded-xl">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Flexible dates</p>
+                <p className="text-xs text-muted-foreground">I'm open to any dates</p>
+              </div>
+            </div>
+            <Switch
+              checked={localFilters.flexibleDates}
+              onCheckedChange={(checked) => 
+                setLocalFilters((prev) => ({ 
+                  ...prev, 
+                  flexibleDates: checked,
+                  dates: checked ? undefined : prev.dates 
+                }))
+              }
             />
           </div>
+
+          {/* Calendar - only show when not flexible */}
+          {!localFilters.flexibleDates && (
+            <div className="flex justify-center">
+              <Calendar
+                mode="range"
+                selected={localFilters.dates}
+                onSelect={(dates) => setLocalFilters((prev) => ({ ...prev, dates }))}
+                numberOfMonths={1}
+                disabled={(date) => date < new Date()}
+                className="rounded-xl border border-border pointer-events-auto"
+              />
+            </div>
+          )}
         </div>
 
         {/* Section 3: Budget */}
