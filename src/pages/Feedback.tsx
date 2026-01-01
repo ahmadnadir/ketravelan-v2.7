@@ -122,7 +122,7 @@ export default function Feedback() {
         </div>
 
         {/* CTA Section */}
-        <div className="space-y-4 pt-2">
+        <div className="pt-2">
           <a
             href={googleFormUrl}
             target="_blank"
@@ -137,9 +137,6 @@ export default function Feedback() {
               <ExternalLink className="h-4 w-4" />
             </Button>
           </a>
-          <p className="text-xs text-muted-foreground/70">
-            Takes less than 2 minutes. No right or wrong answers.
-          </p>
         </div>
       </div>
     </AppLayout>
