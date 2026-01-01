@@ -19,6 +19,7 @@ import {
   Copy,
   Check,
   UserPlus,
+  X,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
@@ -762,15 +763,39 @@ export default function TripDetails() {
 
       {/* Request to Join Confirmation Modal */}
       <Dialog open={showJoinConfirmModal} onOpenChange={setShowJoinConfirmModal}>
-        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden [&>button]:hidden">
           <DialogHeader className="p-4 pb-3 border-b border-border/50">
-            <DialogTitle>Request to Join Trip</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Request to Join Trip</DialogTitle>
+              <button 
+                onClick={() => setShowJoinConfirmModal(false)}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
             <DialogDescription>
               Here's what happens when you request to join
             </DialogDescription>
           </DialogHeader>
           
           <div className="p-4 space-y-4">
+            {/* What happens next steps */}
+            <div className="bg-secondary/50 rounded-xl p-3 space-y-2">
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">1</div>
+                <p className="text-sm text-muted-foreground">Your request is sent to the trip organizer</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">2</div>
+                <p className="text-sm text-muted-foreground">They'll review your profile and message</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">3</div>
+                <p className="text-sm text-muted-foreground">You'll be notified when they respond</p>
+              </div>
+            </div>
+
             {/* Message input */}
             <div className="space-y-2">
               <label htmlFor="join-note" className="text-sm font-medium">
