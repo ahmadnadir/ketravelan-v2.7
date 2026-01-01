@@ -14,7 +14,8 @@ export function HeroSection() {
           {/* Headline */}
           <div className="space-y-3 sm:space-y-4">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight tracking-tight">
-              Plan Trips. Split Costs. No Awkward Math.
+              Plan Trips. Split Costs.{" "}
+              <span className="whitespace-nowrap">No Awkward Math.</span>
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed">
               Whether you're traveling with best friends or new travel buddies, track shared expenses in real-time. No more 'I'll pay first' anxiety—everyone knows exactly what they owe.
