@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -138,7 +138,7 @@ export function TripFilterDrawer({
   };
 
   const content = (
-    <ScrollArea className="flex-1 px-4">
+    <div className="flex-1 overflow-y-auto px-4">
       <div className="space-y-6 pb-6">
         {/* Section 1: Destination */}
         <div className="space-y-3">
@@ -251,7 +251,7 @@ export function TripFilterDrawer({
           />
         </div>
       </div>
-    </ScrollArea>
+    </div>
   );
 
   const footer = (
@@ -272,7 +272,7 @@ export function TripFilterDrawer({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[90vh] flex flex-col">
+        <DrawerContent className="max-h-[85vh] flex flex-col overflow-hidden">
           <DrawerHeader className="border-b border-border pb-4">
             <DrawerTitle>Filter Trips</DrawerTitle>
           </DrawerHeader>
