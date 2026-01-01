@@ -44,12 +44,20 @@ export function ReceiptViewerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg h-[85vh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0">
+      <DialogContent className="max-w-lg h-[85vh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 [&>button]:hidden">
         {/* Fixed Header */}
         <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
-          <DialogTitle className="flex items-center justify-between pr-6 text-lg font-semibold">
-            <span className="truncate">Receipt: {expenseTitle}</span>
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-lg font-semibold truncate">
+              Receipt: {expenseTitle}
+            </DialogTitle>
+            <button 
+              onClick={() => onOpenChange(false)}
+              className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </DialogHeader>
 
         {/* Scrollable Content */}

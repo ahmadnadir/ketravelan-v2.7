@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, ZoomIn, ZoomOut, ImageIcon, CheckCircle, Bell } from "lucide-react";
+import { Download, ZoomIn, ZoomOut, ImageIcon, CheckCircle, Bell, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -63,7 +63,7 @@ export function PaymentReviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+      <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden [&>button]:hidden">
         {/* Fixed Header */}
         <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
           <DialogTitle className="sr-only">Payment Review for {member.name}</DialogTitle>
@@ -78,7 +78,15 @@ export function PaymentReviewModal({
                 <p className="text-lg font-bold text-foreground">RM {amount.toFixed(2)}</p>
               </div>
             </div>
-            {getStatusBadge()}
+            <div className="flex items-center gap-2">
+              {getStatusBadge()}
+              <button 
+                onClick={() => onOpenChange(false)}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </DialogHeader>
 

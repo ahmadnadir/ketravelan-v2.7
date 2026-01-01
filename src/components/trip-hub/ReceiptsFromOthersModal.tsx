@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, Bell, CheckCircle, ImageOff, Download, ZoomIn, ZoomOut } from "lucide-react";
+import { Eye, Bell, CheckCircle, ImageOff, Download, ZoomIn, ZoomOut, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -88,12 +88,20 @@ export function ReceiptsFromOthersModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+      <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden [&>button]:hidden">
         {/* Fixed Header */}
         <DialogHeader className="flex-none p-4 pb-2 border-b border-border/50">
-          <DialogTitle className="text-lg font-semibold">
-            Payment Receipts from Others
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-lg font-semibold">
+              Payment Receipts from Others
+            </DialogTitle>
+            <button 
+              onClick={() => handleOpenChange(false)}
+              className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </DialogHeader>
 
         {/* Scrollable Content */}
