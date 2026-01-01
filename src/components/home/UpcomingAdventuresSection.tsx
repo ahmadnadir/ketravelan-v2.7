@@ -2,19 +2,24 @@ import { Link } from "react-router-dom";
 import { TripCard } from "@/components/shared/TripCard";
 import { mockTrips } from "@/data/mockData";
 
-export function PopularTripsSection() {
+export function UpcomingAdventuresSection() {
   const diyTrips = mockTrips.filter((trip) => trip.tripType === "diy");
 
   return (
     <section className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-          Popular Trips on Ketravelan
-        </h2>
-        <Link to="/explore" className="text-xs sm:text-sm text-primary font-medium">
-          See all
-        </Link>
+      <div className="space-y-1">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+            Join the Adventure
+          </h2>
+          <Link to="/explore" className="text-xs sm:text-sm text-primary font-medium">
+            See all
+          </Link>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Discover open trips happening soon.
+        </p>
       </div>
 
       {/* Trip Cards - Horizontal Scroll */}
