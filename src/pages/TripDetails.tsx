@@ -847,9 +847,17 @@ export default function TripDetails() {
 
       {/* Message Organizer Modal */}
       <Dialog open={showMessageModal} onOpenChange={setShowMessageModal}>
-        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden [&>button]:hidden">
           <DialogHeader className="p-4 pb-3 border-b border-border/50">
-            <DialogTitle>Message Trip Organizer</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Message Trip Organizer</DialogTitle>
+              <button 
+                onClick={() => setShowMessageModal(false)}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
             <DialogDescription>
               Start a conversation with {organizer.name}
             </DialogDescription>
