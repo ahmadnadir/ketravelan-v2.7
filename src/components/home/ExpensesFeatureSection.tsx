@@ -186,20 +186,20 @@ const MockupCard = ({ title, description, children }: MockupCardProps) => (
 const featureCards = [
   {
     id: "overview",
-    title: "See the Full Picture",
-    description: "Get a clear snapshot of total trip spending and everyone's share — updated in real time for the whole group.",
+    title: "Expenses at a Glance",
+    description: "See your total spend, what you owe, and what others owe you.",
     mockup: <OverviewMockup />,
   },
   {
     id: "contributions",
-    title: "Upfront Payments, Clearly Tracked",
-    description: "Covered flights, stays, or tickets upfront? We automatically track who paid for what, so balance stays fair without reminders.",
+    title: "Upfront Payments, Tracked",
+    description: "Instantly track who paid upfront and manage shared costs fairly.",
     mockup: <ContributionsMockup />,
   },
   {
     id: "settlement",
-    title: "Settle Once. Done.",
-    description: "We calculate the net balance across all expenses. Settle everything in one step — no back-and-forth, no confusion.",
+    title: "Net Settlement, Simplified",
+    description: "We offset expenses automatically — no mental maths, no confusion.",
     mockup: <SettlementMockup />,
   },
 ];
@@ -210,10 +210,10 @@ export const ExpensesFeatureSection = () => {
       {/* Section Header */}
       <div className="space-y-1">
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-          Expenses, Without the Awkwardness
+          Expenses, Made Simple
         </h2>
         <p className="text-sm text-muted-foreground">
-          Know where the money stands — without spreadsheets, reminders, or uncomfortable conversations.
+          Track spending, upfront payments, and settlements — clearly and fairly.
         </p>
       </div>
 
