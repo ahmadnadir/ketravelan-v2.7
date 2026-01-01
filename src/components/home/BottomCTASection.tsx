@@ -25,7 +25,7 @@ export function BottomCTASection() {
           <Button
             size="lg"
             variant="outline"
-            className="rounded-full w-full sm:w-auto border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+            className="rounded-full w-full sm:w-auto border-primary-foreground bg-primary-foreground/10 text-primary-foreground font-semibold hover:bg-primary-foreground/20"
           >
             Browse DIY Trips
           </Button>
