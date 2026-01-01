@@ -54,8 +54,8 @@ export function BottomNav({ inline = false }: BottomNavProps) {
                   className={cn(
                     "flex flex-col items-center justify-center gap-0.5 sm:gap-1 px-3 sm:px-5 py-2 rounded-xl transition-all min-w-0",
                     isActive 
-                      ? "text-primary-foreground bg-primary" 
-                      : "text-nav-inactive hover:text-foreground hover:bg-secondary"
+                      ? "text-nav-active" 
+                      : "text-nav-inactive hover:text-foreground"
                   )}
                 >
                   <Icon className={cn("h-6 w-6 sm:h-7 sm:w-7", isActive && "stroke-[2.5]")} />
