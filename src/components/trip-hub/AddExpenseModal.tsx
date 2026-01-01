@@ -238,22 +238,30 @@ export function AddExpenseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md h-[90vh] sm:h-auto sm:max-h-[90vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+      <DialogContent className="max-w-md h-[90vh] sm:h-auto sm:max-h-[90vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden [&>button]:hidden">
         {/* Fixed Header */}
         <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
-          <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
-            {isEditMode ? (
-              <>
-                <Pencil className="h-5 w-5 text-primary" />
-                Edit Expense
-              </>
-            ) : (
-              <>
-                <Receipt className="h-5 w-5 text-primary" />
-                Add Shared Expense
-              </>
-            )}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
+              {isEditMode ? (
+                <>
+                  <Pencil className="h-5 w-5 text-primary" />
+                  Edit Expense
+                </>
+              ) : (
+                <>
+                  <Receipt className="h-5 w-5 text-primary" />
+                  Add Shared Expense
+                </>
+              )}
+            </DialogTitle>
+            <button 
+              onClick={() => onOpenChange(false)}
+              className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </DialogHeader>
 
         {/* Scrollable Body */}

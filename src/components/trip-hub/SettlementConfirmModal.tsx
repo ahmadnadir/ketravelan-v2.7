@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -65,12 +65,20 @@ export function SettlementConfirmModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+      <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden [&>button]:hidden">
         {/* Header */}
         <DialogHeader className="flex-none p-4 pb-4 border-b border-border/50">
-          <DialogTitle className="text-xl sm:text-lg font-semibold text-center">
-            Confirm Settlement
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl sm:text-lg font-semibold text-center flex-1">
+              Confirm Settlement
+            </DialogTitle>
+            <button 
+              onClick={() => onOpenChange(false)}
+              className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
 
           {/* From → To Visual */}
           <div className="flex items-center justify-center gap-4 pt-3">

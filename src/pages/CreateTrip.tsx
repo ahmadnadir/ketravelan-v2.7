@@ -890,13 +890,21 @@ export default function CreateTrip() {
 
       {/* Share Modal */}
       <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
-        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 overflow-hidden [&>button]:hidden">
           <DialogHeader className="p-4 pb-3 border-b border-border/50">
-            <DialogTitle className="text-center">
-              <span className="text-2xl">🎉</span>
-              <br />
-              Your trip is live!
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-center flex-1">
+                <span className="text-2xl">🎉</span>
+                <br />
+                Your trip is live!
+              </DialogTitle>
+              <button 
+                onClick={() => setShowShareModal(false)}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </DialogHeader>
           <div className="p-4 space-y-4">
             <p className="text-center text-sm text-muted-foreground">

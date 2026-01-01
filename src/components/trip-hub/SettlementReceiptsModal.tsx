@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, Download, ZoomIn, ZoomOut, CheckCircle2, ChevronDown, ChevronUp, Receipt } from "lucide-react";
+import { ArrowRight, Download, ZoomIn, ZoomOut, CheckCircle2, ChevronDown, ChevronUp, Receipt, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -82,9 +82,16 @@ export function SettlementReceiptsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden">
+      <DialogContent className="max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] w-[calc(100%-2rem)] sm:w-full rounded-2xl p-0 flex flex-col overflow-hidden [&>button]:hidden">
         {/* Fixed Header */}
-        <DialogHeader className="flex-none p-4 pb-4 border-b border-border/50">
+        <DialogHeader className="flex-none p-4 pb-4 border-b border-border/50 relative">
+          {/* Custom Close Button */}
+          <button 
+            onClick={() => onOpenChange(false)}
+            className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
           {/* From → To Visual */}
           <div className="flex items-center justify-center gap-4 pt-2">
             {/* From User (Payer) */}
