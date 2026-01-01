@@ -67,6 +67,10 @@ export function BottomNav({ inline = false }: BottomNavProps) {
 
             // Profile item with avatar
             if (item.isProfile) {
+              const initials = user?.name
+                ? user.name.split(' ').map(n => n.charAt(0)).join('').slice(0, 2).toUpperCase()
+                : "U";
+              
               return (
                 <Link
                   key={item.path}
@@ -83,8 +87,8 @@ export function BottomNav({ inline = false }: BottomNavProps) {
                     isActive ? "border-primary" : "border-transparent"
                   )}>
                     <AvatarImage src={user?.avatar} alt={user?.name || "Profile"} />
-                    <AvatarFallback className="text-xs">
-                      {user?.name?.charAt(0) || "U"}
+                    <AvatarFallback className="bg-primary/10 text-primary text-[10px] sm:text-xs font-semibold">
+                      {initials}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-xs sm:text-sm font-medium truncate">{item.label}</span>
