@@ -23,33 +23,30 @@ interface BudgetTierSelectorProps {
 
 export function BudgetTierSelector({ value, onChange }: BudgetTierSelectorProps) {
   return (
-    <div className="space-y-2">
+    <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
       {budgetTiers.map((tier) => (
         <button
           key={tier.id}
           type="button"
           onClick={() => onChange(tier.id)}
           className={cn(
-            "w-full flex items-center justify-between p-4 rounded-xl transition-all",
+            "w-full flex items-center justify-between px-4 py-3 transition-all",
             value === tier.id
-              ? "bg-primary/10 border border-primary/30"
-              : "bg-secondary hover:bg-secondary/80 border border-transparent"
+              ? "bg-secondary"
+              : "bg-background hover:bg-secondary/50"
           )}
         >
           <div className="text-left">
-            <p className={cn(
-              "text-sm font-medium",
-              value === tier.id ? "text-primary" : "text-foreground"
-            )}>
+            <p className="text-sm font-medium text-foreground">
               {tier.label}
             </p>
             <p className="text-xs text-muted-foreground">{tier.description}</p>
           </div>
           <div className={cn(
-            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
             value === tier.id
               ? "border-primary bg-primary"
-              : "border-muted-foreground/30"
+              : "border-muted-foreground/40"
           )}>
             {value === tier.id && (
               <div className="w-2 h-2 rounded-full bg-primary-foreground" />
