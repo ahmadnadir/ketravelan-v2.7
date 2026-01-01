@@ -806,7 +806,7 @@ export default function TripDetails() {
                 value={joinNote}
                 onChange={(e) => setJoinNote(e.target.value.slice(0, 300))}
                 placeholder={`Hi! I'd love to join your ${tripData.destination} trip. A bit about me...`}
-                className="w-full min-h-[80px] p-3 rounded-xl border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="w-full min-h-[80px] p-3 rounded-xl border border-border/50 bg-background text-sm resize-none focus-visible:outline-none focus-visible:border-primary/50"
                 maxLength={300}
               />
               <p className="text-xs text-muted-foreground text-right">
@@ -887,7 +887,7 @@ export default function TripDetails() {
                 value={initialMessage}
                 onChange={(e) => setInitialMessage(e.target.value.slice(0, 500))}
                 placeholder={`Hi ${organizer.name}, I'm interested in joining your ${tripData.destination} trip...`}
-                className="w-full min-h-[100px] p-3 rounded-xl border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="w-full min-h-[100px] p-3 rounded-xl border border-border/50 bg-background text-sm resize-none focus-visible:outline-none focus-visible:border-primary/50"
                 maxLength={500}
               />
               <p className="text-xs text-muted-foreground text-right">
