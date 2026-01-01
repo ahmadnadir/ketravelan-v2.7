@@ -3,6 +3,7 @@ import { Send, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AttachmentSheet } from "./AttachmentSheet";
+import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 
 interface ChatComposerProps {
   onSend: (message: string) => void;
@@ -12,6 +13,7 @@ interface ChatComposerProps {
 export function ChatComposer({ onSend, placeholder = "Type a message..." }: ChatComposerProps) {
   const [message, setMessage] = useState("");
   const [attachmentOpen, setAttachmentOpen] = useState(false);
+  const keyboardHeight = useKeyboardHeight();
 
   const handleSend = () => {
     if (!message.trim()) return;
@@ -25,9 +27,17 @@ export function ChatComposer({ onSend, placeholder = "Type a message..." }: Chat
     setAttachmentOpen(false);
   };
 
+  // When keyboard is open, position above keyboard; otherwise use default nav-aware position
+  const bottomStyle = keyboardHeight > 0 
+    ? { bottom: `${keyboardHeight}px` } 
+    : undefined;
+
   return (
     <>
-      <div className="fixed bottom-above-nav left-0 right-0 glass z-40">
+      <div 
+        className={`fixed left-0 right-0 glass z-40 transition-[bottom] duration-150 ${keyboardHeight === 0 ? 'bottom-above-nav' : ''}`}
+        style={bottomStyle}
+      >
         {/* Input container with elevated padding */}
         <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-4 sm:pb-5">
           <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
