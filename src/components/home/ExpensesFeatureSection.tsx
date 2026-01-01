@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, TrendingDown, Wallet, FileText, CheckCircle2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, ChevronUp } from "lucide-react";
 
 // Member color palette matching TripExpenses
 const MEMBER_COLORS = [
@@ -106,56 +106,49 @@ const ContributionsMockup = () => (
   </div>
 );
 
-// Mockup Card 3 - Settlement (Matches SettlementCard component)
+// Mockup Card 3 - Settlement Breakdown
 const SettlementMockup = () => (
-  <div className="p-2">
-    {/* Card wrapper matching SettlementCard */}
-    <div className="border border-border/50 rounded-lg p-2.5 space-y-2">
-      {/* From → To layout (horizontal row) */}
-      <div className="flex items-center justify-between gap-1">
-        {/* From User */}
-        <div className="flex items-center gap-1">
-          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
-            <span className="text-[8px] font-medium text-muted-foreground">ST</span>
+  <div className="p-2 space-y-2">
+    {/* Net Amount Header */}
+    <div className="text-center space-y-0.5">
+      <p className="text-lg font-bold text-foreground">RM 256.00</p>
+      <p className="text-[9px] text-muted-foreground">Net amount to be settled</p>
+      <p className="text-[7px] text-muted-foreground/70">This is the final amount after offsetting shared expenses.</p>
+    </div>
+    
+    {/* View Breakdown Card */}
+    <div className="border border-border/50 rounded-lg overflow-hidden">
+      {/* Collapsible Header */}
+      <div className="flex items-center justify-between px-2 py-1.5 bg-muted/30">
+        <span className="text-[9px] font-medium">View breakdown</span>
+        <ChevronUp className="h-3 w-3 text-muted-foreground" />
+      </div>
+      
+      {/* Breakdown Content */}
+      <div className="p-2 space-y-1.5 bg-background">
+        {/* John owes Ahmad */}
+        <div className="space-y-0.5">
+          <p className="text-[7px] text-muted-foreground uppercase tracking-wide">John owes Ahmad</p>
+          <div className="flex items-center justify-between">
+            <span className="text-[8px] text-foreground">• Accommodation - 3 nights</span>
+            <span className="text-[8px] font-semibold text-foreground">RM 300.00</span>
           </div>
-          <span className="text-[9px] font-medium text-foreground">Sarah</span>
         </div>
         
-        {/* Arrow */}
-        <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
-        
-        {/* To User */}
-        <div className="flex items-center gap-1">
-          <span className="text-[9px] font-medium text-foreground">Ahmad</span>
-          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
-            <span className="text-[8px] font-medium text-muted-foreground">AR</span>
+        {/* Less: Ahmad owes John */}
+        <div className="space-y-0.5">
+          <p className="text-[7px] text-muted-foreground uppercase tracking-wide">Less: Ahmad owes John</p>
+          <div className="flex items-center justify-between">
+            <span className="text-[8px] text-foreground">• Sky Bridge tickets</span>
+            <span className="text-[8px] font-semibold text-destructive">-RM 44.00</span>
           </div>
         </div>
-      </div>
-      
-      {/* Amount - centered */}
-      <div className="text-center py-1">
-        <p className="text-base font-bold text-foreground">RM 186</p>
-        <p className="text-[8px] text-muted-foreground">Net amount owed</p>
-      </div>
-      
-      {/* Status Badge - matching StatusBadge component */}
-      <div className="flex justify-center">
-        <span className="text-[8px] px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full font-medium">
-          Pending
-        </span>
-      </div>
-      
-      {/* Action buttons - matching SettlementCard */}
-      <div className="flex flex-col gap-1 pt-1.5 border-t border-border/50">
-        <Button variant="outline" size="sm" className="w-full h-6 text-[8px]">
-          <FileText className="h-2.5 w-2.5 mr-1" />
-          View Details
-        </Button>
-        <Button size="sm" className="w-full h-6 text-[8px] bg-foreground text-background hover:bg-foreground/90">
-          <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
-          Mark as Paid
-        </Button>
+        
+        {/* Net Total */}
+        <div className="flex items-center justify-between pt-1.5 border-t border-border/50">
+          <span className="text-[9px] font-semibold text-foreground">Net total</span>
+          <span className="text-[9px] font-bold text-foreground">RM 256.00</span>
+        </div>
       </div>
     </div>
   </div>
