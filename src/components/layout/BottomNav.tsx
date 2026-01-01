@@ -1,4 +1,4 @@
-import { Home, Compass, PlusCircle, Receipt, Map } from "lucide-react";
+import { Home, Compass, PlusCircle, MessageCircle, Receipt, Map } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -6,6 +6,7 @@ const navItems = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Compass, label: "Explore", path: "/explore" },
   { icon: PlusCircle, label: "Create", path: "/create" },
+  { icon: MessageCircle, label: "Chat", path: "/chat" },
   { icon: Receipt, label: "Expenses", path: "/expenses" },
   { icon: Map, label: "My Trips", path: "/my-trips" },
 ];
