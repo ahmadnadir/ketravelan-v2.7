@@ -1,0 +1,72 @@
+import { cn } from "@/lib/utils";
+
+export type BudgetTier = "any" | "budget" | "midrange" | "comfort";
+
+interface BudgetTierOption {
+  id: BudgetTier;
+  label: string;
+  description: string;
+  range: [number, number];
+}
+
+const budgetTiers: BudgetTierOption[] = [
+  { id: "any", label: "Any budget", description: "Show all trips", range: [0, 10000] },
+  { id: "budget", label: "Budget", description: "Under RM 1,500", range: [0, 1500] },
+  { id: "midrange", label: "Mid-range", description: "RM 1,500 – 3,000", range: [1500, 3000] },
+  { id: "comfort", label: "Comfort", description: "RM 3,000+", range: [3000, 10000] },
+];
+
+interface BudgetTierSelectorProps {
+  value: BudgetTier;
+  onChange: (tier: BudgetTier) => void;
+}
+
+export function BudgetTierSelector({ value, onChange }: BudgetTierSelectorProps) {
+  return (
+    <div className="space-y-2">
+      {budgetTiers.map((tier) => (
+        <button
+          key={tier.id}
+          type="button"
+          onClick={() => onChange(tier.id)}
+          className={cn(
+            "w-full flex items-center justify-between p-4 rounded-xl transition-all",
+            value === tier.id
+              ? "bg-primary/10 border border-primary/30"
+              : "bg-secondary hover:bg-secondary/80 border border-transparent"
+          )}
+        >
+          <div className="text-left">
+            <p className={cn(
+              "text-sm font-medium",
+              value === tier.id ? "text-primary" : "text-foreground"
+            )}>
+              {tier.label}
+            </p>
+            <p className="text-xs text-muted-foreground">{tier.description}</p>
+          </div>
+          <div className={cn(
+            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+            value === tier.id
+              ? "border-primary bg-primary"
+              : "border-muted-foreground/30"
+          )}>
+            {value === tier.id && (
+              <div className="w-2 h-2 rounded-full bg-primary-foreground" />
+            )}
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function getBudgetRangeFromTier(tier: BudgetTier): [number, number] {
+  const found = budgetTiers.find((t) => t.id === tier);
+  return found?.range || [0, 10000];
+}
+
+export function getBudgetTierLabel(tier: BudgetTier): string {
+  const found = budgetTiers.find((t) => t.id === tier);
+  return found?.label || "Any budget";
+}
