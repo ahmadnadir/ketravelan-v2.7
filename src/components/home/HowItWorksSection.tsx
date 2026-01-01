@@ -34,7 +34,7 @@ export function HowItWorksSection() {
       </h2>
 
       {/* Swipeable Cards */}
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:overflow-visible">
+      <div className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:overflow-visible justify-center sm:justify-start">
         {cards.map((card, index) => (
           <Card key={index} className="min-w-[280px] sm:min-w-0 snap-start p-4 sm:p-5 space-y-3 border-border/50 flex-shrink-0">
             <div className="text-2xl sm:text-3xl">
