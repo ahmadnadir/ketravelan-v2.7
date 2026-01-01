@@ -127,13 +127,13 @@ interface MockupCardProps {
 }
 
 const MockupCard = ({ title, description, children }: MockupCardProps) => (
-  <div className="min-w-[280px] sm:min-w-0 snap-start flex-shrink-0 sm:h-full">
-    <Card className="overflow-hidden border-border/50 sm:h-full sm:flex sm:flex-col">
+  <div className="min-w-[85vw] max-w-[320px] sm:min-w-0 sm:max-w-none snap-start flex-shrink-0 h-full">
+    <Card className="overflow-hidden border-border/50 h-full flex flex-col min-h-[340px] sm:min-h-0">
       {/* Phone Mockup Frame */}
-      <div className="bg-muted/30 p-3 border-b border-border/30 sm:flex-1 sm:flex sm:flex-col">
-        <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden sm:flex-1 sm:flex sm:flex-col">
+      <div className="bg-muted/30 p-3 border-b border-border/30 h-[200px] sm:h-auto sm:flex-1 flex flex-col">
+        <div className="bg-background rounded-xl border border-border/50 shadow-sm overflow-hidden flex-1 flex flex-col">
           {/* Status Bar */}
-          <div className="h-4 bg-muted/50 flex items-center justify-between px-3">
+          <div className="h-4 bg-muted/50 flex items-center justify-between px-3 flex-shrink-0">
             <span className="text-[8px] text-muted-foreground">9:41</span>
             <div className="flex gap-1">
               <div className="w-2.5 h-1.5 bg-muted-foreground/50 rounded-sm" />
@@ -141,16 +141,16 @@ const MockupCard = ({ title, description, children }: MockupCardProps) => (
             </div>
           </div>
           {/* App Content */}
-          <div className="sm:flex-1">
+          <div className="flex-1 overflow-hidden">
             {children}
           </div>
         </div>
       </div>
       
       {/* Card Footer */}
-      <div className="p-4 space-y-1 sm:mt-auto">
-        <h3 className="font-semibold text-base">{title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+      <div className="p-4 space-y-1.5 mt-auto">
+        <h3 className="font-semibold text-base leading-tight line-clamp-2 break-words">{title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 break-words">{description}</p>
       </div>
     </Card>
   </div>
@@ -179,7 +179,7 @@ const featureCards = [
 
 export const ExpensesFeatureSection = () => {
   return (
-    <section className="space-y-4">
+    <section className="space-y-6">
       {/* Section Header */}
       <div className="space-y-1">
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
