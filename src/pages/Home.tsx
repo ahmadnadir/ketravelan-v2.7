@@ -1,7 +1,7 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { InstallBanner } from "@/components/pwa/InstallBanner";
 import { HeroSection } from "@/components/home/HeroSection";
-import { PopularTripsSection } from "@/components/home/PopularTripsSection";
+import { UpcomingAdventuresSection } from "@/components/home/UpcomingAdventuresSection";
 import { HowItWorksSection } from "@/components/home/HowItWorksSection";
 import { GuidesSection } from "@/components/home/GuidesSection";
 import { FAQSection } from "@/components/home/FAQSection";
@@ -13,7 +13,7 @@ export default function Home() {
       <InstallBanner />
       <div className="py-4 sm:py-6 space-y-10 sm:space-y-14">
         <HeroSection />
-        <PopularTripsSection />
+        <UpcomingAdventuresSection />
         <HowItWorksSection />
         <GuidesSection />
         <FAQSection />
