@@ -171,7 +171,14 @@ export function TripFilterDrawer({
                     setDestinationQuery(e.target.value);
                     setShowDestinationResults(true);
                   }}
-                  onFocus={() => setShowDestinationResults(true)}
+                  onFocus={(e) => {
+                    // Only show results if user explicitly clicks/taps the input
+                    // Not when focus is programmatically set (e.g., when sheet opens)
+                    if (e.relatedTarget !== null || destinationQuery.length > 0) {
+                      setShowDestinationResults(true);
+                    }
+                  }}
+                  onClick={() => setShowDestinationResults(true)}
                   placeholder="Search city, country, or region"
                   className="rounded-xl pl-10 text-sm"
                 />
