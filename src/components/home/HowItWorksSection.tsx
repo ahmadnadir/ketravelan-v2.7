@@ -6,17 +6,17 @@ const cards = [
   {
     emoji: "🚀",
     title: "Create or Join",
-    description: "Start your own trip or jump into an existing one.",
+    description: "Start a trip or join one that fits you.",
   },
   {
     emoji: "💬",
     title: "Group Chat to communicate and plan",
-    description: "Communicate, monitor expense, and plans for your trip. Share ideas, vote on itinerary, and use Shared Notes to pin important info.",
+    description: "Chat, plan, and keep everything in one place.",
   },
   {
     emoji: "💰",
     title: "Transparent Cost Sharing",
-    description: "Log expenses as you go. We track personal vs. group spending and auto-calculate the net settlement. No math required.",
+    description: "Track expenses and settle up automatically.",
   },
 ];
 
