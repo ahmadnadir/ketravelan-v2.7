@@ -15,9 +15,9 @@ export default function Home() {
       <div className="py-4 sm:py-6 space-y-10 sm:space-y-14">
         <HeroSection />
         <UpcomingAdventuresSection />
-        <HowItWorksSection />
         <GuidesSection />
         <ExpensesFeatureSection />
+        <HowItWorksSection />
         <FAQSection />
         <BottomCTASection />
       </div>
