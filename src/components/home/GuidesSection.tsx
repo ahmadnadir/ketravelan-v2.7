@@ -24,9 +24,14 @@ export function GuidesSection() {
   return (
     <section className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-        One App, Two Ways to Travel
-      </h2>
+      <div className="space-y-1">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+          One App, Two Ways to Travel
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Whether you're traveling with friends or strangers, it just works.
+        </p>
+      </div>
 
       {/* Swipeable Cards */}
       <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible">
