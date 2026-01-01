@@ -29,14 +29,9 @@ export function HowItWorksSection() {
   return (
     <section id="how-it-works" className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="space-y-1">
-        <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-          Your Trip, Simplified
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Plan together, track expenses, and settle fairly — all in one place.
-        </p>
-      </div>
+      <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+        Your Trip, Simplified
+      </h2>
 
       {/* Swipeable Cards */}
       <div className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible">
