@@ -223,7 +223,6 @@ function MockExpensesContent() {
             value="RM 680" 
             color="green" 
             subtitle="Your share of all trip costs"
-            variant="highlight"
           />
           {/* Two column layout */}
           <div className="grid grid-cols-2 gap-1.5">
@@ -275,6 +274,16 @@ function MockExpensesContent() {
 function BreakdownContent({ totalCost }: { totalCost: number }) {
   return (
     <>
+      {/* Total Trip Spend - Summary card */}
+      <StatCardMini 
+        icon={DollarSign} 
+        title="Total Trip Spend" 
+        value={`RM ${totalCost.toLocaleString()}`} 
+        color="blue" 
+        description="All group expenses"
+        variant="summary"
+      />
+
       {/* Category Breakdown */}
       <div className="bg-card border border-border/50 rounded-xl p-2 space-y-1.5">
         <h3 className="text-[9px] font-semibold text-foreground">Spending by Category</h3>
@@ -641,7 +650,7 @@ function StatCardMini({
   color: "blue" | "green" | "orange" | "red";
   subtitle?: string;
   description?: string;
-  variant?: "highlight";
+  variant?: "highlight" | "summary";
 }) {
   const iconColors = {
     blue: "text-stat-blue",
@@ -653,7 +662,8 @@ function StatCardMini({
   return (
     <div className={cn(
       "bg-card border border-border/50 rounded-xl p-2 space-y-0.5",
-      variant === "highlight" && "bg-stat-green/5 border-stat-green/20"
+      variant === "highlight" && "bg-stat-green/5 border-stat-green/20",
+      variant === "summary" && "bg-stat-blue/5 border-stat-blue/20"
     )}>
       <div className="flex items-center gap-1">
         <Icon className={cn("h-3 w-3 shrink-0", iconColors[color])} />
