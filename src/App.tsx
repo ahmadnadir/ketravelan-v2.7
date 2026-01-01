@@ -22,6 +22,7 @@ import UserProfileView from "./pages/UserProfileView";
 import Favourites from "./pages/Favourites";
 import Approvals from "./pages/Approvals";
 import Auth from "./pages/Auth";
+import Feedback from "./pages/Feedback";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/approvals" element={<Approvals />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/feedback" element={<Feedback />} />
             <Route path="/install" element={<Install />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
