@@ -99,7 +99,7 @@ export default function Explore() {
         </h1>
 
         {/* Minimal Control Bar */}
-        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+        <div className="bg-card rounded-xl p-4 space-y-3">
           {/* Search Bar Row */}
           <div className="flex gap-2">
             <button
@@ -163,12 +163,9 @@ export default function Explore() {
         </div>
 
         {/* Results Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-xs sm:text-sm">
+        <div className="text-xs sm:text-sm">
           <span className="text-muted-foreground">
             Found {filteredTrips.length} upcoming trips
-          </span>
-          <span className="text-muted-foreground text-[10px] sm:text-xs">
-            Showing prices in Malaysian Ringgit (RM)
           </span>
         </div>
 
