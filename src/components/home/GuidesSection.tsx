@@ -1,3 +1,6 @@
+import socialExplorerImage from "@/assets/travel-social-explorer.png";
+import innerCircleImage from "@/assets/travel-inner-circle.png";
+
 const travelModes = [
   {
     id: "public",
@@ -5,7 +8,7 @@ const travelModes = [
     title: "Find a Travel Buddy",
     description:
       "Make your trip Public. It becomes discoverable so new friends can join, chat, and split the cost.",
-    image: "/placeholder.svg",
+    image: socialExplorerImage,
   },
   {
     id: "private",
@@ -13,7 +16,7 @@ const travelModes = [
     title: "Close Friends Only",
     description:
       "Keep it Private. Not discoverable. Invite-only. Perfect for keeping your squad's itinerary and budget organized.",
-    image: "/placeholder.svg",
+    image: innerCircleImage,
   },
 ];
 
@@ -32,12 +35,12 @@ export function GuidesSection() {
             key={mode.id}
             className="shrink-0 snap-start min-w-[85vw] sm:min-w-0 sm:w-full"
           >
-            <div className="relative aspect-[3/2] rounded-xl overflow-hidden">
+            <div className="relative aspect-[3/2] rounded-xl overflow-hidden bg-muted">
               {/* Background Image */}
               <img
                 src={mode.image}
                 alt={mode.title}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-contain p-4"
               />
 
               {/* Dark Gradient Overlay */}
