@@ -236,6 +236,7 @@
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    touch-action: pan-y;
   }
 
   /* Prevent scroll chaining / rubber-banding */

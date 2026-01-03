@@ -1,4 +1,4 @@
-import { ReactNode, useState, useRef } from "react";
+import { ReactNode, useState } from "react";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
 import { MenuDrawer } from "./MenuDrawer";
@@ -26,10 +26,9 @@ export function AppLayout({ children, hideHeader = false, hideBottomNav = false 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { isAuthenticated } = useAuth();
-  const scrollRef = useRef<HTMLElement>(null);
 
-  // Prevent iOS rubber-band effect
-  usePreventRubberBand(scrollRef);
+  // Prevent iOS rubber-band effect at document level
+  usePreventRubberBand();
 
   // Only show bottom nav for authenticated users
   const showBottomNav = isAuthenticated && !hideBottomNav;
@@ -48,7 +47,6 @@ export function AppLayout({ children, hideHeader = false, hideBottomNav = false 
       
       {/* Scrollable content - ONLY this element scrolls */}
       <main 
-        ref={scrollRef}
         data-scroll-container="app"
         className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain scroll-container"
       >
