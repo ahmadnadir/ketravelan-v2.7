@@ -284,4 +284,15 @@
   .bottom-above-nav {
     bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   }
+
+  /* iOS focus zoom prevention - ensures all form controls are >= 16px on mobile */
+  @supports (-webkit-touch-callout: none) {
+    @media (max-width: 767px) {
+      input:not([type="checkbox"]):not([type="radio"]),
+      textarea,
+      select {
+        font-size: 16px !important;
+      }
+    }
+  }
 }
