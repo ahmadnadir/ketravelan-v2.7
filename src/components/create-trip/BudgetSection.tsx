@@ -97,7 +97,7 @@ export function BudgetSection({
               value={roughBudgetTotal || ''}
               onChange={(e) => onRoughBudgetTotalChange(Number(e.target.value))}
               placeholder="e.g., 2000"
-              className="rounded-xl text-sm"
+              className="rounded-xl"
             />
           </div>
 
@@ -134,7 +134,7 @@ export function BudgetSection({
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
                   placeholder="Custom category"
-                  className="rounded-xl text-sm flex-1"
+                  className="rounded-xl flex-1"
                   maxLength={20}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -173,7 +173,7 @@ export function BudgetSection({
                 value={detailedBudget[cat.id] || ''}
                 onChange={(e) => updateDetailedBudget(cat.id, Number(e.target.value))}
                 placeholder="RM"
-                className="rounded-xl text-sm flex-1"
+                className="rounded-xl flex-1"
               />
             </div>
           ))}
@@ -189,7 +189,7 @@ export function BudgetSection({
                   value={detailedBudget[cat] || ''}
                   onChange={(e) => updateDetailedBudget(cat, Number(e.target.value))}
                   placeholder="RM"
-                  className="rounded-xl text-sm flex-1"
+                  className="rounded-xl flex-1"
                 />
                 <button
                   type="button"
@@ -208,7 +208,7 @@ export function BudgetSection({
                 value={detailedCustomCategory}
                 onChange={(e) => setDetailedCustomCategory(e.target.value)}
                 placeholder="Add custom category"
-                className="rounded-xl text-sm flex-1"
+                className="rounded-xl flex-1"
                 maxLength={20}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {

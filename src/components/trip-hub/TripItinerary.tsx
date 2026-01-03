@@ -195,7 +195,7 @@ export function TripItinerary({ tripId }: TripItineraryProps) {
                     }))
                   }
                   placeholder="Add activity..."
-                  className="flex-1 h-9 text-sm"
+                  className="flex-1 h-9"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
