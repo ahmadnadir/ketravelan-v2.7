@@ -805,6 +805,7 @@ export default function TripDetails() {
                 id="join-note"
                 value={joinNote}
                 onChange={(e) => setJoinNote(e.target.value.slice(0, 300))}
+                onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
                 placeholder={`Hi! I'd love to join your ${tripData.destination} trip. A bit about me...`}
                 className="w-full min-h-[80px] p-3 rounded-xl border border-border/50 bg-background text-base resize-none focus-visible:outline-none focus-visible:border-primary/50"
                 maxLength={300}
@@ -886,6 +887,7 @@ export default function TripDetails() {
                 id="initial-message"
                 value={initialMessage}
                 onChange={(e) => setInitialMessage(e.target.value.slice(0, 500))}
+                onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
                 placeholder={`Hi ${organizer.name}, I'm interested in joining your ${tripData.destination} trip...`}
                 className="w-full min-h-[100px] p-3 rounded-xl border border-border/50 bg-background text-base resize-none focus-visible:outline-none focus-visible:border-primary/50"
                 maxLength={500}

@@ -106,7 +106,7 @@ export function DestinationSearch({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="rounded-xl pl-10 text-sm"
+          className="rounded-xl pl-10 text-base"
         />
       </div>
 

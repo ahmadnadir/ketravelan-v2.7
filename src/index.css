@@ -230,13 +230,20 @@
     width: 100%;
   }
 
-  /* Scroll container - single scroll authority */
+  /* Scroll container - single scroll authority with smooth iOS momentum scrolling */
   .scroll-container {
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: pan-y;
+  }
+
+  /* Smooth touch scrolling for all scrollable areas on iOS */
+  .overflow-y-auto,
+  .overflow-auto,
+  [class*="overflow-y-scroll"] {
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Prevent scroll chaining / rubber-banding */
