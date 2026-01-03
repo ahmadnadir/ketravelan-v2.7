@@ -477,7 +477,8 @@ export function NoteEditor({
                 onChange={(e) => setTitle(e.target.value)}
                 onKeyDown={handleTitleKeyDown}
                 placeholder="Title"
-                className="w-full text-2xl sm:text-3xl font-semibold bg-transparent border-none outline-none placeholder:text-muted-foreground/50"
+                className="w-full text-2xl sm:text-3xl font-semibold bg-transparent border-none outline-none placeholder:text-muted-foreground/50 text-base"
+                style={{ fontSize: 'max(16px, 1.5rem)' }}
               />
               
               <textarea
