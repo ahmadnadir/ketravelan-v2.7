@@ -10,7 +10,14 @@ export function ScrollToTop() {
       return;
     }
     
-    window.scrollTo(0, 0);
+    // Target the app's scroll container instead of window
+    const scrollContainer = document.querySelector('[data-scroll-container="app"]');
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0 });
+    } else {
+      // Fallback for pages not using AppLayout/FocusedFlowLayout
+      window.scrollTo(0, 0);
+    }
   }, [pathname]);
 
   return null;

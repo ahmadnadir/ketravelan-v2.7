@@ -1,5 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import { BottomNav } from "./BottomNav";
+import { usePreventRubberBand } from "@/hooks/usePreventRubberBand";
 
 interface FocusedFlowLayoutProps {
   children: ReactNode;
@@ -26,6 +27,11 @@ export function FocusedFlowLayout({
   showBottomNav = false,
   className,
 }: FocusedFlowLayoutProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Prevent iOS rubber-band effect
+  usePreventRubberBand(scrollRef);
+
   return (
     <div className="fixed inset-0 flex flex-col h-dvh overflow-hidden bg-background">
       {/* Header zone - truly anchored */}
@@ -37,7 +43,9 @@ export function FocusedFlowLayout({
 
       {/* Scrollable content - ONLY this element scrolls */}
       <div 
-        className={`flex-1 overflow-y-auto overflow-x-hidden overscroll-contain ${className || ""}`}
+        ref={scrollRef}
+        data-scroll-container="app"
+        className={`flex-1 overflow-y-auto overflow-x-hidden overscroll-contain scroll-container ${className || ""}`}
       >
         {children}
       </div>

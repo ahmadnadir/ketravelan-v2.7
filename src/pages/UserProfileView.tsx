@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PillChip } from "@/components/shared/PillChip";
-import { BottomNav } from "@/components/layout/BottomNav";
+import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { mockUserProfiles } from "@/data/mockData";
 
 const socialIcons: Record<string, any> = {
@@ -33,25 +33,41 @@ export default function UserProfileView() {
     console.log("Edit cover photo clicked");
   };
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col pb-36">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border/50">
-        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
-          <div className="flex items-center gap-3 h-14">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9 rounded-full bg-secondary"
-              onClick={() => navigate(-1)}
-            >
-              <ChevronLeft className="h-5 w-5 text-foreground" />
-            </Button>
-            <h1 className="font-semibold text-foreground">Profile</h1>
-          </div>
+  const headerContent = (
+    <header className="glass border-b border-border/50">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
+        <div className="flex items-center gap-3 h-14">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9 rounded-full bg-secondary"
+            onClick={() => navigate(-1)}
+          >
+            <ChevronLeft className="h-5 w-5 text-foreground" />
+          </Button>
+          <h1 className="font-semibold text-foreground">Profile</h1>
         </div>
-      </header>
+      </div>
+    </header>
+  );
 
+  const footerContent = (
+    <div className="bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
+        <Button size="lg" className="w-full rounded-xl" onClick={handleMessage}>
+          <MessageCircle className="h-5 w-5 mr-2" />
+          Message {profile.name.split(" ")[0]}
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <FocusedFlowLayout
+      headerContent={headerContent}
+      footerContent={footerContent}
+      showBottomNav={true}
+    >
       {/* Cover Photo Banner */}
       <div className="relative group">
         <div className="h-32 sm:h-40 w-full bg-muted overflow-hidden">
@@ -91,7 +107,7 @@ export default function UserProfileView() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 pt-3 pb-6">
+      <div className="pt-3 pb-6">
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4 space-y-6">
           {/* Profile Header */}
           <div className="flex flex-col items-center text-center space-y-1">
@@ -216,19 +232,7 @@ export default function UserProfileView() {
             )}
           </div>
         </div>
-      </main>
-
-      {/* Sticky Message Button */}
-      <div className="fixed bottom-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
-        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
-          <Button size="lg" className="w-full rounded-xl" onClick={handleMessage}>
-            <MessageCircle className="h-5 w-5 mr-2" />
-            Message {profile.name.split(" ")[0]}
-          </Button>
-        </div>
       </div>
-
-      <BottomNav />
-    </div>
+    </FocusedFlowLayout>
   );
 }
