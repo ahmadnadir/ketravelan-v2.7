@@ -55,7 +55,7 @@ export function ChatComposer({ onSend, placeholder = "Type a message..." }: Chat
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                className="flex-1 rounded-full bg-secondary border-0 h-9 sm:h-10 text-sm sm:text-base"
+                className="flex-1 rounded-full bg-secondary border-0 h-9 sm:h-10 text-base"
               />
               <Button
                 size="icon"
