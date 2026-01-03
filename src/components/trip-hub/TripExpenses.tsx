@@ -207,16 +207,6 @@ export function TripExpenses() {
   // Ref for scrolling to category breakdown
   const categoryBreakdownRef = useRef<HTMLDivElement>(null);
   
-  // Ref for auto-scroll to top on subtab change
-  const topScrollAnchorRef = useRef<HTMLDivElement>(null);
-  
-  // Auto-scroll to top when switching sub-tabs
-  useEffect(() => {
-    topScrollAnchorRef.current?.scrollIntoView({ 
-      behavior: "smooth", 
-      block: "start" 
-    });
-  }, [subTab]);
 
   // Modal states
   const [viewQROpen, setViewQROpen] = useState(false);
@@ -915,8 +905,6 @@ export function TripExpenses() {
 
   return (
     <div className="relative">
-      {/* Scroll anchor for auto-scroll on subtab change */}
-      <div ref={topScrollAnchorRef} className="absolute top-0 left-0" />
       {/* Always Visible: Header + Stat Cards */}
       <div className="px-3 sm:px-4 pt-3 sm:pt-4 space-y-4">
         {/* Header */}
