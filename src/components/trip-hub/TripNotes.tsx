@@ -133,7 +133,7 @@ export function TripNotes({ tripId }: TripNotesProps) {
               placeholder="Search notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 rounded-xl bg-secondary border-0 text-sm sm:text-base h-9 sm:h-10"
+              className="pl-9 rounded-xl bg-secondary border-0 h-9 sm:h-10"
             />
           </div>
           <Button onClick={handleNewNote} className="rounded-xl text-sm sm:text-base shrink-0">

@@ -176,7 +176,7 @@ export function RouteBuilder({ stops, onChange, primaryDestination }: RouteBuild
               }
             }}
             placeholder="Add a stop..."
-            className="rounded-xl text-sm"
+            className="rounded-xl"
             autoFocus
           />
           {showSuggestions && filteredSuggestions.length > 0 && (

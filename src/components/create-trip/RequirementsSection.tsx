@@ -104,7 +104,7 @@ export function RequirementsSection({
             value={customInput}
             onChange={(e) => setCustomInput(e.target.value)}
             placeholder="Add custom requirement"
-            className="rounded-xl text-sm flex-1"
+            className="rounded-xl flex-1"
             maxLength={30}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {

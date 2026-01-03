@@ -104,7 +104,7 @@ export function ItinerarySection({
           value={simpleNotes}
           onChange={(e) => onSimpleNotesChange(e.target.value)}
           placeholder="Day 1: Arrive in Bangkok, check-in, night market&#10;Day 2: Temple tour, street food crawl&#10;Day 3: Day trip to Ayutthaya..."
-          className="rounded-xl min-h-[120px] text-sm"
+          className="rounded-xl min-h-[120px]"
         />
       </OptionCard>
 
@@ -169,7 +169,7 @@ export function ItinerarySection({
                     }
                   }}
                   placeholder="Add activity..."
-                  className="rounded-lg text-sm flex-1 h-8"
+                  className="rounded-lg flex-1 h-8"
                 />
                 <Button
                   type="button"
