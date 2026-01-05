@@ -10,6 +10,7 @@ import {
   Twitter,
   Ghost,
   AtSign,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -108,8 +109,15 @@ export default function Profile() {
   const headerContent = (
     <header className="glass border-b border-border/50">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
-        <div className="flex items-center gap-3 h-14">
+        <div className="flex items-center justify-between h-14">
           <h1 className="font-semibold text-foreground">Profile</h1>
+          <Link
+            to="/profile/edit"
+            className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Settings"
+          >
+            <Settings className="h-5 w-5" />
+          </Link>
         </div>
       </div>
     </header>
