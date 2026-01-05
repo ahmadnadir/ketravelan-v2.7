@@ -1,11 +1,20 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, MapPin, Star, MessageCircle, Instagram, Youtube, Linkedin, Globe, Camera } from "lucide-react";
+import { ChevronLeft, MapPin, MessageCircle, Instagram, Youtube, Linkedin, Globe, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PillChip } from "@/components/shared/PillChip";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { mockUserProfiles } from "@/data/mockData";
+import { tripCategories } from "@/data/categories";
+
+// Helper to find category icon by label
+const getCategoryIcon = (styleLabel: string): string | undefined => {
+  const category = tripCategories.find(
+    (cat) => cat.label.toLowerCase() === styleLabel.toLowerCase()
+  );
+  return category?.icon;
+};
 
 const socialIcons: Record<string, any> = {
   instagram: Instagram,
@@ -121,7 +130,7 @@ export default function UserProfileView() {
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <Card className="p-3 text-center border-border/50">
               <p className="text-xl font-bold text-foreground">{profile.stats.tripsCount}</p>
               <p className="text-xs text-muted-foreground">Trips</p>
@@ -129,13 +138,6 @@ export default function UserProfileView() {
             <Card className="p-3 text-center border-border/50">
               <p className="text-xl font-bold text-foreground">{profile.stats.countriesCount}</p>
               <p className="text-xs text-muted-foreground">Countries</p>
-            </Card>
-            <Card className="p-3 text-center border-border/50">
-              <div className="flex items-center justify-center gap-1">
-                <Star className="h-4 w-4 text-primary fill-primary" />
-                <p className="text-xl font-bold text-foreground">{profile.stats.rating || "—"}</p>
-              </div>
-              <p className="text-xs text-muted-foreground">Rating</p>
             </Card>
           </div>
 
@@ -153,7 +155,7 @@ export default function UserProfileView() {
               <h3 className="font-semibold text-foreground mb-3">Travel Style</h3>
               <div className="flex flex-wrap gap-2">
                 {profile.travelStyles.map((style) => (
-                  <PillChip key={style} label={style} />
+                  <PillChip key={style} label={style} icon={getCategoryIcon(style)} />
                 ))}
               </div>
             </Card>
