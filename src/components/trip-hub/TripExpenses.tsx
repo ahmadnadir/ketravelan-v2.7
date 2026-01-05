@@ -232,6 +232,9 @@ export function TripExpenses() {
   
   // Settlement receipts modal state
   const [receiptsModalOpen, setReceiptsModalOpen] = useState(false);
+  
+  // Track if secondary modals were opened from breakdown modal (for back button)
+  const [openedFromBreakdown, setOpenedFromBreakdown] = useState(false);
 
   // Track recently settled expense IDs for visual feedback
   const [recentlySettledIds, setRecentlySettledIds] = useState<string[]>([]);
@@ -1509,21 +1512,35 @@ export function TripExpenses() {
           if (!open) {
             setSelectedMemberForQR(null);
             setSelectedSettlement(null);
+            setOpenedFromBreakdown(false);
           }
         }}
         recipientName={selectedMemberForQR?.name || selectedSettlement?.toUser.name || ""}
         amount={selectedSettlement?.amount}
         qrCodeUrl={selectedMemberForQR?.qrCodeUrl || selectedSettlement?.toUser.qrCodeUrl || userQRUrl || undefined}
+        onBack={openedFromBreakdown ? () => {
+          setViewQROpen(false);
+          setBreakdownModalOpen(true);
+          setOpenedFromBreakdown(false);
+        } : undefined}
       />
 
       {/* Send Reminder Modal */}
       <SendReminderModal
         open={reminderOpen}
-        onOpenChange={setReminderOpen}
+        onOpenChange={(open) => {
+          setReminderOpen(open);
+          if (!open) setOpenedFromBreakdown(false);
+        }}
         recipientName={selectedSettlement?.fromUser.name || ""}
         amount={selectedSettlement?.amount || 0}
         tripName="Cameron Highlands"
         onSend={handleReminderSend}
+        onBack={openedFromBreakdown ? () => {
+          setReminderOpen(false);
+          setBreakdownModalOpen(true);
+          setOpenedFromBreakdown(false);
+        } : undefined}
       />
 
       {/* Receipt Viewer Modal */}
@@ -1578,19 +1595,28 @@ export function TripExpenses() {
             grossOffset={breakdown.grossOffset}
             currentUserId={mockMembers.find(m => m.name === CURRENT_USER)?.id || "1"}
             onUploadProof={() => {
+              setOpenedFromBreakdown(true);
               handleMarkPaid(selectedSettlementForBreakdown);
               setBreakdownModalOpen(false);
             }}
-            onMarkAllPaid={handleMarkAllPaidFromBreakdown}
+            onMarkAllPaid={() => {
+              setOpenedFromBreakdown(true);
+              handleMarkAllPaidFromBreakdown();
+            }}
             onSendReminder={() => {
+              setOpenedFromBreakdown(true);
               handleSendReminder(selectedSettlementForBreakdown);
               setBreakdownModalOpen(false);
             }}
             onViewQR={() => {
+              setOpenedFromBreakdown(true);
               handleViewQR(selectedSettlementForBreakdown);
               setBreakdownModalOpen(false);
             }}
-            onViewReceipts={handleViewSettlementReceipts}
+            onViewReceipts={() => {
+              setOpenedFromBreakdown(true);
+              handleViewSettlementReceipts();
+            }}
           />
         );
       })()}
@@ -1601,7 +1627,10 @@ export function TripExpenses() {
           open={receiptsModalOpen}
           onOpenChange={(open) => {
             setReceiptsModalOpen(open);
-            if (!open) setSelectedSettlementForBreakdown(null);
+            if (!open) {
+              setSelectedSettlementForBreakdown(null);
+              setOpenedFromBreakdown(false);
+            }
           }}
           fromUser={selectedSettlementForBreakdown.fromUser}
           toUser={selectedSettlementForBreakdown.toUser}
@@ -1612,6 +1641,11 @@ export function TripExpenses() {
             setReceiptsModalOpen(false);
             setSettlementConfirmModalOpen(true);
           }}
+          onBack={openedFromBreakdown ? () => {
+            setReceiptsModalOpen(false);
+            setBreakdownModalOpen(true);
+            setOpenedFromBreakdown(false);
+          } : undefined}
         />
       )}
 
@@ -1623,7 +1657,10 @@ export function TripExpenses() {
             open={settlementConfirmModalOpen}
             onOpenChange={(open) => {
               setSettlementConfirmModalOpen(open);
-              if (!open) setSettlementToConfirm(null);
+              if (!open) {
+                setSettlementToConfirm(null);
+                setOpenedFromBreakdown(false);
+              }
             }}
             fromUser={settlementToConfirm.fromUser}
             toUser={settlementToConfirm.toUser}
@@ -1641,6 +1678,11 @@ export function TripExpenses() {
               setReceiptViewerOpen(true);
             }}
             onConfirm={handleConfirmSettlement}
+            onBack={openedFromBreakdown ? () => {
+              setSettlementConfirmModalOpen(false);
+              setBreakdownModalOpen(true);
+              setOpenedFromBreakdown(false);
+            } : undefined}
           />
         );
       })()}

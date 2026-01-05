@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ChevronDown, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,8 @@ interface SettlementConfirmModalProps {
   onViewReceipt?: () => void;
   // Actions
   onConfirm: () => void;
+  // Back navigation (for secondary modal flow)
+  onBack?: () => void;
 }
 
 const formatCurrency = (amount: number): string => {
@@ -55,6 +57,7 @@ export function SettlementConfirmModal({
   receiptUrl,
   onViewReceipt,
   onConfirm,
+  onBack,
 }: SettlementConfirmModalProps) {
   const [breakdownOpen, setBreakdownOpen] = useState(false);
 
@@ -69,6 +72,17 @@ export function SettlementConfirmModal({
         {/* Header */}
         <DialogHeader className="flex-none p-4 pb-4 border-b border-border/50">
           <div className="flex items-center justify-between">
+            {/* Back button (if secondary modal) or spacer */}
+            {onBack ? (
+              <button 
+                onClick={onBack}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            ) : (
+              <div className="w-8" />
+            )}
             <DialogTitle className="text-xl sm:text-lg font-semibold text-center flex-1">
               Confirm Settlement
             </DialogTitle>
