@@ -256,15 +256,17 @@ export default function CreateTrip() {
               // Post-publish buttons
               <>
                 <Button
+                  size="lg"
                   variant="outline"
                   onClick={() => navigate(`/trip/${publishedTripId}`)}
-                  className="rounded-lg h-11 text-sm font-medium"
+                  className="w-full rounded-xl text-sm sm:text-base"
                 >
                   View Trip
                 </Button>
                 <Button
+                  size="lg"
                   onClick={() => setShowShareModal(true)}
-                  className="rounded-lg h-11 text-sm font-medium gap-2"
+                  className="w-full rounded-xl text-sm sm:text-base gap-2"
                 >
                   <Share2 className="h-4 w-4" />
                   Share
@@ -274,30 +276,33 @@ export default function CreateTrip() {
               // Pre-publish buttons
               <>
                 <Button
+                  size="lg"
                   variant="outline"
                   onClick={currentStep === 1 ? () => setShowExitModal(true) : prevStep}
-                  className="rounded-lg h-11 text-sm font-medium"
+                  className="w-full rounded-xl text-sm sm:text-base gap-2"
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  <ChevronLeft className="h-4 w-4" />
                   Back
                 </Button>
 
                 {currentStep < 4 ? (
                   <Button
+                    size="lg"
                     onClick={nextStep}
                     disabled={(currentStep === 1 && !draft.visibility) || (currentStep === 2 && !canProceedStep2())}
-                    className="rounded-lg h-11 text-sm font-medium"
+                    className="w-full rounded-xl text-sm sm:text-base gap-2"
                   >
                     Continue
-                    <ChevronRight className="h-4 w-4 ml-1" />
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 ) : (
                   <Button
+                    size="lg"
                     onClick={handlePublish}
                     disabled={!essentials}
-                    className="rounded-lg h-11 text-sm font-medium"
+                    className="w-full rounded-xl text-sm sm:text-base gap-2"
                   >
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <Sparkles className="h-4 w-4" />
                     Publish
                   </Button>
                 )}
