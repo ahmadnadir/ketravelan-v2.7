@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MapPin,
@@ -103,8 +103,18 @@ const AboutText = ({ text }: { text: string }) => {
 export default function Profile() {
   const navigate = useNavigate();
   const [showAllStyles, setShowAllStyles] = useState(false);
+  const [coverPhoto, setCoverPhoto] = useState<string | null>(userProfile.coverPhotoUrl);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const displayedStyles = userProfile.travelStyles.slice(0, 4);
+
+  const handleCoverPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setCoverPhoto(url);
+    }
+  };
 
   const headerContent = (
     <header className="glass border-b border-border/50">
@@ -135,12 +145,21 @@ export default function Profile() {
 
   return (
     <FocusedFlowLayout headerContent={headerContent} footerContent={footerContent} showBottomNav={true}>
+      {/* Hidden file input for cover photo */}
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleCoverPhotoChange}
+        className="hidden"
+      />
+
       {/* Cover Photo Banner */}
       <div className="relative group">
         <div className="h-32 sm:h-40 w-full bg-muted overflow-hidden">
-          {userProfile.coverPhotoUrl ? (
+          {coverPhoto ? (
             <img
-              src={userProfile.coverPhotoUrl}
+              src={coverPhoto}
               alt="Cover"
               className="h-full w-full object-cover"
             />
@@ -150,7 +169,7 @@ export default function Profile() {
         </div>
         {/* Edit Cover button */}
         <button
-          onClick={() => navigate("/profile/edit")}
+          onClick={() => coverInputRef.current?.click()}
           className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <div className="flex items-center gap-2 text-white text-sm font-medium">
