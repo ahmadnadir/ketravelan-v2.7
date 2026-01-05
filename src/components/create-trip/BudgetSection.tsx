@@ -125,7 +125,7 @@ export function BudgetSection({
             <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
               <Info className="h-3 w-3 mt-0.5 shrink-0" />
               Budget is set in your home currency.
-              {travelCurrencies.length > 0 
+              {(travelCurrencies?.length ?? 0) > 0 
                 ? ` Expenses can be added in: ${travelCurrencies.map(c => allTravelCurrencies.find(tc => tc.code === c)?.code).join(', ')}.`
                 : ' Select travel currencies below for expense entry.'}
             </p>
@@ -133,7 +133,7 @@ export function BudgetSection({
           
           {/* Travel Currency Picker */}
           <TravelCurrencyPicker
-            selectedCurrencies={travelCurrencies}
+            selectedCurrencies={travelCurrencies ?? []}
             onSelectionChange={onTravelCurrenciesChange}
           />
 
@@ -284,14 +284,14 @@ export function BudgetSection({
           <p className="text-[11px] text-muted-foreground flex items-start gap-1.5 pt-2">
             <Info className="h-3 w-3 mt-0.5 shrink-0" />
             Budget is set in your home currency.
-            {travelCurrencies.length > 0 
+            {(travelCurrencies?.length ?? 0) > 0 
               ? ` Expenses can be added in: ${travelCurrencies.map(c => allTravelCurrencies.find(tc => tc.code === c)?.code).join(', ')}.`
               : ' Select travel currencies below for expense entry.'}
           </p>
           
           {/* Travel Currency Picker */}
           <TravelCurrencyPicker
-            selectedCurrencies={travelCurrencies}
+            selectedCurrencies={travelCurrencies ?? []}
             onSelectionChange={onTravelCurrenciesChange}
           />
           
