@@ -24,6 +24,7 @@ import Favourites from "./pages/Favourites";
 import Approvals from "./pages/Approvals";
 import Auth from "./pages/Auth";
 import Feedback from "./pages/Feedback";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/chat/:id" element={<DirectChat />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/edit" element={<EditProfile />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/user/:userId" element={<UserProfileView />} />
               <Route path="/favourites" element={<Favourites />} />
               <Route path="/approvals" element={<Approvals />} />
