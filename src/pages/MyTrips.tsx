@@ -4,8 +4,12 @@ import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { TripCard } from "@/components/shared/TripCard";
 import { mockTrips } from "@/data/mockData";
 import { Calendar, History, FileEdit } from "lucide-react";
+import { TripCardSkeletonList } from "@/components/skeletons/TripCardSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 
 export default function MyTrips() {
+  const isLoading = useSimulatedLoading(500);
   const [tab, setTab] = useState("upcoming");
 
   // Filter trips based on lifecycle
@@ -75,6 +79,18 @@ export default function MyTrips() {
         return null;
     }
   };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="py-6 space-y-6">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <TripCardSkeletonList count={3} />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

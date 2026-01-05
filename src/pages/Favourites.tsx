@@ -3,14 +3,33 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { TripCard } from "@/components/shared/TripCard";
 import { mockTrips } from "@/data/mockData";
 import { Heart } from "lucide-react";
+import { TripCardSkeletonList } from "@/components/skeletons/TripCardSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 
 // Simulated favourites - in a real app this would come from user state/database
 const favouriteTripIds = ["1", "3", "5"];
 
 export default function Favourites() {
+  const isLoading = useSimulatedLoading(400);
+
   const favouriteTrips = useMemo(() => {
     return mockTrips.filter((trip) => favouriteTripIds.includes(trip.id));
   }, []);
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="py-6 space-y-6">
+          <div className="space-y-1">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <TripCardSkeletonList count={3} />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

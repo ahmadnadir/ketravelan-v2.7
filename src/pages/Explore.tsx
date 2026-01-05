@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { TripFilterDrawer, type FilterState } from "@/components/explore/TripFilterDrawer";
 import { AppliedFiltersBar } from "@/components/explore/AppliedFiltersBar";
 import { isDefaultBudgetRange, formatBudgetRange } from "@/components/explore/BudgetTierSelector";
+import { ExplorePageSkeleton } from "@/components/skeletons/ExplorePageSkeleton";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 
 const defaultFilters: FilterState = {
   destination: "",
@@ -22,6 +24,7 @@ const defaultFilters: FilterState = {
 };
 
 export default function Explore() {
+  const isLoading = useSimulatedLoading(600);
   const [tab, setTab] = useState("upcoming");
   const resultsRef = useRef<HTMLDivElement>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -90,6 +93,14 @@ export default function Explore() {
 
   // Display text for the search bar
   const searchDisplayText = appliedFilters.destination || "Where do you want to go?";
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <ExplorePageSkeleton />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
