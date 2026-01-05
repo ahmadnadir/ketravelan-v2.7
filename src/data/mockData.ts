@@ -218,6 +218,11 @@ export interface ExpenseData {
   customSplitAmounts?: { memberId: string; amount: number }[];
   notes?: string;
   payments?: ExpensePayment[];
+  // Multi-currency support
+  originalCurrency?: "MYR" | "USD" | "EUR" | "IDR";
+  fxRateToHome?: number;
+  convertedAmountHome?: number;
+  homeCurrency?: "MYR" | "USD" | "EUR" | "IDR";
 }
 
 export const mockExpenses: ExpenseData[] = [
@@ -294,6 +299,48 @@ export const mockExpenses: ExpenseData[] = [
       { memberId: "3", status: "settled" },
       { memberId: "4", status: "pending" },
       { memberId: "5", status: "pending" },
+    ]
+  },
+  // Multi-currency expenses (USD)
+  { 
+    id: "usd-1", 
+    title: "Airport shuttle", 
+    amount: 45, 
+    paidBy: "Ahmad Razak", 
+    date: "Jan 15, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 50,
+    category: "Transport", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "2"],
+    originalCurrency: "USD",
+    fxRateToHome: 4.76,
+    convertedAmountHome: 214.20,
+    homeCurrency: "MYR",
+    payments: [
+      { memberId: "1", status: "settled" },
+      { memberId: "2", status: "pending" },
+    ]
+  },
+  { 
+    id: "usd-2", 
+    title: "Duty free shopping", 
+    amount: 120, 
+    paidBy: "Sarah Tan", 
+    date: "Jan 16, 2025", 
+    hasReceipt: true, 
+    paymentProgress: 33,
+    category: "Shopping", 
+    splitType: "equal" as const, 
+    splitWith: ["1", "2", "3"],
+    originalCurrency: "USD",
+    fxRateToHome: 4.76,
+    convertedAmountHome: 571.20,
+    homeCurrency: "MYR",
+    payments: [
+      { memberId: "1", status: "pending" },
+      { memberId: "2", status: "settled" },
+      { memberId: "3", status: "pending" },
     ]
   },
   { 
