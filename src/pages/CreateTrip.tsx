@@ -248,21 +248,20 @@ export default function CreateTrip() {
 
   // Footer content with CTA buttons - positioned above bottom nav with proper clearance
   const footerContent = (
-    <div className="bg-background/98 backdrop-blur-md border-t border-border/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-      <div className="px-4 pt-3 pb-5">
-        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 gap-3">
-            {publishedTripId ? (
-              // Post-publish buttons
-              <>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => navigate(`/trip/${publishedTripId}`)}
-                  className="w-full rounded-xl text-sm sm:text-base"
-                >
-                  View Trip
-                </Button>
+  <div className="bg-background/95 backdrop-blur-sm border-t border-border/50">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
+        <div className="grid grid-cols-2 gap-3">
+          {publishedTripId ? (
+            // Post-publish buttons
+            <>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate(`/trip/${publishedTripId}`)}
+                className="w-full rounded-xl text-sm sm:text-base gap-2"
+              >
+                View Trip
+              </Button>
                 <Button
                   size="lg"
                   onClick={() => setShowShareModal(true)}
@@ -308,7 +307,6 @@ export default function CreateTrip() {
                 )}
               </>
             )}
-          </div>
         </div>
       </div>
     </div>
