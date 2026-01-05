@@ -27,7 +27,9 @@ import { cn } from "@/lib/utils";
 
 import { BudgetRangeSelector, isDefaultBudgetRange } from "./BudgetTierSelector";
 import { TravelStylePills } from "./TravelStylePills";
+import { CurrencySelector } from "./CurrencySelector";
 import type { TripCategoryId } from "@/data/categories";
+import type { CurrencyCode } from "@/lib/currencyUtils";
 
 // Mock destinations for autocomplete
 const mockDestinations = [
@@ -52,6 +54,7 @@ export interface FilterState {
   flexibleDates: boolean;
   budgetRange: [number, number];
   categories: TripCategoryId[];
+  currency: CurrencyCode;
 }
 
 interface TripFilterDrawerProps {
@@ -129,6 +132,7 @@ export function TripFilterDrawer({
       flexibleDates: false,
       budgetRange: [0, 10000],
       categories: [],
+      currency: "MYR",
     };
     setLocalFilters(resetState);
     onReset();
@@ -267,11 +271,21 @@ export function TripFilterDrawer({
           <BudgetRangeSelector
             value={localFilters.budgetRange}
             onChange={(range) => setLocalFilters((prev) => ({ ...prev, budgetRange: range }))}
+            currency={localFilters.currency}
           />
         </div>
 
-        {/* Section 4: Travel Style */}
+        {/* Section 4: Currency */}
         <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "225ms", animationFillMode: "backwards" }}>
+          <h3 className="text-sm font-semibold text-foreground">Display Currency</h3>
+          <CurrencySelector
+            value={localFilters.currency}
+            onChange={(currency) => setLocalFilters((prev) => ({ ...prev, currency }))}
+          />
+        </div>
+
+        {/* Section 5: Travel Style */}
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "300ms", animationFillMode: "backwards" }}>
           <h3 className="text-sm font-semibold text-foreground">Travel Style</h3>
           <TravelStylePills
             selected={localFilters.categories}

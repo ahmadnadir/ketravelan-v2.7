@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { TripType } from "@/data/mockData";
 import { tripCategories } from "@/data/categories";
+import { convertPrice, formatCurrency, type CurrencyCode } from "@/lib/currencyUtils";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ interface TripCardProps {
   isAlmostFull?: boolean;
   tripType?: TripType;
   className?: string;
+  displayCurrency?: CurrencyCode;
 }
 
 export function TripCard({
@@ -46,7 +48,11 @@ export function TripCard({
   isAlmostFull,
   tripType,
   className,
+  displayCurrency,
 }: TripCardProps) {
+  // Convert price if displayCurrency is set
+  const displayPrice = displayCurrency ? convertPrice(price, displayCurrency) : price;
+  const displaySymbol = displayCurrency ? "" : currency; // formatCurrency includes symbol
   const [isFavourited, setIsFavourited] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -299,7 +305,10 @@ export function TripCard({
           </div>
           <div className="text-right shrink-0">
             <span className="text-base sm:text-lg font-bold text-foreground">
-              {currency} {price.toLocaleString()}
+              {displayCurrency 
+                ? formatCurrency(displayPrice, displayCurrency)
+                : `${displaySymbol} ${displayPrice.toLocaleString()}`
+              }
             </span>
             <span className="text-xs text-muted-foreground ml-1">budget per person</span>
           </div>

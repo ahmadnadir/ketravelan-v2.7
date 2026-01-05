@@ -21,6 +21,7 @@ const defaultFilters: FilterState = {
   flexibleDates: false,
   budgetRange: [0, 10000],
   categories: [],
+  currency: "MYR",
 };
 
 export default function Explore() {
@@ -39,6 +40,7 @@ export default function Explore() {
     if (appliedFilters.flexibleDates || appliedFilters.dates?.from) count++;
     if (!isDefaultBudgetRange(appliedFilters.budgetRange)) count++;
     count += appliedFilters.categories.length;
+    if (appliedFilters.currency !== "MYR") count++;
     return count;
   }, [appliedFilters]);
 
@@ -146,6 +148,7 @@ export default function Explore() {
               flexibleDates={appliedFilters.flexibleDates}
               budgetRange={appliedFilters.budgetRange}
               categories={appliedFilters.categories}
+              currency={appliedFilters.currency}
               onClear={handleReset}
               onEdit={() => setIsDrawerOpen(true)}
             />
@@ -183,7 +186,7 @@ export default function Explore() {
         {/* Trip List */}
         <div className="space-y-3 sm:space-y-4">
           {filteredTrips.map((trip) => (
-            <TripCard key={trip.id} {...trip} />
+            <TripCard key={trip.id} {...trip} displayCurrency={appliedFilters.currency} />
           ))}
         </div>
       </div>

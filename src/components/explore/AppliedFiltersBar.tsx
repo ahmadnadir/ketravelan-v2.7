@@ -4,6 +4,7 @@ import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { formatBudgetRange, isDefaultBudgetRange } from "./BudgetTierSelector";
 import type { TripCategoryId } from "@/data/categories";
+import type { CurrencyCode } from "@/lib/currencyUtils";
 
 interface AppliedFiltersBarProps {
   destination: string;
@@ -11,6 +12,7 @@ interface AppliedFiltersBarProps {
   flexibleDates: boolean;
   budgetRange: [number, number];
   categories: TripCategoryId[];
+  currency: CurrencyCode;
   onClear: () => void;
   onEdit: () => void;
 }
@@ -21,10 +23,11 @@ export function AppliedFiltersBar({
   flexibleDates,
   budgetRange,
   categories,
+  currency,
   onClear,
   onEdit,
 }: AppliedFiltersBarProps) {
-  const hasFilters = destination || dates?.from || flexibleDates || !isDefaultBudgetRange(budgetRange) || categories.length > 0;
+  const hasFilters = destination || dates?.from || flexibleDates || !isDefaultBudgetRange(budgetRange) || categories.length > 0 || currency !== "MYR";
 
   if (!hasFilters) return null;
 
@@ -45,11 +48,15 @@ export function AppliedFiltersBar({
   }
 
   if (!isDefaultBudgetRange(budgetRange)) {
-    chips.push(formatBudgetRange(budgetRange));
+    chips.push(formatBudgetRange(budgetRange, currency));
   }
 
   if (categories.length > 0) {
     chips.push(`${categories.length} style${categories.length > 1 ? "s" : ""}`);
+  }
+
+  if (currency !== "MYR") {
+    chips.push(`Currency: ${currency}`);
   }
 
   return (
