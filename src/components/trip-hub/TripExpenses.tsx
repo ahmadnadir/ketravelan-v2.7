@@ -156,7 +156,7 @@ const SETTLED_SETTLEMENTS: Settlement[] = [
     id: "settled-1",
     fromUser: { id: "2", name: "Sarah Tan", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" },
     toUser: { id: "1", name: "Ahmad Razak", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200" },
-    amount: 64,
+    amount: 450, // RM 514 (Sarah owes Ahmad) - RM 64 (Ahmad owes Sarah offset) = RM 450
     status: "settled" as const,
   },
   {
