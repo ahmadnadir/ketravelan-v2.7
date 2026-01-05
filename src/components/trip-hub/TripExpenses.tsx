@@ -79,21 +79,34 @@ interface Settlement {
   amount: number;
   status: "pending" | "settled";
   receiptUrl?: string;
+  // Multi-currency support for settlements
+  originalCurrency?: CurrencyCode;
+  convertedAmountHome?: number;
+  conversionAvailable?: boolean;
 }
 
 // Calculate net settlements between all members based on expense data
 const calculateNetSettlements = (
   expenses: ExpenseData[], 
   members: typeof mockMembers,
-  currentUserId: string
+  currentUserId: string,
+  homeCurrency: CurrencyCode
 ): Settlement[] => {
-  // Track debts: debtMatrix[fromId][toId] = amount owed
-  const debtMatrix: Record<string, Record<string, number>> = {};
+  // Track debts: debtMatrix[fromId][toId] = { amountHome, hasForeignCurrency, foreignAmounts }
+  interface DebtInfo {
+    amountHome: number;
+    foreignAmounts: Record<CurrencyCode, number>;
+  }
+  const debtMatrix: Record<string, Record<string, DebtInfo>> = {};
   
   expenses.forEach(expense => {
     // Find payer's member ID
     const payer = members.find(m => m.name === expense.paidBy);
     if (!payer) return;
+    
+    // Determine the expense's effective amount in home currency
+    const expenseHomeCurrency = expense.homeCurrency || homeCurrency;
+    const expenseOriginalCurrency = expense.originalCurrency || expenseHomeCurrency;
     
     // For each person who split this expense (except the payer)
     expense.splitWith.forEach(memberId => {
@@ -104,11 +117,30 @@ const calculateNetSettlements = (
       if (!memberPayment || memberPayment.status !== "settled") {
         const shareAmount = calculateUserShare(expense, memberId);
         
+        // Calculate share in home currency
+        let shareInHome: number;
+        if (expense.convertedAmountHome && expense.amount > 0) {
+          // Proportional share of the converted amount
+          shareInHome = (shareAmount / expense.amount) * expense.convertedAmountHome;
+        } else {
+          shareInHome = shareAmount; // Already in home currency
+        }
+        
         // Initialize if needed
         if (!debtMatrix[memberId]) debtMatrix[memberId] = {};
-        if (!debtMatrix[memberId][payer.id]) debtMatrix[memberId][payer.id] = 0;
+        if (!debtMatrix[memberId][payer.id]) {
+          debtMatrix[memberId][payer.id] = { amountHome: 0, foreignAmounts: {} as Record<CurrencyCode, number> };
+        }
         
-        debtMatrix[memberId][payer.id] += shareAmount;
+        debtMatrix[memberId][payer.id].amountHome += shareInHome;
+        
+        // Track foreign currency amounts for display
+        if (expenseOriginalCurrency !== homeCurrency) {
+          if (!debtMatrix[memberId][payer.id].foreignAmounts[expenseOriginalCurrency]) {
+            debtMatrix[memberId][payer.id].foreignAmounts[expenseOriginalCurrency] = 0;
+          }
+          debtMatrix[memberId][payer.id].foreignAmounts[expenseOriginalCurrency] += shareAmount;
+        }
       }
     });
   });
@@ -123,23 +155,33 @@ const calculateNetSettlements = (
       if (processedPairs.has(pairKey)) return;
       processedPairs.add(pairKey);
       
-      const aOwesB = debtMatrix[fromId]?.[toId] || 0;
-      const bOwesA = debtMatrix[toId]?.[fromId] || 0;
-      const netAmount = aOwesB - bOwesA;
+      const aOwesB = debtMatrix[fromId]?.[toId]?.amountHome || 0;
+      const bOwesA = debtMatrix[toId]?.[fromId]?.amountHome || 0;
+      const netAmountHome = aOwesB - bOwesA;
       
-      if (Math.abs(netAmount) > 0.01) {
-        const netFromId = netAmount > 0 ? fromId : toId;
-        const netToId = netAmount > 0 ? toId : fromId;
+      if (Math.abs(netAmountHome) > 0.01) {
+        const netFromId = netAmountHome > 0 ? fromId : toId;
+        const netToId = netAmountHome > 0 ? toId : fromId;
         const fromMember = members.find(m => m.id === netFromId);
         const toMember = members.find(m => m.id === netToId);
         
         if (fromMember && toMember) {
+          // Determine if settlement has foreign currency component
+          const debtorDebt = debtMatrix[netFromId]?.[netToId];
+          const foreignCurrencies = debtorDebt ? Object.keys(debtorDebt.foreignAmounts) as CurrencyCode[] : [];
+          const dominantForeignCurrency = foreignCurrencies.length === 1 ? foreignCurrencies[0] : undefined;
+          const foreignAmount = dominantForeignCurrency ? debtorDebt?.foreignAmounts[dominantForeignCurrency] : undefined;
+          
           settlements.push({
             id: `settlement-${fromMember.id}-${toMember.id}`,
             fromUser: { id: fromMember.id, name: fromMember.name, imageUrl: fromMember.imageUrl },
             toUser: { id: toMember.id, name: toMember.name, imageUrl: toMember.imageUrl },
-            amount: Math.abs(netAmount),
-            status: "pending"
+            amount: Math.round(Math.abs(netAmountHome) * 100) / 100,
+            status: "pending",
+            // Multi-currency: if there's a single dominant foreign currency, show dual display
+            originalCurrency: dominantForeignCurrency,
+            convertedAmountHome: dominantForeignCurrency ? Math.abs(netAmountHome) : undefined,
+            conversionAvailable: true,
           });
         }
       }
@@ -265,8 +307,8 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
 
   // Generate settlements dynamically from expense data
   const calculatedSettlements = useMemo(() => {
-    return calculateNetSettlements(expenses, mockMembers, CURRENT_USER_ID);
-  }, [expenses]);
+    return calculateNetSettlements(expenses, mockMembers, CURRENT_USER_ID, homeCurrency);
+  }, [expenses, homeCurrency]);
 
   // Merge calculated settlements with local status overrides and historical settled settlements
   const settlements = useMemo(() => {
@@ -710,13 +752,23 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
       splitWith: newExpense.splitWith,
       customSplitAmounts: newExpense.customSplitAmounts,
       notes: newExpense.notes,
+      // Multi-currency fields
+      originalCurrency: newExpense.originalCurrency,
+      fxRateToHome: newExpense.fxRateToHome,
+      convertedAmountHome: newExpense.convertedAmountHome,
+      homeCurrency: newExpense.homeCurrency || homeCurrency,
     };
     
     setExpenses(prev => [expense, ...prev]);
     
+    const currencySymbol = newExpense.originalCurrency === "MYR" ? "RM" : 
+                           newExpense.originalCurrency === "USD" ? "$" :
+                           newExpense.originalCurrency === "EUR" ? "€" :
+                           newExpense.originalCurrency === "IDR" ? "Rp" : "RM";
+    
     toast({
       title: "Expense added",
-      description: `${newExpense.title} - RM ${newExpense.amount.toFixed(2)} added successfully`,
+      description: `${newExpense.title} - ${currencySymbol} ${newExpense.amount.toFixed(2)} added successfully`,
     });
     
     // Switch to expenses tab to show the new expense
@@ -738,6 +790,11 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
           splitWith: updatedExpense.splitWith,
           customSplitAmounts: updatedExpense.customSplitAmounts,
           notes: updatedExpense.notes,
+          // Multi-currency fields
+          originalCurrency: updatedExpense.originalCurrency,
+          fxRateToHome: updatedExpense.fxRateToHome,
+          convertedAmountHome: updatedExpense.convertedAmountHome,
+          homeCurrency: updatedExpense.homeCurrency || homeCurrency,
         };
       }
       return expense;
@@ -1393,7 +1450,11 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
                     key={settlement.id}
                     fromUser={settlement.fromUser}
                     toUser={settlement.toUser}
-                    amount={settlement.amount}
+                    amount={settlement.originalCurrency ? 
+                      // If there's a foreign currency, show foreign amount as primary
+                      (settlement.amount / (settlement.convertedAmountHome ? settlement.convertedAmountHome / settlement.amount : 1)) :
+                      settlement.amount
+                    }
                     status={settlement.status}
                     currentUserId={CURRENT_USER_ID}
                     showReminder={canShowReminder(settlement)}
@@ -1402,9 +1463,13 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
                     onViewDetails={() => handleSettlementCardClick(settlement)}
                     onSendReminder={() => handleSendReminder(settlement)}
                     onMarkPaid={() => handleMarkPaid(settlement)}
-                    // Multi-currency props - settlements currently don't have currency info, so we show in base currency
+                    // Multi-currency props
+                    originalCurrency={settlement.originalCurrency}
+                    homeCurrency={homeCurrency}
+                    convertedAmountHome={settlement.convertedAmountHome}
+                    conversionAvailable={settlement.conversionAvailable}
                     viewMode={viewMode}
-                    onToggleViewMode={toggleViewMode}
+                    onToggleViewMode={settlement.originalCurrency && settlement.originalCurrency !== homeCurrency ? toggleViewMode : undefined}
                   />
                 ))
               ) : (
