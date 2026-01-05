@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, MapPin, MessageCircle, Instagram, Youtube, Linkedin, Globe, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,28 @@ const socialIcons: Record<string, any> = {
   youtube: Youtube,
   linkedin: Linkedin,
   website: Globe,
+};
+
+// About text component with truncation
+const AboutText = ({ bio }: { bio: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const shouldTruncate = bio.length > 150;
+
+  return (
+    <div>
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        {shouldTruncate && !expanded ? `${bio.slice(0, 150)}...` : bio}
+      </p>
+      {shouldTruncate && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-sm text-primary font-medium mt-1"
+        >
+          {expanded ? "Show less" : "Read more"}
+        </button>
+      )}
+    </div>
+  );
 };
 
 export default function UserProfileView() {
@@ -63,8 +86,11 @@ export default function UserProfileView() {
   const footerContent = (
     <div className="bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
-        <Button size="lg" className="w-full rounded-xl" onClick={handleMessage}>
-          <MessageCircle className="h-5 w-5 mr-2" />
+        <p className="text-xs text-muted-foreground text-center mb-2">
+          Start a conversation before joining the trip
+        </p>
+        <Button size="lg" className="w-full rounded-xl gap-2" onClick={handleMessage}>
+          <MessageCircle className="h-5 w-5" />
           Message {profile.name.split(" ")[0]}
         </Button>
       </div>
@@ -118,13 +144,33 @@ export default function UserProfileView() {
       {/* Main Content */}
       <div className="pt-3 pb-6">
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4 space-y-6">
-          {/* Profile Header */}
+          {/* Profile Header - Identity First */}
           <div className="flex flex-col items-center text-center space-y-1">
             <h2 className="text-xl font-bold text-foreground">{profile.name}</h2>
             {profile.location && (
               <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
                 <MapPin className="h-3.5 w-3.5" />
                 <span className="text-sm">{profile.location}</span>
+              </div>
+            )}
+            
+            {/* Social Links - Icon Row (under name/location) */}
+            {profile.socialLinks && profile.socialLinks.length > 0 && (
+              <div className="flex items-center gap-2 pt-2">
+                {profile.socialLinks.map((link) => {
+                  const Icon = socialIcons[link.platform] || Globe;
+                  return (
+                    <a
+                      key={link.platform}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-8 w-8 rounded-full bg-secondary/60 flex items-center justify-center hover:bg-secondary transition-colors"
+                    >
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                    </a>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -144,42 +190,27 @@ export default function UserProfileView() {
           {/* About Section */}
           {profile.bio && (
             <Card className="p-4 border-border/50">
-              <h3 className="font-semibold text-foreground mb-2">About Me</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
+              <h3 className="font-semibold text-foreground mb-1">About Me</h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                A short intro for your travel buddies
+              </p>
+              <AboutText bio={profile.bio} />
             </Card>
           )}
 
           {/* Travel Style Tags */}
           {profile.travelStyles.length > 0 && (
-            <Card className="p-4 border-border/50">
-              <h3 className="font-semibold text-foreground mb-3">Travel Style</h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.travelStyles.map((style) => (
-                  <PillChip key={style} label={style} icon={getCategoryIcon(style)} />
+            <Card className="p-3 border-border/50">
+              <h3 className="font-semibold text-foreground mb-2">Travel Style</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.travelStyles.slice(0, 4).map((style) => (
+                  <PillChip key={style} label={style} icon={getCategoryIcon(style)} size="sm" />
                 ))}
-              </div>
-            </Card>
-          )}
-
-          {/* Social Links */}
-          {profile.socialLinks && profile.socialLinks.length > 0 && (
-            <Card className="p-4 border-border/50">
-              <h3 className="font-semibold text-foreground mb-3">Social Links</h3>
-              <div className="flex gap-3">
-                {profile.socialLinks.map((link) => {
-                  const Icon = socialIcons[link.platform] || Globe;
-                  return (
-                    <a
-                      key={link.platform}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
-                    >
-                      <Icon className="h-5 w-5 text-muted-foreground" />
-                    </a>
-                  );
-                })}
+                {profile.travelStyles.length > 4 && (
+                  <span className="inline-flex items-center px-2 py-1 text-xs text-muted-foreground">
+                    +{profile.travelStyles.length - 4} more
+                  </span>
+                )}
               </div>
             </Card>
           )}
