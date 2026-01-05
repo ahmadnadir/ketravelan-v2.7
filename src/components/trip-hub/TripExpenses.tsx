@@ -188,7 +188,11 @@ const calculateUserShare = (expense: ExpenseData, userId: string): number => {
   return expense.amount / expense.splitWith.length;
 };
 
-export function TripExpenses() {
+interface TripExpensesProps {
+  allowedCurrencies?: CurrencyCode[];
+}
+
+export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const homeCurrency: CurrencyCode = user?.homeCurrency || "MYR";
@@ -1514,6 +1518,7 @@ export function TripExpenses() {
         onEditExpense={handleEditExpense}
         editingExpense={editingExpense}
         currentUser="Ahmad Razak"
+        allowedCurrencies={allowedCurrencies}
       />
 
       {/* Delete Expense Dialog */}

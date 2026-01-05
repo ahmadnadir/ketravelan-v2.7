@@ -4,8 +4,9 @@ import { OptionCard } from './OptionCard';
 import { Input } from '@/components/ui/input';
 import { PillChip } from '@/components/shared/PillChip';
 import { Badge } from '@/components/ui/badge';
-import { CurrencyCode, getCurrencySymbol } from '@/lib/currencyUtils';
+import { CurrencyCode, getCurrencySymbol, travelCurrencies as allTravelCurrencies } from '@/lib/currencyUtils';
 import { useAuth } from '@/contexts/AuthContext';
+import { TravelCurrencyPicker } from './TravelCurrencyPicker';
 
 interface BudgetSectionProps {
   budgetType: 'skip' | 'rough' | 'detailed';
@@ -16,6 +17,8 @@ interface BudgetSectionProps {
   onRoughBudgetCategoriesChange: (categories: string[]) => void;
   detailedBudget: Record<string, number>;
   onDetailedBudgetChange: (budget: Record<string, number>) => void;
+  travelCurrencies: CurrencyCode[];
+  onTravelCurrenciesChange: (currencies: CurrencyCode[]) => void;
 }
 
 const defaultCategories = [
@@ -36,6 +39,8 @@ export function BudgetSection({
   onRoughBudgetCategoriesChange,
   detailedBudget,
   onDetailedBudgetChange,
+  travelCurrencies,
+  onTravelCurrenciesChange,
 }: BudgetSectionProps) {
   const { user } = useAuth();
   const homeCurrency: CurrencyCode = user?.homeCurrency || "MYR";
@@ -119,9 +124,18 @@ export function BudgetSection({
             </div>
             <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
               <Info className="h-3 w-3 mt-0.5 shrink-0" />
-              Budget is set in your home currency. Expenses can be added in travel currencies (USD, EUR, IDR).
+              Budget is set in your home currency.
+              {travelCurrencies.length > 0 
+                ? ` Expenses can be added in: ${travelCurrencies.map(c => allTravelCurrencies.find(tc => tc.code === c)?.code).join(', ')}.`
+                : ' Select travel currencies below for expense entry.'}
             </p>
           </div>
+          
+          {/* Travel Currency Picker */}
+          <TravelCurrencyPicker
+            selectedCurrencies={travelCurrencies}
+            onSelectionChange={onTravelCurrenciesChange}
+          />
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-foreground">
@@ -269,8 +283,17 @@ export function BudgetSection({
           
           <p className="text-[11px] text-muted-foreground flex items-start gap-1.5 pt-2">
             <Info className="h-3 w-3 mt-0.5 shrink-0" />
-            Budget is set in your home currency. Expenses can be added in travel currencies (USD, EUR, IDR).
+            Budget is set in your home currency.
+            {travelCurrencies.length > 0 
+              ? ` Expenses can be added in: ${travelCurrencies.map(c => allTravelCurrencies.find(tc => tc.code === c)?.code).join(', ')}.`
+              : ' Select travel currencies below for expense entry.'}
           </p>
+          
+          {/* Travel Currency Picker */}
+          <TravelCurrencyPicker
+            selectedCurrencies={travelCurrencies}
+            onSelectionChange={onTravelCurrenciesChange}
+          />
           
           <div className="pt-2 border-t border-border flex items-center justify-between">
             <span className="text-sm font-medium text-foreground">Total</span>
