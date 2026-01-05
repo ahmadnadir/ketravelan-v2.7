@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCategoryById } from "@/lib/expenseCategories";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { CurrencyCode, getCurrencySymbol } from "@/lib/currencyUtils";
 
 export interface SettlementExpense {
   expenseId: string;
@@ -18,6 +19,7 @@ export interface SettlementExpense {
   status: "pending" | "settled";
   category: string;
   paidBy: string;
+  originalCurrency?: CurrencyCode;
 }
 
 interface SettlementBreakdownModalProps {
@@ -37,6 +39,9 @@ interface SettlementBreakdownModalProps {
   onSendReminder?: () => void;
   onViewQR?: () => void;
   onViewReceipts?: () => void;
+  // Multi-currency props
+  originalCurrency?: CurrencyCode;
+  homeCurrency?: CurrencyCode;
 }
 
 export function SettlementBreakdownModal({
@@ -56,9 +61,15 @@ export function SettlementBreakdownModal({
   onSendReminder,
   onViewQR,
   onViewReceipts,
+  originalCurrency,
+  homeCurrency = "MYR",
 }: SettlementBreakdownModalProps) {
   const isViewerOwing = fromUser.id === currentUserId;
   const isViewerReceiving = toUser.id === currentUserId;
+  
+  // Determine which currency symbol to use for display
+  const displayCurrency = originalCurrency || homeCurrency;
+  const displaySymbol = getCurrencySymbol(displayCurrency);
   
   const getStatusBadge = (expenseStatus: SettlementExpense["status"]) => (
     <StatusBadge status={expenseStatus} />
@@ -121,7 +132,7 @@ export function SettlementBreakdownModal({
           <DialogTitle className="text-center mt-3">
             <span className="text-muted-foreground text-[15px] sm:text-sm font-normal">Total Outstanding</span>
             <span className="block text-2xl font-bold text-foreground mt-0.5">
-              RM {totalAmount.toLocaleString()}
+              {displaySymbol} {totalAmount.toLocaleString()}
             </span>
           </DialogTitle>
         </DialogHeader>
@@ -155,7 +166,7 @@ export function SettlementBreakdownModal({
                               </p>
                             </div>
                             <p className="font-semibold text-foreground text-[15px] sm:text-sm shrink-0">
-                              RM {expense.shareAmount.toFixed(2)}
+                              {getCurrencySymbol(expense.originalCurrency || displayCurrency)} {expense.shareAmount.toFixed(2)}
                             </p>
                           </div>
                           <div className="mt-2">
@@ -169,7 +180,7 @@ export function SettlementBreakdownModal({
                 {grossOwed !== undefined && (
                   <div className="flex justify-between items-center pt-2 px-1">
                     <span className="text-[15px] sm:text-sm text-muted-foreground">Subtotal</span>
-                    <span className="font-semibold text-foreground text-[15px] sm:text-sm">RM {grossOwed.toFixed(2)}</span>
+                    <span className="font-semibold text-foreground text-[15px] sm:text-sm">{displaySymbol} {grossOwed.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -206,7 +217,7 @@ export function SettlementBreakdownModal({
                               </p>
                             </div>
                             <p className="font-semibold text-stat-red text-[15px] sm:text-sm shrink-0">
-                              -RM {expense.shareAmount.toFixed(2)}
+                              -{getCurrencySymbol(expense.originalCurrency || displayCurrency)} {expense.shareAmount.toFixed(2)}
                             </p>
                           </div>
                           <div className="mt-2">
@@ -220,7 +231,7 @@ export function SettlementBreakdownModal({
                 {grossOffset !== undefined && (
                   <div className="flex justify-between items-center pt-2 px-1 border-t border-border/20 mt-2">
                     <span className="text-[15px] sm:text-sm text-muted-foreground">Offset</span>
-                    <span className="font-semibold text-stat-red text-[15px] sm:text-sm">-RM {grossOffset.toFixed(2)}</span>
+                    <span className="font-semibold text-stat-red text-[15px] sm:text-sm">-{displaySymbol} {grossOffset.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -233,7 +244,7 @@ export function SettlementBreakdownModal({
           {/* Total Confirmation */}
           <div className="flex items-center justify-between text-[15px] sm:text-sm">
             <span className="text-muted-foreground">Total</span>
-            <span className="font-bold text-foreground text-lg">RM {totalAmount.toLocaleString()}</span>
+            <span className="font-bold text-foreground text-lg">{displaySymbol} {totalAmount.toLocaleString()}</span>
           </div>
 
           {/* Action Buttons */}

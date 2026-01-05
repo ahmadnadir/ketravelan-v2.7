@@ -468,6 +468,7 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
             status,
             category: getCategoryFromTitle(expense.title),
             paidBy: expense.paidBy,
+            originalCurrency: expense.originalCurrency,
           });
         }
       }
@@ -494,6 +495,7 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
             status,
             category: getCategoryFromTitle(expense.title),
             paidBy: expense.paidBy,
+            originalCurrency: expense.originalCurrency,
           });
         }
       }
@@ -1664,6 +1666,9 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
         }}
         onConfirmPaymentReceived={handleConfirmPaymentSettled}
         onSubmitPayment={handleSubmitPayment}
+        viewMode={viewMode}
+        onToggleViewMode={viewingExpenseDetails?.originalCurrency && viewingExpenseDetails.originalCurrency !== homeCurrency ? toggleViewMode : undefined}
+        homeCurrency={homeCurrency}
       />
 
       {/* Settlement Breakdown Modal */}
@@ -1685,6 +1690,8 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
             grossOwed={breakdown.grossOwed}
             grossOffset={breakdown.grossOffset}
             currentUserId={mockMembers.find(m => m.name === CURRENT_USER)?.id || "1"}
+            originalCurrency={selectedSettlementForBreakdown.originalCurrency}
+            homeCurrency={homeCurrency}
             onUploadProof={() => {
               setOpenedFromBreakdown(true);
               handleMarkPaid(selectedSettlementForBreakdown);

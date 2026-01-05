@@ -22,6 +22,9 @@ import { PaymentReviewModal } from "./PaymentReviewModal";
 import { ReceiptsFromOthersModal } from "./ReceiptsFromOthersModal";
 import { formatDisplayDate } from "@/lib/dateUtils";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { DualCurrencyDisplay } from "@/components/shared/DualCurrencyDisplay";
+import { CurrencyCode, getCurrencySymbol } from "@/lib/currencyUtils";
+import { CurrencyViewMode } from "@/hooks/useCurrencyViewPreference";
 
 type TabType = "overview" | "payments";
 
@@ -36,6 +39,10 @@ interface ExpenseDetailsModalProps {
   onUpdateProgress?: (newProgress: number) => void;
   onConfirmPaymentReceived?: (expenseId: string, memberId: string) => void;
   onSubmitPayment?: (expenseId: string, memberId: string, receiptUrl?: string, payerNote?: string) => void;
+  // Multi-currency props
+  viewMode?: CurrencyViewMode;
+  onToggleViewMode?: () => void;
+  homeCurrency?: CurrencyCode;
 }
 
 // Mock payment data for each member
@@ -59,6 +66,9 @@ export function ExpenseDetailsModal({
   onUpdateProgress,
   onConfirmPaymentReceived,
   onSubmitPayment,
+  viewMode = "travel",
+  onToggleViewMode,
+  homeCurrency = "MYR",
 }: ExpenseDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [zoom, setZoom] = useState(1);
@@ -136,6 +146,12 @@ export function ExpenseDetailsModal({
   if (!expense) return null;
 
   const category = getCategoryById(expense.category || "Other");
+
+  // Multi-currency: determine the expense's currency
+  const expenseCurrency = expense.originalCurrency || homeCurrency;
+  const currencySymbol = getCurrencySymbol(expenseCurrency);
+  const needsDualDisplay = expenseCurrency !== homeCurrency;
+  const conversionAvailable = expense.fxRateToHome !== undefined || expense.convertedAmountHome !== undefined;
 
   // Calculate split amounts
   const splitMembers = expense.splitWith || mockMembers.map(m => m.id);
@@ -350,7 +366,7 @@ export function ExpenseDetailsModal({
                 {/* Progress bar with amount - under title */}
                 <div className="space-y-2">
                   <span className={`text-sm font-medium ${expense.paymentProgress === 100 ? "text-stat-green" : "text-amber-600"}`}>
-                    {expense.paymentProgress}% settled · RM {settledAmount.toFixed(0)}/{expense.amount}
+                    {expense.paymentProgress}% settled · {currencySymbol} {settledAmount.toFixed(0)}/{expense.amount}
                   </span>
                   <Progress 
                     value={expense.paymentProgress} 
@@ -392,7 +408,22 @@ export function ExpenseDetailsModal({
                 </div>
                 
                 <div className="text-right shrink-0 flex items-center">
-                  <p className="text-xl font-bold text-foreground">RM {expense.amount.toLocaleString()}</p>
+                  {needsDualDisplay ? (
+                    <DualCurrencyDisplay
+                      originalAmount={expense.amount}
+                      originalCurrency={expenseCurrency}
+                      convertedAmount={expense.convertedAmountHome}
+                      homeCurrency={homeCurrency}
+                      conversionAvailable={conversionAvailable}
+                      viewMode={viewMode}
+                      showToggle={!!onToggleViewMode}
+                      onToggle={onToggleViewMode}
+                      size="lg"
+                      align="right"
+                    />
+                  ) : (
+                    <p className="text-xl font-bold text-foreground">{currencySymbol} {expense.amount.toLocaleString()}</p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -554,7 +585,7 @@ export function ExpenseDetailsModal({
                         </Avatar>
                         <p className="flex-1 min-w-0 text-[15px] sm:text-sm font-medium text-foreground break-words">{member.name}</p>
                         <p className="text-[15px] sm:text-sm font-semibold text-foreground whitespace-nowrap">
-                          RM {amount.toFixed(2)}
+                          {currencySymbol} {amount.toFixed(2)}
                         </p>
                         <StatusBadge 
                           status={isPaid ? "settled" : "pending"} 
@@ -615,7 +646,7 @@ export function ExpenseDetailsModal({
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">{member.name}</p>
                               <p className="text-base font-bold text-foreground">
-                                RM {amount.toFixed(2)}
+                                {currencySymbol} {amount.toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -705,7 +736,7 @@ export function ExpenseDetailsModal({
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">{member.name}</p>
                               <p className="text-base font-bold text-foreground">
-                                RM {amount.toFixed(2)}
+                                {currencySymbol} {amount.toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -738,7 +769,7 @@ export function ExpenseDetailsModal({
                 {/* Amount Display - Clean centered design */}
                 <div className="bg-muted/50 rounded-2xl p-6 text-center">
                   <p className="text-[15px] sm:text-sm text-muted-foreground mb-1">Amount</p>
-                  <p className="text-3xl font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-foreground">{currencySymbol} {currentUserOwesAmount.toFixed(2)}</p>
                 </div>
 
                 {/* PENDING State - Show upload form (also handles undefined status for users who owe) */}
@@ -843,7 +874,7 @@ export function ExpenseDetailsModal({
                     <Card className="p-4 border-border/50 space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Amount Paid</span>
-                        <span className="text-lg font-bold text-foreground">RM {currentUserOwesAmount.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-foreground">{currencySymbol} {currentUserOwesAmount.toFixed(2)}</span>
                       </div>
                       
                       {currentUserPayment.payerNote && (
