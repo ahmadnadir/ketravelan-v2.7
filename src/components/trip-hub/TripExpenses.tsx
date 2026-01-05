@@ -1708,6 +1708,13 @@ export function TripExpenses() {
                 description: "Your payment receipt has been attached.",
               });
             }}
+            onRemoveReceipt={() => {
+              setSettlementReceiptUrl(null);
+              toast({
+                title: "Receipt removed",
+                description: "The payment receipt has been removed.",
+              });
+            }}
             onConfirm={handleConfirmSettlement}
             onBack={openedFromBreakdown ? () => {
               setSettlementConfirmModalOpen(false);

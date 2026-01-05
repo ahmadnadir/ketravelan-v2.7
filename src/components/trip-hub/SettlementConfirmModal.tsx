@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ArrowLeft, ArrowRight, ChevronDown, Upload, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, RefreshCw, Trash2, Upload, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +35,7 @@ interface SettlementConfirmModalProps {
   receiptUrl?: string;
   onViewReceipt?: () => void;
   onUploadReceipt?: (file: File) => void;
+  onRemoveReceipt?: () => void;
   // Actions
   onConfirm: () => void;
   // Back navigation (for secondary modal flow)
@@ -58,6 +59,7 @@ export function SettlementConfirmModal({
   receiptUrl,
   onViewReceipt,
   onUploadReceipt,
+  onRemoveReceipt,
   onConfirm,
   onBack,
 }: SettlementConfirmModalProps) {
@@ -231,14 +233,43 @@ export function SettlementConfirmModal({
                   alt="Payment receipt" 
                   className="h-16 w-16 rounded-lg object-cover border border-border/50"
                 />
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={onViewReceipt}
-                  className="text-sm"
-                >
-                  View
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={onViewReceipt}
+                    className="text-sm"
+                  >
+                    View
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-sm gap-1"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Replace
+                  </Button>
+                  {onRemoveReceipt && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onRemoveReceipt}
+                      className="text-sm text-destructive hover:text-destructive gap-1"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Remove
+                    </Button>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-between">
