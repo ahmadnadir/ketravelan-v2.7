@@ -9,12 +9,15 @@ import { TripChat } from "@/components/trip-hub/TripChat";
 import { TripExpenses } from "@/components/trip-hub/TripExpenses";
 import { TripNotes } from "@/components/trip-hub/TripNotes";
 import { GroupInfoModal } from "@/components/trip-hub/GroupInfoModal";
+import { getPublishedTripById } from "@/lib/publishedTrips";
+import { CurrencyCode } from "@/lib/currencyUtils";
 
 export default function TripHub() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("chat");
   const [groupInfoOpen, setGroupInfoOpen] = useState(false);
+  const [travelCurrencies, setTravelCurrencies] = useState<CurrencyCode[]>([]);
 
   // Read tab from URL query param on mount
   useEffect(() => {
@@ -23,6 +26,16 @@ export default function TripHub() {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
+
+  // Load published trip data to get travel currencies
+  useEffect(() => {
+    if (id) {
+      const publishedTrip = getPublishedTripById(id);
+      if (publishedTrip?.travelCurrencies) {
+        setTravelCurrencies(publishedTrip.travelCurrencies);
+      }
+    }
+  }, [id]);
 
   const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
 
@@ -83,7 +96,7 @@ export default function TripHub() {
       <FocusedFlowLayout headerContent={headerContent} showBottomNav={true}>
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
           {activeTab === "chat" && <TripChat />}
-          {activeTab === "expenses" && <TripExpenses />}
+          {activeTab === "expenses" && <TripExpenses allowedCurrencies={travelCurrencies.length > 0 ? travelCurrencies : undefined} />}
           {activeTab === "notes" && <TripNotes tripId={id || "1"} />}
         </div>
       </FocusedFlowLayout>
