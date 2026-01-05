@@ -243,6 +243,9 @@ export function TripExpenses() {
   
   // Track if secondary modals were opened from breakdown modal (for back button)
   const [openedFromBreakdown, setOpenedFromBreakdown] = useState(false);
+  
+  // Track uploaded receipt for settlement confirmation
+  const [settlementReceiptUrl, setSettlementReceiptUrl] = useState<string | null>(null);
 
   // Track recently settled expense IDs for visual feedback
   const [recentlySettledIds, setRecentlySettledIds] = useState<string[]>([]);
@@ -1678,6 +1681,7 @@ export function TripExpenses() {
               if (!open) {
                 setSettlementToConfirm(null);
                 setOpenedFromBreakdown(false);
+                setSettlementReceiptUrl(null); // Clear uploaded receipt when closing
               }
             }}
             fromUser={settlementToConfirm.fromUser}
@@ -1687,13 +1691,22 @@ export function TripExpenses() {
             owedToDebtor={breakdown.owedToDebtor.map(e => ({ title: e.title, amount: e.shareAmount }))}
             grossOwed={breakdown.grossOwed}
             grossOffset={breakdown.grossOffset}
-            receiptUrl={settlementToConfirm.receiptUrl}
+            receiptUrl={settlementReceiptUrl || settlementToConfirm.receiptUrl}
             onViewReceipt={() => {
               setViewingReceipt({ 
                 title: "Payment Receipt", 
-                url: settlementToConfirm.receiptUrl 
+                url: settlementReceiptUrl || settlementToConfirm.receiptUrl 
               });
               setReceiptViewerOpen(true);
+            }}
+            onUploadReceipt={(file: File) => {
+              // Create a local URL for the uploaded file
+              const url = URL.createObjectURL(file);
+              setSettlementReceiptUrl(url);
+              toast({
+                title: "Receipt uploaded",
+                description: "Your payment receipt has been attached.",
+              });
             }}
             onConfirm={handleConfirmSettlement}
             onBack={openedFromBreakdown ? () => {
