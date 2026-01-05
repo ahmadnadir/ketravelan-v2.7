@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, QrCode, SlidersHorizontal } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, QrCode, SlidersHorizontal, Info } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { ScrollableTabBar } from "@/components/shared/ScrollableTabBar";
@@ -36,6 +36,9 @@ import { Badge } from "@/components/ui/badge";
 import { mockExpenses as initialMockExpenses, mockMembers } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import { getCategoryFromTitle } from "@/lib/expenseCategories";
+import { useCurrencyViewPreference } from "@/hooks/useCurrencyViewPreference";
+import { useAuth } from "@/contexts/AuthContext";
+import { CurrencyCode, formatCurrencySpaced } from "@/lib/currencyUtils";
 
 const categoryBreakdown = [
   { category: "Transport", amount: 770, percentage: 30, color: "bg-stat-blue", emoji: "🚗" },
@@ -187,6 +190,12 @@ const calculateUserShare = (expense: ExpenseData, userId: string): number => {
 
 export function TripExpenses() {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const homeCurrency: CurrencyCode = user?.homeCurrency || "MYR";
+  
+  // Currency view preference - persisted per trip
+  const { viewMode, toggleViewMode } = useCurrencyViewPreference("trip-1");
+  
   const [subTab, setSubTab] = useState("breakdown");
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [filterPayer, setFilterPayer] = useState<string>("all");
@@ -197,7 +206,6 @@ export function TripExpenses() {
   // Settlement filters
   const [directionFilter, setDirectionFilter] = useState<"all" | "owesMe" | "iOwe">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "settled">("all");
-  
   // QR Codes sub-view toggle
   const [qrSubView, setQrSubView] = useState<"myqr" | "others">("myqr");
   
@@ -1308,6 +1316,13 @@ export function TripExpenses() {
                     onDelete={() => openDeleteExpense(expense)}
                     isHighlighted={recentlySettledIds.includes(expense.id)}
                     animationDelay={200 + index * 100}
+                    // Multi-currency props
+                    originalCurrency={expense.originalCurrency}
+                    homeCurrency={homeCurrency}
+                    convertedAmountHome={expense.convertedAmountHome}
+                    conversionAvailable={expense.fxRateToHome !== undefined}
+                    viewMode={viewMode}
+                    onToggleViewMode={expense.originalCurrency && expense.originalCurrency !== homeCurrency ? toggleViewMode : undefined}
                   />
                 ))
               ) : (
@@ -1380,6 +1395,9 @@ export function TripExpenses() {
                     onViewDetails={() => handleSettlementCardClick(settlement)}
                     onSendReminder={() => handleSendReminder(settlement)}
                     onMarkPaid={() => handleMarkPaid(settlement)}
+                    // Multi-currency props - settlements currently don't have currency info, so we show in base currency
+                    viewMode={viewMode}
+                    onToggleViewMode={toggleViewMode}
                   />
                 ))
               ) : (

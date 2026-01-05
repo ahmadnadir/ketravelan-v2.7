@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Upload, Receipt, Users, UserCheck, Pencil } from "lucide-react";
+import { X, Upload, Receipt, Users, UserCheck, Pencil, Info } from "lucide-react";
 import { expenseCategories } from "@/lib/expenseCategories";
 import {
   Dialog,
@@ -21,6 +21,14 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { mockMembers, ExpensePayment } from "@/data/mockData";
+import { 
+  CurrencyCode, 
+  travelCurrencies, 
+  convertToHomeCurrency, 
+  formatCurrencySpaced,
+  getCurrencySymbol
+} from "@/lib/currencyUtils";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Using expenseCategories from lib for consistency
 
@@ -40,6 +48,11 @@ export interface NewExpense {
   notes?: string;
   receiptFile?: File;
   date: string;
+  // Multi-currency fields
+  originalCurrency: CurrencyCode;
+  fxRateToHome?: number;
+  convertedAmountHome?: number;
+  homeCurrency?: CurrencyCode;
 }
 
 export interface ExpenseData {
@@ -56,6 +69,11 @@ export interface ExpenseData {
   customSplitAmounts?: CustomSplitAmount[];
   notes?: string;
   payments?: ExpensePayment[];
+  // Multi-currency fields
+  originalCurrency?: CurrencyCode;
+  fxRateToHome?: number;
+  convertedAmountHome?: number;
+  homeCurrency?: CurrencyCode;
 }
 
 interface AddExpenseModalProps {
@@ -75,8 +93,12 @@ export function AddExpenseModal({
   editingExpense,
   currentUser = "Ahmad Razak",
 }: AddExpenseModalProps) {
+  const { user } = useAuth();
+  const homeCurrency: CurrencyCode = user?.homeCurrency || "MYR";
+  
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState<CurrencyCode>("USD");
   const [category, setCategory] = useState("");
   const [paidBy, setPaidBy] = useState(currentUser);
   const [splitType, setSplitType] = useState<"equal" | "custom">("equal");
@@ -89,12 +111,18 @@ export function AddExpenseModal({
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
 
   const isEditMode = !!editingExpense;
+  
+  // Compute conversion
+  const numericAmount = parseFloat(amount) || 0;
+  const conversion = convertToHomeCurrency(numericAmount, currency, homeCurrency);
+  const showConversion = currency !== homeCurrency && numericAmount > 0;
 
   // Load editing expense data
   useEffect(() => {
     if (editingExpense && open) {
       setTitle(editingExpense.title);
       setAmount(editingExpense.amount.toString());
+      setCurrency(editingExpense.originalCurrency || "USD");
       setCategory(editingExpense.category || "other");
       setPaidBy(editingExpense.paidBy);
       setSplitType(editingExpense.splitType || "equal");
@@ -169,6 +197,7 @@ export function AddExpenseModal({
   const resetForm = () => {
     setTitle("");
     setAmount("");
+    setCurrency("USD");
     setCategory("");
     setPaidBy(currentUser);
     setSplitType("equal");
@@ -204,6 +233,11 @@ export function AddExpenseModal({
         day: "numeric",
         year: "numeric",
       }),
+      // Multi-currency fields
+      originalCurrency: currency,
+      fxRateToHome: conversion.available ? conversion.rate : undefined,
+      convertedAmountHome: conversion.available ? conversion.amount : undefined,
+      homeCurrency: homeCurrency,
     };
 
     if (isEditMode && onEditExpense && editingExpense) {
@@ -279,19 +313,49 @@ export function AddExpenseModal({
             />
           </div>
 
-          {/* Amount */}
+          {/* Amount with Currency */}
           <div className="space-y-2">
-            <Label htmlFor="amount">Total Amount (RM) *</Label>
-            <Input
-              id="amount"
-              type="number"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              min="0"
-              step="0.01"
-              className="h-12 rounded-xl"
-            />
+            <Label htmlFor="amount">Amount *</Label>
+            <div className="flex gap-2">
+              <Input
+                id="amount"
+                type="number"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                min="0"
+                step="0.01"
+                className="h-12 rounded-xl flex-1"
+              />
+              <Select value={currency} onValueChange={(val) => setCurrency(val as CurrencyCode)}>
+                <SelectTrigger className="w-28 h-12 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {travelCurrencies.map((c) => (
+                    <SelectItem key={c.code} value={c.code} className="rounded-lg">
+                      <span className="flex items-center gap-2">
+                        <span>{c.symbol}</span>
+                        <span>{c.code}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Conversion preview */}
+            {showConversion && conversion.available && (
+              <p className="text-xs text-muted-foreground">
+                ≈ {formatCurrencySpaced(conversion.amount, homeCurrency)}
+              </p>
+            )}
+            {showConversion && !conversion.available && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Info className="h-3 w-3" />
+                Conversion unavailable
+              </p>
+            )}
           </div>
 
           {/* Category */}
@@ -415,7 +479,7 @@ export function AddExpenseModal({
                   {splitWith.includes(member.id) && (
                     splitType === "custom" ? (
                       <div className="flex items-center gap-1">
-                        <span className="text-xs text-muted-foreground">RM</span>
+                        <span className="text-xs text-muted-foreground">{getCurrencySymbol(currency)}</span>
                         <Input
                           type="number"
                           placeholder="0.00"
@@ -430,7 +494,7 @@ export function AddExpenseModal({
                     ) : (
                       parseFloat(amount) > 0 && (
                         <span className="text-xs text-muted-foreground">
-                          RM {perPersonAmount}
+                          {getCurrencySymbol(currency)} {perPersonAmount}
                         </span>
                       )
                     )
@@ -444,20 +508,20 @@ export function AddExpenseModal({
               <div className="space-y-1">
                 {splitType === "equal" ? (
                   <p className="text-xs text-muted-foreground">
-                    Each person pays: <span className="font-medium text-foreground">RM {perPersonAmount}</span>
+                    Each person pays: <span className="font-medium text-foreground">{getCurrencySymbol(currency)} {perPersonAmount}</span>
                   </p>
                 ) : (
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">
-                      Total assigned: <span className="font-medium text-foreground">RM {totalCustomAmount.toFixed(2)}</span>
+                      Total assigned: <span className="font-medium text-foreground">{getCurrencySymbol(currency)} {totalCustomAmount.toFixed(2)}</span>
                       {" / "}
-                      <span className="font-medium">RM {totalAmount.toFixed(2)}</span>
+                      <span className="font-medium">{getCurrencySymbol(currency)} {totalAmount.toFixed(2)}</span>
                     </p>
                     {Math.abs(customAmountDifference) >= 0.01 && (
                       <p className={`text-xs ${customAmountDifference > 0 ? "text-destructive" : "text-amber-500"}`}>
                         {customAmountDifference > 0 
-                          ? `RM ${customAmountDifference.toFixed(2)} remaining to assign` 
-                          : `RM ${Math.abs(customAmountDifference).toFixed(2)} over-assigned`}
+                          ? `${getCurrencySymbol(currency)} ${customAmountDifference.toFixed(2)} remaining to assign` 
+                          : `${getCurrencySymbol(currency)} ${Math.abs(customAmountDifference).toFixed(2)} over-assigned`}
                       </p>
                     )}
                   </div>

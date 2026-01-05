@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { CurrencyCode } from "@/lib/currencyUtils";
 
 interface User {
   name: string;
   avatar: string;
+  homeCurrency: CurrencyCode;
 }
 
 interface AuthContextType {
@@ -17,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const mockUser: User = {
   name: "Alex Chen",
   avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+  homeCurrency: "MYR",
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {

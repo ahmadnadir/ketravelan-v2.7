@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Ban, Calculator, TableProperties, Plus, X } from 'lucide-react';
+import { Ban, Calculator, TableProperties, Plus, X, Info } from 'lucide-react';
 import { OptionCard } from './OptionCard';
 import { Input } from '@/components/ui/input';
 import { PillChip } from '@/components/shared/PillChip';
+import { Badge } from '@/components/ui/badge';
+import { CurrencyCode, getCurrencySymbol } from '@/lib/currencyUtils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BudgetSectionProps {
   budgetType: 'skip' | 'rough' | 'detailed';
@@ -34,6 +37,9 @@ export function BudgetSection({
   detailedBudget,
   onDetailedBudgetChange,
 }: BudgetSectionProps) {
+  const { user } = useAuth();
+  const homeCurrency: CurrencyCode = user?.homeCurrency || "MYR";
+  const currencySymbol = getCurrencySymbol(homeCurrency);
   const [customCategory, setCustomCategory] = useState('');
   const [detailedCustomCategory, setDetailedCustomCategory] = useState('');
 
@@ -88,17 +94,33 @@ export function BudgetSection({
         
       >
         <div className="space-y-4">
+          {/* Home currency indicator */}
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs font-normal">
+              Home currency: {currencySymbol} {homeCurrency}
+            </Badge>
+          </div>
+          
           <div className="space-y-2">
             <label className="text-xs font-medium text-foreground">
-              Total estimate (RM)
+              Budget (per person)
             </label>
-            <Input
-              type="number"
-              value={roughBudgetTotal || ''}
-              onChange={(e) => onRoughBudgetTotalChange(Number(e.target.value))}
-              placeholder="e.g., 2000"
-              className="rounded-xl"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                {currencySymbol}
+              </span>
+              <Input
+                type="number"
+                value={roughBudgetTotal || ''}
+                onChange={(e) => onRoughBudgetTotalChange(Number(e.target.value))}
+                placeholder="e.g., 2000"
+                className="rounded-xl pl-10"
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+              <Info className="h-3 w-3 mt-0.5 shrink-0" />
+              Budget is set in your home currency. Expenses can be added in travel currencies (USD, EUR, IDR).
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -165,16 +187,28 @@ export function BudgetSection({
         onClick={() => onBudgetTypeChange('detailed')}
       >
         <div className="space-y-3">
+          {/* Home currency indicator */}
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="secondary" className="text-xs font-normal">
+              Home currency: {currencySymbol} {homeCurrency}
+            </Badge>
+          </div>
+          
           {defaultCategories.map((cat) => (
             <div key={cat.id} className="flex items-center gap-3">
               <span className="text-sm text-foreground w-24">{cat.emoji} {cat.label}</span>
-              <Input
-                type="number"
-                value={detailedBudget[cat.id] || ''}
-                onChange={(e) => updateDetailedBudget(cat.id, Number(e.target.value))}
-                placeholder="RM"
-                className="rounded-xl flex-1"
-              />
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                  {currencySymbol}
+                </span>
+                <Input
+                  type="number"
+                  value={detailedBudget[cat.id] || ''}
+                  onChange={(e) => updateDetailedBudget(cat.id, Number(e.target.value))}
+                  placeholder="0"
+                  className="rounded-xl pl-10"
+                />
+              </div>
             </div>
           ))}
           
@@ -184,13 +218,18 @@ export function BudgetSection({
             .map((cat) => (
               <div key={cat} className="flex items-center gap-3">
                 <span className="text-sm text-foreground w-24">📦 {cat}</span>
-                <Input
-                  type="number"
-                  value={detailedBudget[cat] || ''}
-                  onChange={(e) => updateDetailedBudget(cat, Number(e.target.value))}
-                  placeholder="RM"
-                  className="rounded-xl flex-1"
-                />
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    {currencySymbol}
+                  </span>
+                  <Input
+                    type="number"
+                    value={detailedBudget[cat] || ''}
+                    onChange={(e) => updateDetailedBudget(cat, Number(e.target.value))}
+                    placeholder="0"
+                    className="rounded-xl pl-10"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => removeDetailedCategory(cat)}
@@ -228,10 +267,15 @@ export function BudgetSection({
             </div>
           )}
           
+          <p className="text-[11px] text-muted-foreground flex items-start gap-1.5 pt-2">
+            <Info className="h-3 w-3 mt-0.5 shrink-0" />
+            Budget is set in your home currency. Expenses can be added in travel currencies (USD, EUR, IDR).
+          </p>
+          
           <div className="pt-2 border-t border-border flex items-center justify-between">
             <span className="text-sm font-medium text-foreground">Total</span>
             <span className="text-sm font-bold text-primary">
-              RM {Object.values(detailedBudget).reduce((a, b) => a + b, 0).toLocaleString()}
+              {currencySymbol} {Object.values(detailedBudget).reduce((a, b) => a + b, 0).toLocaleString()}
             </span>
           </div>
         </div>
