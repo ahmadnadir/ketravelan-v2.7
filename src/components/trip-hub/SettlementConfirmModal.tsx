@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, ChevronDown, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { ArrowLeft, ArrowRight, ChevronDown, Upload, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +34,7 @@ interface SettlementConfirmModalProps {
   // Receipt (optional)
   receiptUrl?: string;
   onViewReceipt?: () => void;
+  onUploadReceipt?: (file: File) => void;
   // Actions
   onConfirm: () => void;
   // Back navigation (for secondary modal flow)
@@ -56,14 +57,27 @@ export function SettlementConfirmModal({
   grossOffset,
   receiptUrl,
   onViewReceipt,
+  onUploadReceipt,
   onConfirm,
   onBack,
 }: SettlementConfirmModalProps) {
   const [breakdownOpen, setBreakdownOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleConfirm = () => {
     onConfirm();
     onOpenChange(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onUploadReceipt) {
+      onUploadReceipt(file);
+    }
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -227,9 +241,27 @@ export function SettlementConfirmModal({
                 </Button>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                No receipt uploaded (optional)
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  No receipt uploaded (optional)
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-sm gap-1.5"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Upload
+                </Button>
+              </div>
             )}
           </div>
         </div>
