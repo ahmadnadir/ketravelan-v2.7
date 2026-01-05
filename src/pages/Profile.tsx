@@ -10,7 +10,6 @@ import {
   Twitter,
   Ghost,
   AtSign,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -107,169 +106,178 @@ export default function Profile() {
   const displayedStyles = userProfile.travelStyles.slice(0, 4);
 
   const headerContent = (
-    <div className="flex items-center justify-between w-full px-4 py-3 border-b border-border/50 bg-background">
-      <span className="text-base font-semibold">Profile</span>
-    </div>
+    <header className="glass border-b border-border/50">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
+        <div className="flex items-center gap-3 h-14">
+          <h1 className="font-semibold text-foreground">Profile</h1>
+        </div>
+      </div>
+    </header>
   );
 
   const footerContent = (
-    <div className="p-4 border-t border-border/50 bg-background">
-      <Link to="/profile/edit" className="block">
-        <Button className="w-full rounded-xl">Edit Profile</Button>
-      </Link>
+    <div className="bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
+        <Link to="/profile/edit" className="block">
+          <Button size="lg" className="w-full rounded-xl">Edit Profile</Button>
+        </Link>
+      </div>
     </div>
   );
 
   return (
-    <FocusedFlowLayout headerContent={headerContent} footerContent={footerContent}>
-      <div className="space-y-4">
-        {/* Cover Photo Banner */}
-        <div className="relative group -mx-4 -mt-4">
-          <div className="h-32 sm:h-40 w-full bg-muted overflow-hidden">
-            {userProfile.coverPhotoUrl ? (
-              <img
-                src={userProfile.coverPhotoUrl}
-                alt="Cover"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-gradient-to-br from-primary/20 to-primary/5" />
-            )}
+    <FocusedFlowLayout headerContent={headerContent} footerContent={footerContent} showBottomNav={true}>
+      {/* Cover Photo Banner */}
+      <div className="relative group">
+        <div className="h-32 sm:h-40 w-full bg-muted overflow-hidden">
+          {userProfile.coverPhotoUrl ? (
+            <img
+              src={userProfile.coverPhotoUrl}
+              alt="Cover"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+          )}
+        </div>
+        {/* Edit Cover button */}
+        <button
+          onClick={() => navigate("/profile/edit")}
+          className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <div className="flex items-center gap-2 text-white text-sm font-medium">
+            <Camera className="h-4 w-4" />
+            Edit Cover
           </div>
-          {/* Edit Cover button */}
-          <button
-            onClick={() => navigate("/profile/edit")}
-            className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <div className="flex items-center gap-2 text-white text-sm font-medium">
-              <Camera className="h-4 w-4" />
-              Edit Cover
-            </div>
-          </button>
-          {/* Avatar */}
-          <div className="absolute -bottom-12 left-4">
-            <Avatar className="h-24 w-24 border-4 border-background">
+        </button>
+
+        {/* Avatar - Centered, overlapping cover */}
+        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
+          <div className="flex flex-col items-center -mt-12">
+            <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
               <AvatarImage src={userProfile.imageUrl} alt={userProfile.name} />
               <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
             </Avatar>
           </div>
         </div>
+      </div>
 
-        {/* Spacer for avatar overlap */}
-        <div className="h-8" />
+      {/* Main Content */}
+      <div className="pt-3 pb-6">
+        <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4 space-y-4">
+          {/* Profile Header - Identity */}
+          <div className="flex flex-col items-center text-center space-y-1">
+            <h2 className="text-xl font-bold text-foreground">{userProfile.name}</h2>
+            <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5" />
+              <span className="text-sm">{userProfile.location}</span>
+            </div>
 
-        {/* Name, Location & Social Links */}
-        <div className="space-y-2">
-          <h1 className="text-xl font-bold text-foreground">{userProfile.name}</h1>
-          <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
-            <MapPin className="h-4 w-4" />
-            <span>{userProfile.location}</span>
+            {/* Social Links - Centered row */}
+            {userProfile.socialLinks.length > 0 && (
+              <div className="flex items-center gap-3 pt-2">
+                {userProfile.socialLinks.map((link) => {
+                  const Icon = platformIcons[link.platform];
+                  if (!Icon) return null;
+                  return (
+                    <a
+                      key={link.platform}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={link.platform}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Social Links */}
-          {userProfile.socialLinks.length > 0 && (
-            <div className="flex items-center gap-3 pt-1">
-              {userProfile.socialLinks.map((link) => {
-                const Icon = platformIcons[link.platform];
-                if (!Icon) return null;
-                return (
-                  <a
-                    key={link.platform}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label={link.platform}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </a>
-                );
-              })}
-            </div>
-          )}
-        </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="p-3 text-center border-border/50">
+              <p className="text-xl font-bold text-foreground">{userProfile.stats.tripsCount}</p>
+              <p className="text-xs text-muted-foreground">Trips</p>
+            </Card>
+            <Card className="p-3 text-center border-border/50">
+              <p className="text-xl font-bold text-foreground">{userProfile.stats.countriesCount}</p>
+              <p className="text-xs text-muted-foreground">Countries</p>
+            </Card>
+          </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="p-3 text-center border-border/50">
-            <p className="text-xl font-bold text-foreground">{userProfile.stats.tripsCount}</p>
-            <p className="text-xs text-muted-foreground">Trips</p>
-          </Card>
-          <Card className="p-3 text-center border-border/50">
-            <p className="text-xl font-bold text-foreground">{userProfile.stats.countriesCount}</p>
-            <p className="text-xs text-muted-foreground">Countries</p>
-          </Card>
-        </div>
-
-        {/* About Me */}
-        <Card className="p-4 border-border/50">
-          <h3 className="font-semibold text-foreground mb-2 text-sm">About Me</h3>
-          <AboutText text={userProfile.bio} />
-        </Card>
-
-        {/* Travel Style */}
-        {userProfile.travelStyles.length > 0 && (
+          {/* About Me */}
           <Card className="p-4 border-border/50">
-            <h3 className="font-semibold text-foreground mb-3 text-sm">Travel Style</h3>
-            <div className="flex flex-wrap gap-2 items-center">
-              {displayedStyles.map((style) => (
-                <PillChip key={style} label={style} icon={getCategoryIcon(style)} size="sm" />
-              ))}
-              {userProfile.travelStyles.length > 4 && (
-                <button
-                  onClick={() => setShowAllStyles(true)}
-                  className="inline-flex items-center px-2 py-1 text-xs text-primary font-medium hover:text-primary/80 transition-colors"
-                >
-                  +{userProfile.travelStyles.length - 4} more
-                </button>
-              )}
-            </div>
+            <h3 className="font-semibold text-foreground mb-2 text-sm">About Me</h3>
+            <AboutText text={userProfile.bio} />
           </Card>
-        )}
 
-        {/* Travel Styles Modal */}
-        <Dialog open={showAllStyles} onOpenChange={setShowAllStyles}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Travel Style</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-wrap gap-2 pt-2">
-              {userProfile.travelStyles.map((style) => (
-                <PillChip key={style} label={style} icon={getCategoryIcon(style)} />
+          {/* Travel Style */}
+          {userProfile.travelStyles.length > 0 && (
+            <Card className="p-4 border-border/50">
+              <h3 className="font-semibold text-foreground mb-3 text-sm">Travel Style</h3>
+              <div className="flex flex-wrap gap-2 items-center">
+                {displayedStyles.map((style) => (
+                  <PillChip key={style} label={style} icon={getCategoryIcon(style)} size="sm" />
+                ))}
+                {userProfile.travelStyles.length > 4 && (
+                  <button
+                    onClick={() => setShowAllStyles(true)}
+                    className="inline-flex items-center px-2 py-1 text-xs text-primary font-medium hover:text-primary/80 transition-colors"
+                  >
+                    +{userProfile.travelStyles.length - 4} more
+                  </button>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Travel Styles Modal */}
+          <Dialog open={showAllStyles} onOpenChange={setShowAllStyles}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Travel Style</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {userProfile.travelStyles.map((style) => (
+                  <PillChip key={style} label={style} icon={getCategoryIcon(style)} />
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Previous Trips */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-foreground text-sm">Previous Trips</h3>
+            <div className="space-y-3">
+              {userProfile.previousTrips.map((trip) => (
+                <Link key={trip.id} to={`/trip/${trip.id}`}>
+                  <Card className="overflow-hidden border-border/50 hover:bg-muted/30 transition-colors">
+                    <div className="flex gap-3 p-3">
+                      <div className="h-16 w-20 rounded-lg overflow-hidden shrink-0">
+                        <img
+                          src={trip.imageUrl}
+                          alt={trip.title}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-foreground text-sm truncate">
+                          {trip.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <MapPin className="h-3 w-3" />
+                          {trip.destination}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">{trip.date}</p>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
               ))}
             </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Previous Trips */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-foreground text-sm">Previous Trips</h3>
-          <div className="space-y-3">
-            {userProfile.previousTrips.map((trip) => (
-              <Link key={trip.id} to={`/trip/${trip.id}`}>
-                <Card className="overflow-hidden border-border/50 hover:bg-muted/30 transition-colors">
-                  <div className="flex gap-3 p-3">
-                    <div className="h-16 w-20 rounded-lg overflow-hidden shrink-0">
-                      <img
-                        src={trip.imageUrl}
-                        alt={trip.title}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-foreground text-sm truncate">
-                        {trip.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <MapPin className="h-3 w-3" />
-                        {trip.destination}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">{trip.date}</p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
           </div>
         </div>
       </div>
