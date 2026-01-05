@@ -3,6 +3,9 @@ import { ArrowRight, QrCode, FileText, Upload, CheckCircle2 } from "lucide-react
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { DualCurrencyDisplay } from "@/components/shared/DualCurrencyDisplay";
+import { CurrencyCode } from "@/lib/currencyUtils";
+import { CurrencyViewMode } from "@/hooks/useCurrencyViewPreference";
 
 interface SettlementCardProps {
   fromUser: { id: string; name: string; imageUrl?: string };
@@ -17,6 +20,13 @@ interface SettlementCardProps {
   onViewDetails?: () => void;
   onSendReminder?: () => void;
   onMarkPaid?: () => void;
+  // Multi-currency props
+  originalCurrency?: CurrencyCode;
+  homeCurrency?: CurrencyCode;
+  convertedAmountHome?: number;
+  conversionAvailable?: boolean;
+  viewMode?: CurrencyViewMode;
+  onToggleViewMode?: () => void;
 }
 
 export function SettlementCard({
@@ -32,10 +42,21 @@ export function SettlementCard({
   onViewDetails,
   onSendReminder,
   onMarkPaid,
+  // Multi-currency props
+  originalCurrency,
+  homeCurrency = "MYR",
+  convertedAmountHome,
+  conversionAvailable = true,
+  viewMode = "travel",
+  onToggleViewMode,
 }: SettlementCardProps) {
   // Determine user's role in this settlement
   const isUserPayer = currentUserId === fromUser.id;  // I owe someone
   const isUserReceiver = currentUserId === toUser.id; // Someone owes me
+  
+  // Determine if dual currency display is needed
+  const needsDualDisplay = originalCurrency && originalCurrency !== homeCurrency;
+
   return (
     <Card 
       className="p-4 border-border/50 cursor-pointer hover:border-primary/50 hover:shadow-md active:scale-[0.98] transition-all"
@@ -89,9 +110,26 @@ export function SettlementCard({
 
       {/* Middle Section: Net Amount (Primary Focus) */}
       <div className="text-center py-2">
-        <p className="text-2xl font-bold text-foreground">
-          {currency} {amount.toLocaleString()}
-        </p>
+        {needsDualDisplay && originalCurrency ? (
+          <div className="flex justify-center">
+            <DualCurrencyDisplay
+              originalAmount={amount}
+              originalCurrency={originalCurrency}
+              convertedAmount={convertedAmountHome}
+              homeCurrency={homeCurrency}
+              conversionAvailable={conversionAvailable}
+              viewMode={viewMode}
+              showToggle={!!onToggleViewMode}
+              onToggle={onToggleViewMode}
+              size="lg"
+              align="center"
+            />
+          </div>
+        ) : (
+          <p className="text-2xl font-bold text-foreground">
+            {currency} {amount.toLocaleString()}
+          </p>
+        )}
         <p className="text-[14px] sm:text-xs text-muted-foreground mt-0.5">Net amount owed</p>
       </div>
 

@@ -12,6 +12,9 @@ import { getCategoryFromTitle } from "@/lib/expenseCategories";
 import { cn } from "@/lib/utils";
 import { formatDisplayDate } from "@/lib/dateUtils";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { DualCurrencyDisplay } from "@/components/shared/DualCurrencyDisplay";
+import { CurrencyCode } from "@/lib/currencyUtils";
+import { CurrencyViewMode } from "@/hooks/useCurrencyViewPreference";
 
 // User role types for expense actions
 type ExpenseRole = "payer" | "owes" | "settled";
@@ -47,11 +50,18 @@ interface ExpenseCardProps {
   isHighlighted?: boolean;
   // Staggered animation delay for progress bar (in ms)
   animationDelay?: number;
+  // Multi-currency props
+  originalCurrency?: CurrencyCode;
+  homeCurrency?: CurrencyCode;
+  convertedAmountHome?: number;
+  conversionAvailable?: boolean;
+  viewMode?: CurrencyViewMode;
+  onToggleViewMode?: () => void;
 }
 
 // Format currency helper
 const formatCurrency = (value: number, curr: string = "RM"): string => {
-  return `${curr}${value.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${curr} ${value.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 export function ExpenseCard({
@@ -74,7 +84,16 @@ export function ExpenseCard({
   onDelete,
   isHighlighted = false,
   animationDelay = 300,
+  // Multi-currency props
+  originalCurrency,
+  homeCurrency = "MYR",
+  convertedAmountHome,
+  conversionAvailable = true,
+  viewMode = "travel",
+  onToggleViewMode,
 }: ExpenseCardProps) {
+  // Determine if dual currency display is needed
+  const needsDualDisplay = originalCurrency && originalCurrency !== homeCurrency;
 
   // Determine user's role for this expense
   const isFullySettled = paymentProgress === 100;
@@ -159,9 +178,24 @@ export function ExpenseCard({
               </p>
             </div>
             <div className="flex items-start gap-1 shrink-0">
-              <span className="text-base sm:text-lg font-semibold text-foreground">
-                {currency} {amount.toLocaleString()}
-              </span>
+              {needsDualDisplay && originalCurrency ? (
+                <DualCurrencyDisplay
+                  originalAmount={amount}
+                  originalCurrency={originalCurrency}
+                  convertedAmount={convertedAmountHome}
+                  homeCurrency={homeCurrency}
+                  conversionAvailable={conversionAvailable}
+                  viewMode={viewMode}
+                  showToggle={!!onToggleViewMode}
+                  onToggle={onToggleViewMode}
+                  size="md"
+                  align="right"
+                />
+              ) : (
+                <span className="text-base sm:text-lg font-semibold text-foreground">
+                  {currency} {amount.toLocaleString()}
+                </span>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 

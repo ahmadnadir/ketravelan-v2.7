@@ -7,13 +7,70 @@ export const currencies: { code: CurrencyCode; symbol: string; name: string }[] 
   { code: "IDR", symbol: "Rp", name: "Indonesian Rupiah" },
 ];
 
-// Approximate conversion rates from MYR
+// Travel currencies only (for expense entry)
+export const travelCurrencies = currencies.filter(c => c.code !== "MYR");
+
+// Approximate conversion rates TO MYR (base currency)
+// 1 USD = 4.76 MYR, 1 EUR = 5.00 MYR, 1 IDR = 0.000296 MYR
+export const conversionRatesToMYR: Record<CurrencyCode, number> = {
+  MYR: 1,
+  USD: 4.76,
+  EUR: 5.00,
+  IDR: 0.000296,
+};
+
+// Legacy: rates FROM MYR (for backward compatibility)
 export const conversionRates: Record<CurrencyCode, number> = {
   MYR: 1,
   USD: 0.21,
   EUR: 0.20,
   IDR: 3380,
 };
+
+export interface ConversionResult {
+  amount: number;
+  rate: number;
+  available: boolean;
+}
+
+// Convert from any currency to home currency
+export function convertToHomeCurrency(
+  amount: number,
+  fromCurrency: CurrencyCode,
+  homeCurrency: CurrencyCode
+): ConversionResult {
+  if (fromCurrency === homeCurrency) {
+    return { amount, rate: 1, available: true };
+  }
+  
+  // Convert to MYR first (base), then to home currency
+  const amountInMYR = amount * conversionRatesToMYR[fromCurrency];
+  const rate = conversionRatesToMYR[fromCurrency] / conversionRatesToMYR[homeCurrency];
+  const convertedAmount = amount * rate;
+  
+  return {
+    amount: Math.round(convertedAmount * 100) / 100,
+    rate,
+    available: true,
+  };
+}
+
+// Format currency with proper spacing: "RM 5,000" not "RM5,000"
+export function formatCurrencySpaced(amount: number, currency: CurrencyCode): string {
+  const currencyInfo = currencies.find((c) => c.code === currency);
+  const symbol = currencyInfo?.symbol || currency;
+  
+  if (currency === "IDR") {
+    if (amount >= 1000000) {
+      return `${symbol} ${(amount / 1000000).toFixed(1)}jt`;
+    }
+    if (amount >= 1000) {
+      return `${symbol} ${Math.round(amount / 1000)}k`;
+    }
+  }
+  
+  return `${symbol} ${amount.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
 export function convertPrice(priceInMYR: number, toCurrency: CurrencyCode): number {
   return Math.round(priceInMYR * conversionRates[toCurrency]);
