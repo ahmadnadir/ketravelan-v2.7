@@ -98,14 +98,16 @@ export function AddExpenseModal({
   const { user } = useAuth();
   const homeCurrency: CurrencyCode = user?.homeCurrency || "MYR";
   
-  // Filter available currencies based on allowedCurrencies prop
-  const availableCurrencies = allowedCurrencies?.length 
+  // Build available currencies: home currency + allowed travel currencies
+  const homeCurrencyInfo = { code: homeCurrency, symbol: homeCurrency === "MYR" ? "RM" : homeCurrency, name: "Home Currency" };
+  const filteredTravelCurrencies = allowedCurrencies?.length 
     ? travelCurrencies.filter(c => allowedCurrencies.includes(c.code))
     : travelCurrencies;
+  const availableCurrencies = [homeCurrencyInfo, ...filteredTravelCurrencies.filter(c => c.code !== homeCurrency)];
   
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState<CurrencyCode>("USD");
+  const [currency, setCurrency] = useState<CurrencyCode>(homeCurrency);
   const [category, setCategory] = useState("");
   const [paidBy, setPaidBy] = useState(currentUser);
   const [splitType, setSplitType] = useState<"equal" | "custom">("equal");
@@ -204,7 +206,7 @@ export function AddExpenseModal({
   const resetForm = () => {
     setTitle("");
     setAmount("");
-    setCurrency("USD");
+    setCurrency(homeCurrency);
     setCategory("");
     setPaidBy(currentUser);
     setSplitType("equal");
