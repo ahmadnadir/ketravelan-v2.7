@@ -240,7 +240,21 @@ export function ExpenseCard({
           <div className="flex items-center justify-between pt-1">
             <span className="text-[14px] sm:text-xs font-medium text-foreground">Your share:</span>
             <div className="flex items-center gap-1.5">
-              <span className="text-[15px] sm:text-xs font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
+              {needsDualDisplay && originalCurrency ? (
+                <DualCurrencyDisplay
+                  originalAmount={personalShare.amount}
+                  originalCurrency={originalCurrency}
+                  convertedAmount={convertedAmountHome && amount ? (personalShare.amount / amount) * convertedAmountHome : undefined}
+                  homeCurrency={homeCurrency}
+                  conversionAvailable={conversionAvailable}
+                  viewMode={viewMode}
+                  showToggle={false}
+                  size="sm"
+                  align="right"
+                />
+              ) : (
+                <span className="text-[15px] sm:text-xs font-semibold">{formatCurrency(personalShare.amount, currency)}</span>
+              )}
               <StatusBadge 
                 status={personalShare.status} 
                 className="text-[12px] sm:text-[10px] px-2.5 sm:px-2 py-1 sm:py-0.5"
