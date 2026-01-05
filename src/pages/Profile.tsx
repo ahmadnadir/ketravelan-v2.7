@@ -122,7 +122,7 @@ export default function Profile() {
         <div className="flex items-center justify-between h-14">
           <h1 className="font-semibold text-foreground">Profile</h1>
           <Link
-            to="/profile/edit"
+            to="/settings"
             className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Settings"
           >
