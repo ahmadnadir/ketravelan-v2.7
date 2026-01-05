@@ -86,9 +86,6 @@ export default function UserProfileView() {
   const footerContent = (
     <div className="bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
-        <p className="text-xs text-muted-foreground text-center mb-2">
-          Start a conversation before joining the trip
-        </p>
         <Button size="lg" className="w-full rounded-xl gap-2" onClick={handleMessage}>
           <MessageCircle className="h-5 w-5" />
           Message {profile.name.split(" ")[0]}
@@ -190,10 +187,7 @@ export default function UserProfileView() {
           {/* About Section */}
           {profile.bio && (
             <Card className="p-4 border-border/50">
-              <h3 className="font-semibold text-foreground mb-1">About Me</h3>
-              <p className="text-xs text-muted-foreground mb-2">
-                A short intro for your travel buddies
-              </p>
+              <h3 className="font-semibold text-foreground mb-2">About Me</h3>
               <AboutText bio={profile.bio} />
             </Card>
           )}
