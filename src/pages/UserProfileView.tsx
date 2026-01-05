@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, MapPin, MessageCircle, Instagram, Youtube, Linkedin, Globe, Camera } from "lucide-react";
+import { ChevronLeft, MapPin, MessageCircle, Instagram, Youtube, Linkedin, Globe, Camera, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,6 +8,12 @@ import { PillChip } from "@/components/shared/PillChip";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { mockUserProfiles } from "@/data/mockData";
 import { tripCategories } from "@/data/categories";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Helper to find category icon by label
 const getCategoryIcon = (styleLabel: string): string | undefined => {
@@ -48,6 +54,7 @@ const AboutText = ({ bio }: { bio: string }) => {
 
 export default function UserProfileView() {
   const { userId } = useParams();
+  const [showAllStyles, setShowAllStyles] = useState(false);
   const navigate = useNavigate();
   
   const profile = mockUserProfiles[userId || "1"] || mockUserProfiles["1"];
@@ -201,13 +208,30 @@ export default function UserProfileView() {
                   <PillChip key={style} label={style} icon={getCategoryIcon(style)} size="sm" />
                 ))}
                 {profile.travelStyles.length > 4 && (
-                  <span className="inline-flex items-center px-2 py-1 text-xs text-muted-foreground">
+                  <button
+                    onClick={() => setShowAllStyles(true)}
+                    className="inline-flex items-center px-2 py-1 text-xs text-primary font-medium hover:text-primary/80 transition-colors"
+                  >
                     +{profile.travelStyles.length - 4} more
-                  </span>
+                  </button>
                 )}
               </div>
             </Card>
           )}
+
+          {/* Travel Styles Modal */}
+          <Dialog open={showAllStyles} onOpenChange={setShowAllStyles}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Travel Style</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {profile.travelStyles.map((style) => (
+                  <PillChip key={style} label={style} icon={getCategoryIcon(style)} />
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Previous Trips */}
           <div className="space-y-3">
