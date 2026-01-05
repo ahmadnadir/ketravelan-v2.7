@@ -40,6 +40,8 @@ import { useToast } from "@/hooks/use-toast";
 import SafetyNotice from "@/components/trip-details/SafetyNotice";
 import { tripCategories } from "@/data/categories";
 import { cn } from "@/lib/utils";
+import { TripDetailsSkeleton } from "@/components/skeletons/TripDetailsSkeleton";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 
 const iconMap: Record<string, any> = {
   car: Car,
@@ -112,6 +114,7 @@ const parseDescriptionToBullets = (description: string): string[] => {
 
 export default function TripDetails() {
   const { id } = useParams();
+  const isLoading = useSimulatedLoading(700);
   const [currentImage, setCurrentImage] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
   const [isFavourited, setIsFavourited] = useState(false);
@@ -307,9 +310,12 @@ export default function TripDetails() {
     });
   };
 
+  if (isLoading) {
+    return <TripDetailsSkeleton />;
+  }
+
   return (
     <>
-      {/* Share Modal */}
       <Dialog open={shareModalOpen} onOpenChange={setShareModalOpen}>
         <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] max-w-sm left-1/2 -translate-x-1/2 rounded-2xl">
           <DialogHeader className="pb-2">
