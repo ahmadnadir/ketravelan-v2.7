@@ -81,7 +81,7 @@ export function StatCard({
   
   const displayValue = animate && num !== 0 ? animatedValue : value;
 
-  // Summary variant: centered, no icon, larger text
+  // Summary variant: centered, with icon, larger text
   if (variant === "summary") {
     return (
       <Card 
@@ -93,7 +93,12 @@ export function StatCard({
         onClick={onClick}
       >
         <div className="text-center space-y-1">
-          <p className="text-[13px] sm:text-xs text-muted-foreground">{title}</p>
+          <div className="flex items-center justify-center gap-1.5">
+            {showIcon && (
+              <Icon className={cn("h-4 w-4 shrink-0", iconColors[color])} />
+            )}
+            <p className="text-[13px] sm:text-xs text-muted-foreground">{title}</p>
+          </div>
           <p className="text-2xl sm:text-xl font-bold text-foreground">{displayValue}</p>
           {description && (
             <p className="text-[12px] sm:text-[11px] text-muted-foreground/80">{description}</p>
