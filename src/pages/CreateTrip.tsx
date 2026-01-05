@@ -148,6 +148,7 @@ export default function CreateTrip() {
       groupSizeType: draft.groupSizeType,
       groupSize: draft.groupSize,
       galleryImages: draft.galleryImages,
+      travelCurrencies: draft.travelCurrencies,
       budgetType: draft.budgetType,
       roughBudgetTotal: draft.roughBudgetTotal,
       roughBudgetCategories: draft.roughBudgetCategories,
@@ -663,6 +664,8 @@ export default function CreateTrip() {
                 onRoughBudgetCategoriesChange={(cats) => updateDraft("roughBudgetCategories", cats)}
                 detailedBudget={draft.detailedBudget}
                 onDetailedBudgetChange={(budget) => updateDraft("detailedBudget", budget)}
+                travelCurrencies={draft.travelCurrencies}
+                onTravelCurrenciesChange={(currencies) => updateDraft("travelCurrencies", currencies)}
               />
             </div>
 

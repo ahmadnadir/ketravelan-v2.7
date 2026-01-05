@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 const DRAFT_KEY = 'ketravelan-draft-trip';
 const DEBOUNCE_MS = 500;
 
+import { CurrencyCode } from '@/lib/currencyUtils';
+
 export interface TripDraft {
   // Step 1
   visibility: 'public' | 'private';
@@ -21,6 +23,7 @@ export interface TripDraft {
   galleryImages: string[];
   
   // Step 3 - Plan
+  travelCurrencies: CurrencyCode[];
   budgetType: 'skip' | 'rough' | 'detailed';
   roughBudgetTotal: number;
   roughBudgetCategories: string[];
@@ -49,6 +52,7 @@ export const getDefaultDraft = (): TripDraft => ({
   groupSizeType: 'later',
   groupSize: 3,
   galleryImages: [],
+  travelCurrencies: [],
   budgetType: 'skip',
   roughBudgetTotal: 0,
   roughBudgetCategories: [],

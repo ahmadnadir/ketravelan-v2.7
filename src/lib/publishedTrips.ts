@@ -1,5 +1,7 @@
 // Storage helper for published trips (persists to localStorage)
 
+import { CurrencyCode } from '@/lib/currencyUtils';
+
 const PUBLISHED_TRIPS_KEY = 'ketravelan-published-trips';
 
 export interface PublishedTrip {
@@ -16,6 +18,7 @@ export interface PublishedTrip {
   groupSizeType: 'later' | 'set';
   groupSize: number;
   galleryImages: string[];
+  travelCurrencies?: CurrencyCode[];
   budgetType: 'skip' | 'rough' | 'detailed';
   roughBudgetTotal: number;
   roughBudgetCategories: string[];

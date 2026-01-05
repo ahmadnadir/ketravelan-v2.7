@@ -83,6 +83,7 @@ interface AddExpenseModalProps {
   onEditExpense?: (id: string, expense: NewExpense) => void;
   editingExpense?: ExpenseData | null;
   currentUser?: string;
+  allowedCurrencies?: CurrencyCode[];
 }
 
 export function AddExpenseModal({
@@ -92,9 +93,15 @@ export function AddExpenseModal({
   onEditExpense,
   editingExpense,
   currentUser = "Ahmad Razak",
+  allowedCurrencies,
 }: AddExpenseModalProps) {
   const { user } = useAuth();
   const homeCurrency: CurrencyCode = user?.homeCurrency || "MYR";
+  
+  // Filter available currencies based on allowedCurrencies prop
+  const availableCurrencies = allowedCurrencies?.length 
+    ? travelCurrencies.filter(c => allowedCurrencies.includes(c.code))
+    : travelCurrencies;
   
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -332,7 +339,7 @@ export function AddExpenseModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  {travelCurrencies.map((c) => (
+                  {availableCurrencies.map((c) => (
                     <SelectItem key={c.code} value={c.code} className="rounded-lg">
                       <span className="flex items-center gap-2">
                         <span>{c.symbol}</span>
