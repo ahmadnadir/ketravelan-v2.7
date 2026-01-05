@@ -1,4 +1,4 @@
-import { Download } from "lucide-react";
+import { Download, ArrowLeft } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -14,6 +14,8 @@ interface ViewQRModalProps {
   amount?: number;
   currency?: string;
   qrCodeUrl?: string;
+  // Back navigation (for secondary modal flow)
+  onBack?: () => void;
 }
 
 export function ViewQRModal({
@@ -23,6 +25,7 @@ export function ViewQRModal({
   amount,
   currency = "RM",
   qrCodeUrl,
+  onBack,
 }: ViewQRModalProps) {
   const handleDownload = () => {
     const link = document.createElement("a");
@@ -36,7 +39,16 @@ export function ViewQRModal({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
-        <SheetHeader className="pb-4">
+        <SheetHeader className="pb-4 relative">
+          {/* Back button (if secondary modal) */}
+          {onBack && (
+            <button 
+              onClick={onBack}
+              className="absolute left-0 top-0 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          )}
           <SheetTitle className="text-center text-lg font-semibold">
             Payment QR Code
           </SheetTitle>

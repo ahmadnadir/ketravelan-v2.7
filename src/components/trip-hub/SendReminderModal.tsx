@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Mail, MessageCircle, Bell, X } from "lucide-react";
+import { Send, Mail, MessageCircle, Bell, X, ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import {
   Dialog,
@@ -19,6 +19,8 @@ interface SendReminderModalProps {
   tripName: string;
   lastReminderSent?: Date;
   onSend: (message: string) => void;
+  // Back navigation (for secondary modal flow)
+  onBack?: () => void;
 }
 
 export function SendReminderModal({
@@ -29,6 +31,7 @@ export function SendReminderModal({
   tripName,
   lastReminderSent,
   onSend,
+  onBack,
 }: SendReminderModalProps) {
   const defaultMessage = `Hey 👋 Just a reminder to settle RM${amount} for our ${tripName} trip. Thanks!`;
   const [message, setMessage] = useState(defaultMessage);
@@ -49,7 +52,18 @@ export function SendReminderModal({
         {/* Fixed Header */}
         <DialogHeader className="flex-none p-4 pb-3 border-b border-border/50">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">Send Payment Reminder</DialogTitle>
+            {/* Back button (if secondary modal) */}
+            {onBack ? (
+              <button 
+                onClick={onBack}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            ) : (
+              <div className="w-8" />
+            )}
+            <DialogTitle className="text-lg font-semibold flex-1 text-center">Send Payment Reminder</DialogTitle>
             <button 
               onClick={() => onOpenChange(false)}
               className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
