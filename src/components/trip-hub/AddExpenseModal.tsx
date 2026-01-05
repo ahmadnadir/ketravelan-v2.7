@@ -346,6 +346,11 @@ export function AddExpenseModal({
                       <span className="flex items-center gap-2">
                         <span>{c.symbol}</span>
                         <span>{c.code}</span>
+                        {c.code === homeCurrency && (
+                          <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium bg-primary/10 text-primary rounded-full">
+                            Home
+                          </span>
+                        )}
                       </span>
                     </SelectItem>
                   ))}
