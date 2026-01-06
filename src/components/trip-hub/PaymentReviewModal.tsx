@@ -12,6 +12,9 @@ import { Card } from "@/components/ui/card";
 import { ExpensePayment } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { CurrencyLensToggle } from "@/components/shared/CurrencyLensToggle";
+import { CurrencyCode, formatCurrencySpaced } from "@/lib/currencyUtils";
+import { CurrencyViewMode } from "@/hooks/useCurrencyViewPreference";
 
 interface Member {
   id: string;
@@ -26,6 +29,13 @@ interface PaymentReviewModalProps {
   amount: number;
   payment: ExpensePayment | null;
   onConfirmReceived: () => void;
+  // Multi-currency props
+  originalCurrency?: CurrencyCode;
+  homeCurrency?: CurrencyCode;
+  convertedAmountHome?: number;
+  conversionAvailable?: boolean;
+  viewMode?: CurrencyViewMode;
+  onToggleViewMode?: () => void;
 }
 
 export function PaymentReviewModal({
@@ -35,6 +45,12 @@ export function PaymentReviewModal({
   amount,
   payment,
   onConfirmReceived,
+  originalCurrency,
+  homeCurrency = "MYR",
+  convertedAmountHome,
+  conversionAvailable = true,
+  viewMode = "travel",
+  onToggleViewMode,
 }: PaymentReviewModalProps) {
   const [zoom, setZoom] = useState(1);
 
@@ -42,6 +58,25 @@ export function PaymentReviewModal({
 
   const isSettled = payment.status === "settled";
   const hasReceipt = !!payment.receiptUrl;
+
+  // Determine if dual currency display is needed
+  const needsDualDisplay = originalCurrency && originalCurrency !== homeCurrency;
+  const showToggle = needsDualDisplay && conversionAvailable && !!onToggleViewMode;
+
+  // Calculate amounts based on view mode
+  const primaryAmount = viewMode === "home" && convertedAmountHome !== undefined
+    ? convertedAmountHome
+    : amount;
+  const primaryCurrency: CurrencyCode = viewMode === "home" 
+    ? homeCurrency 
+    : (originalCurrency || "MYR");
+
+  const secondaryAmount = viewMode === "home" 
+    ? amount 
+    : convertedAmountHome;
+  const secondaryCurrency: CurrencyCode = viewMode === "home" 
+    ? (originalCurrency || "MYR") 
+    : homeCurrency;
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5));
@@ -75,10 +110,26 @@ export function PaymentReviewModal({
               </Avatar>
               <div>
                 <p className="font-semibold text-foreground">{member.name}</p>
-                <p className="text-lg font-bold text-foreground">RM {amount.toFixed(2)}</p>
+                <p className="text-lg font-bold text-foreground transition-opacity duration-150">
+                  {formatCurrencySpaced(primaryAmount, primaryCurrency)}
+                </p>
+                {needsDualDisplay && conversionAvailable && secondaryAmount !== undefined && (
+                  <p className="text-xs text-muted-foreground">
+                    ≈ {formatCurrencySpaced(secondaryAmount, secondaryCurrency)} (est.)
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Currency Toggle */}
+              {showToggle && originalCurrency && (
+                <CurrencyLensToggle
+                  travelCurrency={originalCurrency}
+                  homeCurrency={homeCurrency}
+                  viewMode={viewMode}
+                  onToggle={onToggleViewMode!}
+                />
+              )}
               {getStatusBadge()}
               <button 
                 onClick={() => onOpenChange(false)}

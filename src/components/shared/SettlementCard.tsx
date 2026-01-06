@@ -1,11 +1,17 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, QrCode, FileText, Upload, CheckCircle2 } from "lucide-react";
+import { ArrowRight, QrCode, FileText, Upload, CheckCircle2, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { DualCurrencyDisplay } from "@/components/shared/DualCurrencyDisplay";
-import { CurrencyCode } from "@/lib/currencyUtils";
+import { CurrencyLensToggle } from "@/components/shared/CurrencyLensToggle";
+import { CurrencyCode, formatCurrencySpaced } from "@/lib/currencyUtils";
 import { CurrencyViewMode } from "@/hooks/useCurrencyViewPreference";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SettlementCardProps {
   fromUser: { id: string; name: string; imageUrl?: string };
@@ -56,6 +62,22 @@ export function SettlementCard({
   
   // Determine if dual currency display is needed
   const needsDualDisplay = originalCurrency && originalCurrency !== homeCurrency;
+  const showToggle = needsDualDisplay && conversionAvailable && !!onToggleViewMode;
+
+  // Calculate amounts based on view mode
+  const primaryAmount = viewMode === "home" && convertedAmountHome !== undefined
+    ? convertedAmountHome
+    : amount;
+  const primaryCurrency: CurrencyCode = viewMode === "home" 
+    ? homeCurrency 
+    : (originalCurrency || "MYR");
+
+  const secondaryAmount = viewMode === "home" 
+    ? amount 
+    : convertedAmountHome;
+  const secondaryCurrency: CurrencyCode = viewMode === "home" 
+    ? (originalCurrency || "MYR") 
+    : homeCurrency;
 
   return (
     <Card 
@@ -110,27 +132,50 @@ export function SettlementCard({
 
       {/* Middle Section: Net Amount (Primary Focus) */}
       <div className="text-center py-2">
-        {needsDualDisplay && originalCurrency ? (
-          <div className="flex justify-center">
-            <DualCurrencyDisplay
-              originalAmount={amount}
-              originalCurrency={originalCurrency}
-              convertedAmount={convertedAmountHome}
+        {/* Currency Toggle - only if different currencies and conversion available */}
+        {showToggle && originalCurrency && (
+          <div className="flex justify-center mb-2">
+            <CurrencyLensToggle
+              travelCurrency={originalCurrency}
               homeCurrency={homeCurrency}
-              conversionAvailable={conversionAvailable}
               viewMode={viewMode}
-              showToggle={!!onToggleViewMode}
-              onToggle={onToggleViewMode}
-              size="lg"
-              align="center"
+              onToggle={onToggleViewMode!}
             />
           </div>
-        ) : (
-          <p className="text-2xl font-bold text-foreground">
-            {currency} {amount.toLocaleString()}
+        )}
+        
+        {/* Conversion unavailable indicator */}
+        {needsDualDisplay && !conversionAvailable && (
+          <div className="flex justify-center mb-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Info className="h-3 w-3" />
+                    Rate unavailable
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Currency conversion unavailable</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
+
+        {/* Primary Amount - single dominant currency */}
+        <p className="text-2xl font-bold text-foreground transition-opacity duration-150">
+          {formatCurrencySpaced(primaryAmount, primaryCurrency)}
+        </p>
+        
+        {/* Secondary reference */}
+        {needsDualDisplay && conversionAvailable && secondaryAmount !== undefined && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            ≈ {formatCurrencySpaced(secondaryAmount, secondaryCurrency)} (est.)
           </p>
         )}
-        <p className="text-[14px] sm:text-xs text-muted-foreground mt-0.5">Net amount owed</p>
+        
+        <p className="text-[14px] sm:text-xs text-muted-foreground mt-1">Net amount owed</p>
       </div>
 
       {/* Status Badge - Centered */}
