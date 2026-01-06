@@ -22,8 +22,8 @@ import { PaymentReviewModal } from "./PaymentReviewModal";
 import { ReceiptsFromOthersModal } from "./ReceiptsFromOthersModal";
 import { formatDisplayDate } from "@/lib/dateUtils";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { DualCurrencyDisplay } from "@/components/shared/DualCurrencyDisplay";
-import { CurrencyCode, getCurrencySymbol } from "@/lib/currencyUtils";
+import { CurrencyLensToggle } from "@/components/shared/CurrencyLensToggle";
+import { CurrencyCode, getCurrencySymbol, formatCurrencySpaced } from "@/lib/currencyUtils";
 import { CurrencyViewMode } from "@/hooks/useCurrencyViewPreference";
 
 type TabType = "overview" | "payments";
@@ -152,6 +152,22 @@ export function ExpenseDetailsModal({
   const currencySymbol = getCurrencySymbol(expenseCurrency);
   const needsDualDisplay = expenseCurrency !== homeCurrency;
   const conversionAvailable = expense.fxRateToHome !== undefined || expense.convertedAmountHome !== undefined;
+  const showToggle = needsDualDisplay && conversionAvailable && !!onToggleViewMode;
+
+  // Calculate amounts based on view mode
+  const primaryAmount = viewMode === "home" && expense.convertedAmountHome !== undefined
+    ? expense.convertedAmountHome
+    : expense.amount;
+  const primaryCurrency: CurrencyCode = viewMode === "home" 
+    ? homeCurrency 
+    : expenseCurrency;
+
+  const secondaryAmount = viewMode === "home" 
+    ? expense.amount 
+    : expense.convertedAmountHome;
+  const secondaryCurrency: CurrencyCode = viewMode === "home" 
+    ? expenseCurrency 
+    : homeCurrency;
 
   // Calculate split amounts
   const splitMembers = expense.splitWith || mockMembers.map(m => m.id);
@@ -395,7 +411,7 @@ export function ExpenseDetailsModal({
             <TabsContent value="overview" className="p-4 space-y-4 mt-0">
             {/* Combined: Amount + Paid by in one card */}
             <Card className="p-4 border-border/50">
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <Avatar className="h-12 w-12 shrink-0">
                   <AvatarImage src={payerMember?.imageUrl} alt={expense.paidBy} />
                   <AvatarFallback>{expense.paidBy.split(" ").map(n => n[0]).join("")}</AvatarFallback>
@@ -407,22 +423,29 @@ export function ExpenseDetailsModal({
                   <p className="text-[13px] sm:text-xs text-muted-foreground">{formatDisplayDate(expense.date)}</p>
                 </div>
                 
-                <div className="text-right shrink-0 flex items-center">
-                  {needsDualDisplay ? (
-                    <DualCurrencyDisplay
-                      originalAmount={expense.amount}
-                      originalCurrency={expenseCurrency}
-                      convertedAmount={expense.convertedAmountHome}
-                      homeCurrency={homeCurrency}
-                      conversionAvailable={conversionAvailable}
-                      viewMode={viewMode}
-                      showToggle={!!onToggleViewMode}
-                      onToggle={onToggleViewMode}
-                      size="lg"
-                      align="right"
-                    />
-                  ) : (
-                    <p className="text-xl font-bold text-foreground">{currencySymbol} {expense.amount.toLocaleString()}</p>
+                <div className="text-right shrink-0 space-y-1">
+                  {/* Currency Toggle */}
+                  {showToggle && (
+                    <div className="flex justify-end">
+                      <CurrencyLensToggle
+                        travelCurrency={expenseCurrency}
+                        homeCurrency={homeCurrency}
+                        viewMode={viewMode}
+                        onToggle={onToggleViewMode!}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Primary Amount */}
+                  <p className="text-xl font-bold text-foreground transition-opacity duration-150">
+                    {formatCurrencySpaced(primaryAmount, primaryCurrency)}
+                  </p>
+                  
+                  {/* Secondary Reference */}
+                  {needsDualDisplay && conversionAvailable && secondaryAmount !== undefined && (
+                    <p className="text-xs text-muted-foreground">
+                      ≈ {formatCurrencySpaced(secondaryAmount, secondaryCurrency)} (est.)
+                    </p>
                   )}
                 </div>
               </div>

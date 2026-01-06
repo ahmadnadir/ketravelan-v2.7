@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCategoryById } from "@/lib/expenseCategories";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { CurrencyCode, getCurrencySymbol } from "@/lib/currencyUtils";
+import { CurrencyLensToggle } from "@/components/shared/CurrencyLensToggle";
+import { CurrencyCode, getCurrencySymbol, formatCurrencySpaced } from "@/lib/currencyUtils";
+import { CurrencyViewMode } from "@/hooks/useCurrencyViewPreference";
 
 export interface SettlementExpense {
   expenseId: string;
@@ -42,6 +44,10 @@ interface SettlementBreakdownModalProps {
   // Multi-currency props
   originalCurrency?: CurrencyCode;
   homeCurrency?: CurrencyCode;
+  convertedAmountHome?: number;
+  conversionAvailable?: boolean;
+  viewMode?: CurrencyViewMode;
+  onToggleViewMode?: () => void;
 }
 
 export function SettlementBreakdownModal({
@@ -63,13 +69,32 @@ export function SettlementBreakdownModal({
   onViewReceipts,
   originalCurrency,
   homeCurrency = "MYR",
+  convertedAmountHome,
+  conversionAvailable = true,
+  viewMode = "travel",
+  onToggleViewMode,
 }: SettlementBreakdownModalProps) {
   const isViewerOwing = fromUser.id === currentUserId;
   const isViewerReceiving = toUser.id === currentUserId;
   
   // Determine which currency symbol to use for display
-  const displayCurrency = originalCurrency || homeCurrency;
-  const displaySymbol = getCurrencySymbol(displayCurrency);
+  const needsDualDisplay = originalCurrency && originalCurrency !== homeCurrency;
+  const showToggle = needsDualDisplay && conversionAvailable && !!onToggleViewMode;
+
+  // Calculate amounts based on view mode
+  const primaryAmount = viewMode === "home" && convertedAmountHome !== undefined
+    ? convertedAmountHome
+    : totalAmount;
+  const primaryCurrency: CurrencyCode = viewMode === "home" 
+    ? homeCurrency 
+    : (originalCurrency || homeCurrency);
+
+  const secondaryAmount = viewMode === "home" 
+    ? totalAmount 
+    : convertedAmountHome;
+  const secondaryCurrency: CurrencyCode = viewMode === "home" 
+    ? (originalCurrency || homeCurrency) 
+    : homeCurrency;
   
   const getStatusBadge = (expenseStatus: SettlementExpense["status"]) => (
     <StatusBadge status={expenseStatus} />
@@ -128,12 +153,29 @@ export function SettlementBreakdownModal({
             </div>
           </div>
 
+          {/* Currency Toggle */}
+          {showToggle && originalCurrency && (
+            <div className="flex justify-center mt-3">
+              <CurrencyLensToggle
+                travelCurrency={originalCurrency}
+                homeCurrency={homeCurrency}
+                viewMode={viewMode}
+                onToggle={onToggleViewMode!}
+              />
+            </div>
+          )}
+
           {/* Total Amount */}
           <DialogTitle className="text-center mt-3">
             <span className="text-muted-foreground text-[15px] sm:text-sm font-normal">Total Outstanding</span>
-            <span className="block text-2xl font-bold text-foreground mt-0.5">
-              {displaySymbol} {totalAmount.toLocaleString()}
+            <span className="block text-2xl font-bold text-foreground mt-0.5 transition-opacity duration-150">
+              {formatCurrencySpaced(primaryAmount, primaryCurrency)}
             </span>
+            {needsDualDisplay && conversionAvailable && secondaryAmount !== undefined && (
+              <span className="block text-xs text-muted-foreground mt-0.5">
+                ≈ {formatCurrencySpaced(secondaryAmount, secondaryCurrency)} (est.)
+              </span>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -166,7 +208,7 @@ export function SettlementBreakdownModal({
                               </p>
                             </div>
                             <p className="font-semibold text-foreground text-[15px] sm:text-sm shrink-0">
-                              {getCurrencySymbol(expense.originalCurrency || displayCurrency)} {expense.shareAmount.toFixed(2)}
+                              {getCurrencySymbol(expense.originalCurrency || primaryCurrency)} {expense.shareAmount.toFixed(2)}
                             </p>
                           </div>
                           <div className="mt-2">
@@ -180,7 +222,7 @@ export function SettlementBreakdownModal({
                 {grossOwed !== undefined && (
                   <div className="flex justify-between items-center pt-2 px-1">
                     <span className="text-[15px] sm:text-sm text-muted-foreground">Subtotal</span>
-                    <span className="font-semibold text-foreground text-[15px] sm:text-sm">{displaySymbol} {grossOwed.toFixed(2)}</span>
+                    <span className="font-semibold text-foreground text-[15px] sm:text-sm">{formatCurrencySpaced(grossOwed, primaryCurrency)}</span>
                   </div>
                 )}
               </div>
@@ -217,7 +259,7 @@ export function SettlementBreakdownModal({
                               </p>
                             </div>
                             <p className="font-semibold text-stat-red text-[15px] sm:text-sm shrink-0">
-                              -{getCurrencySymbol(expense.originalCurrency || displayCurrency)} {expense.shareAmount.toFixed(2)}
+                              -{getCurrencySymbol(expense.originalCurrency || primaryCurrency)} {expense.shareAmount.toFixed(2)}
                             </p>
                           </div>
                           <div className="mt-2">
@@ -231,7 +273,7 @@ export function SettlementBreakdownModal({
                 {grossOffset !== undefined && (
                   <div className="flex justify-between items-center pt-2 px-1 border-t border-border/20 mt-2">
                     <span className="text-[15px] sm:text-sm text-muted-foreground">Offset</span>
-                    <span className="font-semibold text-stat-red text-[15px] sm:text-sm">-{displaySymbol} {grossOffset.toFixed(2)}</span>
+                    <span className="font-semibold text-stat-red text-[15px] sm:text-sm">-{formatCurrencySpaced(grossOffset, primaryCurrency)}</span>
                   </div>
                 )}
               </div>
@@ -244,7 +286,7 @@ export function SettlementBreakdownModal({
           {/* Total Confirmation */}
           <div className="flex items-center justify-between text-[15px] sm:text-sm">
             <span className="text-muted-foreground">Total</span>
-            <span className="font-bold text-foreground text-lg">{displaySymbol} {totalAmount.toLocaleString()}</span>
+            <span className="font-bold text-foreground text-lg">{formatCurrencySpaced(primaryAmount, primaryCurrency)}</span>
           </div>
 
           {/* Action Buttons */}
