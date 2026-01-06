@@ -265,22 +265,22 @@ export function TripFilterDrawer({
           )}
         </div>
 
-        {/* Section 3: Budget */}
+        {/* Section 3: Currency */}
         <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "150ms", animationFillMode: "backwards" }}>
+          <h3 className="text-sm font-semibold text-foreground">Display Currency</h3>
+          <CurrencySelector
+            value={localFilters.currency}
+            onChange={(currency) => setLocalFilters((prev) => ({ ...prev, currency }))}
+          />
+        </div>
+
+        {/* Section 4: Budget */}
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "225ms", animationFillMode: "backwards" }}>
           <h3 className="text-sm font-semibold text-foreground">Budget</h3>
           <BudgetRangeSelector
             value={localFilters.budgetRange}
             onChange={(range) => setLocalFilters((prev) => ({ ...prev, budgetRange: range }))}
             currency={localFilters.currency}
-          />
-        </div>
-
-        {/* Section 4: Currency */}
-        <div className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in" style={{ animationDelay: "225ms", animationFillMode: "backwards" }}>
-          <h3 className="text-sm font-semibold text-foreground">Display Currency</h3>
-          <CurrencySelector
-            value={localFilters.currency}
-            onChange={(currency) => setLocalFilters((prev) => ({ ...prev, currency }))}
           />
         </div>
 
