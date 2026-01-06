@@ -999,6 +999,13 @@ export function ExpenseDetailsModal({
           amount={reviewingPayment?.amount || 0}
           payment={reviewingPayment?.payment || null}
           onConfirmReceived={handleConfirmFromReview}
+          // Pass through currency props for synced currency lens
+          originalCurrency={expenseCurrency}
+          homeCurrency={homeCurrency}
+          convertedAmountHome={reviewingPayment ? (expense.convertedAmountHome !== undefined ? (reviewingPayment.amount / expense.amount) * expense.convertedAmountHome : undefined) : undefined}
+          conversionAvailable={conversionAvailable}
+          viewMode={viewMode}
+          onToggleViewMode={onToggleViewMode}
         />
 
         {/* Receipts From Others Modal */}
