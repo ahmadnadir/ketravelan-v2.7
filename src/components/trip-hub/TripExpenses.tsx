@@ -1692,6 +1692,10 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
             currentUserId={mockMembers.find(m => m.name === CURRENT_USER)?.id || "1"}
             originalCurrency={selectedSettlementForBreakdown.originalCurrency}
             homeCurrency={homeCurrency}
+            convertedAmountHome={selectedSettlementForBreakdown.convertedAmountHome}
+            conversionAvailable={selectedSettlementForBreakdown.conversionAvailable}
+            viewMode={viewMode}
+            onToggleViewMode={selectedSettlementForBreakdown.originalCurrency && selectedSettlementForBreakdown.originalCurrency !== homeCurrency ? toggleViewMode : undefined}
             onUploadProof={() => {
               setOpenedFromBreakdown(true);
               handleMarkPaid(selectedSettlementForBreakdown);
