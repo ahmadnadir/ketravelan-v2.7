@@ -608,7 +608,12 @@ export function ExpenseDetailsModal({
                         </Avatar>
                         <p className="flex-1 min-w-0 text-[15px] sm:text-sm font-medium text-foreground break-words">{member.name}</p>
                         <p className="text-[15px] sm:text-sm font-semibold text-foreground whitespace-nowrap">
-                          {currencySymbol} {amount.toFixed(2)}
+                          {formatCurrencySpaced(
+                            viewMode === "home" && expense.convertedAmountHome !== undefined
+                              ? (amount / expense.amount) * expense.convertedAmountHome
+                              : amount,
+                            primaryCurrency
+                          )}
                         </p>
                         <StatusBadge 
                           status={isPaid ? "settled" : "pending"} 
@@ -669,7 +674,12 @@ export function ExpenseDetailsModal({
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">{member.name}</p>
                               <p className="text-base font-bold text-foreground">
-                                {currencySymbol} {amount.toFixed(2)}
+                                {formatCurrencySpaced(
+                                  viewMode === "home" && expense.convertedAmountHome !== undefined
+                                    ? (amount / expense.amount) * expense.convertedAmountHome
+                                    : amount,
+                                  primaryCurrency
+                                )}
                               </p>
                             </div>
                           </div>
@@ -759,7 +769,12 @@ export function ExpenseDetailsModal({
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-foreground text-[15px] sm:text-sm truncate">{member.name}</p>
                               <p className="text-base font-bold text-foreground">
-                                {currencySymbol} {amount.toFixed(2)}
+                                {formatCurrencySpaced(
+                                  viewMode === "home" && expense.convertedAmountHome !== undefined
+                                    ? (amount / expense.amount) * expense.convertedAmountHome
+                                    : amount,
+                                  primaryCurrency
+                                )}
                               </p>
                             </div>
                           </div>
@@ -789,10 +804,41 @@ export function ExpenseDetailsModal({
             ) : (
               /* Case A: I owe others - Show my payment status based on state */
               <div className="space-y-4">
-                {/* Amount Display - Clean centered design */}
+                {/* Amount Display - Clean centered design with currency toggle */}
                 <div className="bg-muted/50 rounded-2xl p-6 text-center">
+                  {/* Currency Toggle */}
+                  {showToggle && (
+                    <div className="flex justify-center mb-2">
+                      <CurrencyLensToggle
+                        travelCurrency={expenseCurrency}
+                        homeCurrency={homeCurrency}
+                        viewMode={viewMode}
+                        onToggle={onToggleViewMode!}
+                      />
+                    </div>
+                  )}
                   <p className="text-[15px] sm:text-sm text-muted-foreground mb-1">Amount</p>
-                  <p className="text-3xl font-bold text-foreground">{currencySymbol} {currentUserOwesAmount.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-foreground transition-opacity duration-150">
+                    {formatCurrencySpaced(
+                      viewMode === "home" && expense.convertedAmountHome !== undefined
+                        ? (currentUserOwesAmount / expense.amount) * expense.convertedAmountHome
+                        : currentUserOwesAmount,
+                      primaryCurrency
+                    )}
+                  </p>
+                  {/* Secondary reference */}
+                  {needsDualDisplay && conversionAvailable && secondaryAmount !== undefined && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ≈ {formatCurrencySpaced(
+                        viewMode === "home"
+                          ? currentUserOwesAmount
+                          : expense.convertedAmountHome !== undefined
+                            ? (currentUserOwesAmount / expense.amount) * expense.convertedAmountHome
+                            : currentUserOwesAmount,
+                        secondaryCurrency
+                      )} (est.)
+                    </p>
+                  )}
                 </div>
 
                 {/* PENDING State - Show upload form (also handles undefined status for users who owe) */}
