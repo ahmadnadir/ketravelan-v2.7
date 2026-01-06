@@ -81,6 +81,11 @@ export function SettlementBreakdownModal({
   const needsDualDisplay = originalCurrency && originalCurrency !== homeCurrency;
   const showToggle = needsDualDisplay && conversionAvailable && !!onToggleViewMode;
 
+  // Calculate conversion rate for individual expense amounts
+  const conversionRate = (convertedAmountHome !== undefined && totalAmount > 0)
+    ? convertedAmountHome / totalAmount
+    : 1;
+
   // Calculate amounts based on view mode
   const primaryAmount = viewMode === "home" && convertedAmountHome !== undefined
     ? convertedAmountHome
@@ -95,6 +100,22 @@ export function SettlementBreakdownModal({
   const secondaryCurrency: CurrencyCode = viewMode === "home" 
     ? (originalCurrency || homeCurrency) 
     : homeCurrency;
+  
+  // Helper to get display amount for individual expense items
+  const getDisplayAmount = (shareAmount: number): number => {
+    if (viewMode === "home" && convertedAmountHome !== undefined) {
+      return shareAmount * conversionRate;
+    }
+    return shareAmount;
+  };
+
+  // Calculate gross amounts in the current view currency
+  const displayGrossOwed = grossOwed !== undefined 
+    ? (viewMode === "home" && convertedAmountHome !== undefined ? grossOwed * conversionRate : grossOwed)
+    : undefined;
+  const displayGrossOffset = grossOffset !== undefined 
+    ? (viewMode === "home" && convertedAmountHome !== undefined ? grossOffset * conversionRate : grossOffset)
+    : undefined;
   
   const getStatusBadge = (expenseStatus: SettlementExpense["status"]) => (
     <StatusBadge status={expenseStatus} />
@@ -208,7 +229,7 @@ export function SettlementBreakdownModal({
                               </p>
                             </div>
                             <p className="font-semibold text-foreground text-[15px] sm:text-sm shrink-0">
-                              {getCurrencySymbol(expense.originalCurrency || primaryCurrency)} {expense.shareAmount.toFixed(2)}
+                              {formatCurrencySpaced(getDisplayAmount(expense.shareAmount), primaryCurrency)}
                             </p>
                           </div>
                           <div className="mt-2">
@@ -219,10 +240,10 @@ export function SettlementBreakdownModal({
                     </Card>
                   );
                 })}
-                {grossOwed !== undefined && (
+                {displayGrossOwed !== undefined && (
                   <div className="flex justify-between items-center pt-2 px-1">
                     <span className="text-[15px] sm:text-sm text-muted-foreground">Subtotal</span>
-                    <span className="font-semibold text-foreground text-[15px] sm:text-sm">{formatCurrencySpaced(grossOwed, primaryCurrency)}</span>
+                    <span className="font-semibold text-foreground text-[15px] sm:text-sm">{formatCurrencySpaced(displayGrossOwed, primaryCurrency)}</span>
                   </div>
                 )}
               </div>
@@ -259,7 +280,7 @@ export function SettlementBreakdownModal({
                               </p>
                             </div>
                             <p className="font-semibold text-stat-red text-[15px] sm:text-sm shrink-0">
-                              -{getCurrencySymbol(expense.originalCurrency || primaryCurrency)} {expense.shareAmount.toFixed(2)}
+                              -{formatCurrencySpaced(getDisplayAmount(expense.shareAmount), primaryCurrency)}
                             </p>
                           </div>
                           <div className="mt-2">
@@ -270,10 +291,10 @@ export function SettlementBreakdownModal({
                     </Card>
                   );
                 })}
-                {grossOffset !== undefined && (
+                {displayGrossOffset !== undefined && (
                   <div className="flex justify-between items-center pt-2 px-1 border-t border-border/20 mt-2">
                     <span className="text-[15px] sm:text-sm text-muted-foreground">Offset</span>
-                    <span className="font-semibold text-stat-red text-[15px] sm:text-sm">-{formatCurrencySpaced(grossOffset, primaryCurrency)}</span>
+                    <span className="font-semibold text-stat-red text-[15px] sm:text-sm">-{formatCurrencySpaced(displayGrossOffset, primaryCurrency)}</span>
                   </div>
                 )}
               </div>
