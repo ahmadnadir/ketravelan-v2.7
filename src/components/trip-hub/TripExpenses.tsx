@@ -1802,6 +1802,18 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
               setBreakdownModalOpen(true);
               setOpenedFromBreakdown(false);
             } : undefined}
+            // Multi-currency props for synced currency lens
+            originalCurrency={settlementToConfirm.originalCurrency}
+            homeCurrency={homeCurrency}
+            convertedAmountHome={settlementToConfirm.convertedAmountHome}
+            conversionAvailable={settlementToConfirm.conversionAvailable}
+            viewMode={viewMode}
+            onToggleViewMode={
+              settlementToConfirm.originalCurrency && 
+              settlementToConfirm.originalCurrency !== homeCurrency 
+                ? toggleViewMode 
+                : undefined
+            }
           />
         );
       })()}

@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { CurrencyLensToggle } from "@/components/shared/CurrencyLensToggle";
+import { CurrencyCode, formatCurrencySpaced } from "@/lib/currencyUtils";
+import { CurrencyViewMode } from "@/hooks/useCurrencyViewPreference";
 
 interface BreakdownExpense {
   title: string;
@@ -40,11 +43,14 @@ interface SettlementConfirmModalProps {
   onConfirm: () => void;
   // Back navigation (for secondary modal flow)
   onBack?: () => void;
+  // Multi-currency support
+  originalCurrency?: CurrencyCode;
+  homeCurrency?: CurrencyCode;
+  convertedAmountHome?: number;
+  conversionAvailable?: boolean;
+  viewMode?: CurrencyViewMode;
+  onToggleViewMode?: () => void;
 }
-
-const formatCurrency = (amount: number): string => {
-  return `RM ${amount.toFixed(2)}`;
-};
 
 export function SettlementConfirmModal({
   open,
@@ -62,9 +68,55 @@ export function SettlementConfirmModal({
   onRemoveReceipt,
   onConfirm,
   onBack,
+  originalCurrency,
+  homeCurrency = "MYR",
+  convertedAmountHome,
+  conversionAvailable = true,
+  viewMode = "travel",
+  onToggleViewMode,
 }: SettlementConfirmModalProps) {
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Determine which currency to display
+  const needsDualDisplay = originalCurrency && originalCurrency !== homeCurrency;
+  const showToggle = needsDualDisplay && conversionAvailable && !!onToggleViewMode;
+
+  // Calculate conversion rate for individual expense amounts
+  const conversionRate = (convertedAmountHome !== undefined && netAmount > 0)
+    ? convertedAmountHome / netAmount
+    : 1;
+
+  // Calculate amounts based on view mode
+  const primaryAmount = viewMode === "home" && convertedAmountHome !== undefined
+    ? convertedAmountHome
+    : netAmount;
+  const primaryCurrency: CurrencyCode = viewMode === "home" 
+    ? homeCurrency 
+    : (originalCurrency || homeCurrency);
+
+  const secondaryAmount = viewMode === "home" 
+    ? netAmount 
+    : convertedAmountHome;
+  const secondaryCurrency: CurrencyCode = viewMode === "home" 
+    ? (originalCurrency || homeCurrency) 
+    : homeCurrency;
+
+  // Helper to get display amount for individual expense items
+  const getDisplayAmount = (amount: number): number => {
+    if (viewMode === "home" && convertedAmountHome !== undefined) {
+      return amount * conversionRate;
+    }
+    return amount;
+  };
+
+  // Calculate gross amounts in the current view currency
+  const displayGrossOwed = viewMode === "home" && convertedAmountHome !== undefined 
+    ? grossOwed * conversionRate 
+    : grossOwed;
+  const displayGrossOffset = viewMode === "home" && convertedAmountHome !== undefined 
+    ? grossOffset * conversionRate 
+    : grossOffset;
 
   const handleConfirm = () => {
     onConfirm();
@@ -147,15 +199,32 @@ export function SettlementConfirmModal({
               </span>
             </div>
           </div>
+
+          {/* Currency Toggle */}
+          {showToggle && originalCurrency && (
+            <div className="flex justify-center mt-3">
+              <CurrencyLensToggle
+                travelCurrency={originalCurrency}
+                homeCurrency={homeCurrency}
+                viewMode={viewMode}
+                onToggle={onToggleViewMode!}
+              />
+            </div>
+          )}
         </DialogHeader>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4">
           {/* Section 1: Net Amount (Primary Focus) */}
           <div className="text-center py-4">
-            <p className="text-4xl font-bold text-foreground">
-              {formatCurrency(netAmount)}
+            <p className="text-4xl font-bold text-foreground transition-opacity duration-150">
+              {formatCurrencySpaced(primaryAmount, primaryCurrency)}
             </p>
+            {needsDualDisplay && conversionAvailable && secondaryAmount !== undefined && (
+              <p className="text-sm text-muted-foreground mt-1">
+                ≈ {formatCurrencySpaced(secondaryAmount, secondaryCurrency)} (est.)
+              </p>
+            )}
             <p className="text-sm text-muted-foreground mt-1.5">
               Net amount to be settled
             </p>
@@ -187,7 +256,7 @@ export function SettlementConfirmModal({
                       <div key={index} className="flex justify-between items-center text-sm">
                         <span className="text-foreground">• {expense.title}</span>
                         <span className="text-foreground font-medium tabular-nums">
-                          {formatCurrency(expense.amount)}
+                          {formatCurrencySpaced(getDisplayAmount(expense.amount), primaryCurrency)}
                         </span>
                       </div>
                     ))}
@@ -204,7 +273,7 @@ export function SettlementConfirmModal({
                       <div key={index} className="flex justify-between items-center text-sm">
                         <span className="text-foreground">• {expense.title}</span>
                         <span className="text-stat-red font-medium tabular-nums">
-                          -{formatCurrency(expense.amount)}
+                          -{formatCurrencySpaced(getDisplayAmount(expense.amount), primaryCurrency)}
                         </span>
                       </div>
                     ))}
@@ -216,7 +285,7 @@ export function SettlementConfirmModal({
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-semibold text-foreground">Net total</span>
                   <span className="text-sm font-bold text-foreground tabular-nums">
-                    {formatCurrency(netAmount)}
+                    {formatCurrencySpaced(primaryAmount, primaryCurrency)}
                   </span>
                 </div>
               </div>
@@ -303,7 +372,7 @@ export function SettlementConfirmModal({
             onClick={handleConfirm} 
             className="w-full h-12 rounded-xl font-medium text-[15px]"
           >
-            Confirm & Settle {formatCurrency(netAmount)}
+            Confirm & Settle {formatCurrencySpaced(primaryAmount, primaryCurrency)}
           </Button>
           <Button 
             variant="ghost" 
