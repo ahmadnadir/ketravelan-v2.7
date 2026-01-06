@@ -1,4 +1,5 @@
 import { MoreVertical, Upload, FileText, Info } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +54,7 @@ interface ExpenseCardProps {
   // Visual feedback for bulk settlement
   isHighlighted?: boolean;
   // Staggered animation delay for progress bar (in ms)
+  // Staggered animation delay for progress bar (in ms)
   animationDelay?: number;
   // Multi-currency props
   originalCurrency?: CurrencyCode;
@@ -81,6 +83,7 @@ export function ExpenseCard({
   onEdit,
   onDelete,
   isHighlighted = false,
+  animationDelay = 300,
   // Multi-currency props
   originalCurrency,
   homeCurrency = "MYR",
@@ -285,29 +288,36 @@ export function ExpenseCard({
             - Primary CTA button
         ═══════════════════════════════════════════════════════════════════ */}
         <div className="pt-2 border-t border-border/50 space-y-2">
-          {/* Meta row: Secondary reference + Settlement info */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            {/* Secondary currency reference (only if dual display needed) */}
-            {needsDualDisplay && conversionAvailable && personalShareSecondary !== undefined ? (
-              <span>
-                ≈ {formatCurrencySpaced(personalShareSecondary, secondaryCurrency)} (est.)
+          {/* Group Settlement Progress Bar */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span className={cn(
+                isFullySettled && "text-stat-green font-medium"
+              )}>
+                Group settlement: {paymentProgress}%
               </span>
-            ) : needsDualDisplay && !conversionAvailable ? (
-              <span className="flex items-center gap-1">
-                <Info className="h-3 w-3" />
-                Rate unavailable
-              </span>
-            ) : (
-              <span></span>
-            )}
-            
-            {/* Group settlement percentage */}
-            <span className={cn(
-              isFullySettled && "text-stat-green font-medium"
-            )}>
-              Group: {paymentProgress}% settled
-            </span>
+            </div>
+            <Progress 
+              value={paymentProgress} 
+              className="h-1.5"
+              autoVariant
+              animate
+              animationDelay={animationDelay}
+            />
           </div>
+
+          {/* Secondary currency reference (only if dual display needed) */}
+          {needsDualDisplay && conversionAvailable && personalShareSecondary !== undefined && (
+            <p className="text-xs text-muted-foreground">
+              ≈ {formatCurrencySpaced(personalShareSecondary, secondaryCurrency)} (est.)
+            </p>
+          )}
+          {needsDualDisplay && !conversionAvailable && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Info className="h-3 w-3" />
+              Rate unavailable
+            </p>
+          )}
 
           {/* Primary CTA */}
           <Button
