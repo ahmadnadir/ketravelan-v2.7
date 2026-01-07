@@ -76,12 +76,12 @@ interface Settlement {
   id: string;
   fromUser: { id: string; name: string; imageUrl?: string };
   toUser: { id: string; name: string; imageUrl?: string; qrCodeUrl?: string };
-  amount: number;
+  amount: number; // Always in home currency for calculations
   status: "pending" | "settled";
   receiptUrl?: string;
   // Multi-currency support for settlements
   originalCurrency?: CurrencyCode;
-  convertedAmountHome?: number;
+  amountOriginal?: number; // Amount in the foreign currency (for display when toggled)
   conversionAvailable?: boolean;
 }
 
@@ -172,15 +172,23 @@ const calculateNetSettlements = (
           const dominantForeignCurrency = foreignCurrencies.length === 1 ? foreignCurrencies[0] : undefined;
           const foreignAmount = dominantForeignCurrency ? debtorDebt?.foreignAmounts[dominantForeignCurrency] : undefined;
           
+          // Calculate foreign amount if there's a dominant foreign currency
+          // Net foreign = debtor's foreign debt - (creditor's debt to debtor in that currency)
+          const creditorDebt = debtMatrix[netToId]?.[netFromId];
+          const creditorForeignInSameCurrency = creditorDebt?.foreignAmounts[dominantForeignCurrency!] || 0;
+          const netForeignAmount = dominantForeignCurrency 
+            ? Math.abs((foreignAmount || 0) - creditorForeignInSameCurrency)
+            : undefined;
+          
           settlements.push({
             id: `settlement-${fromMember.id}-${toMember.id}`,
             fromUser: { id: fromMember.id, name: fromMember.name, imageUrl: fromMember.imageUrl },
             toUser: { id: toMember.id, name: toMember.name, imageUrl: toMember.imageUrl },
-            amount: Math.round(Math.abs(netAmountHome) * 100) / 100,
+            amount: Math.round(Math.abs(netAmountHome) * 100) / 100, // Home currency amount
             status: "pending",
             // Multi-currency: if there's a single dominant foreign currency, show dual display
             originalCurrency: dominantForeignCurrency,
-            convertedAmountHome: dominantForeignCurrency ? Math.abs(netAmountHome) : undefined,
+            amountOriginal: netForeignAmount ? Math.round(netForeignAmount * 100) / 100 : undefined, // Foreign amount
             conversionAvailable: true,
           });
         }
@@ -1452,11 +1460,8 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
                     key={settlement.id}
                     fromUser={settlement.fromUser}
                     toUser={settlement.toUser}
-                    amount={settlement.originalCurrency ? 
-                      // If there's a foreign currency, show foreign amount as primary
-                      (settlement.amount / (settlement.convertedAmountHome ? settlement.convertedAmountHome / settlement.amount : 1)) :
-                      settlement.amount
-                    }
+                    // If foreign currency exists, pass foreign amount; else pass home amount
+                    amount={settlement.amountOriginal ?? settlement.amount}
                     status={settlement.status}
                     currentUserId={CURRENT_USER_ID}
                     showReminder={canShowReminder(settlement)}
@@ -1465,13 +1470,13 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
                     onViewDetails={() => handleSettlementCardClick(settlement)}
                     onSendReminder={() => handleSendReminder(settlement)}
                     onMarkPaid={() => handleMarkPaid(settlement)}
-                    // Multi-currency props
-                    originalCurrency={settlement.originalCurrency}
+                    // Multi-currency props - only provide if we have a foreign amount
+                    originalCurrency={settlement.amountOriginal ? settlement.originalCurrency : undefined}
                     homeCurrency={homeCurrency}
-                    convertedAmountHome={settlement.convertedAmountHome}
+                    convertedAmountHome={settlement.amountOriginal ? settlement.amount : undefined}
                     conversionAvailable={settlement.conversionAvailable}
                     viewMode={viewMode}
-                    onToggleViewMode={settlement.originalCurrency && settlement.originalCurrency !== homeCurrency ? toggleViewMode : undefined}
+                    onToggleViewMode={settlement.amountOriginal && settlement.originalCurrency !== homeCurrency ? toggleViewMode : undefined}
                   />
                 ))
               ) : (
@@ -1683,19 +1688,21 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
             }}
             fromUser={selectedSettlementForBreakdown.fromUser}
             toUser={selectedSettlementForBreakdown.toUser}
-            totalAmount={selectedSettlementForBreakdown.amount}
+            // Pass foreign amount if available, else home amount
+            totalAmount={selectedSettlementForBreakdown.amountOriginal ?? selectedSettlementForBreakdown.amount}
             status={selectedSettlementForBreakdown.status}
             contributingExpenses={breakdown.owedToReceiver}
             reverseExpenses={breakdown.owedToDebtor}
             grossOwed={breakdown.grossOwed}
             grossOffset={breakdown.grossOffset}
             currentUserId={mockMembers.find(m => m.name === CURRENT_USER)?.id || "1"}
-            originalCurrency={selectedSettlementForBreakdown.originalCurrency}
+            // Only provide currency props if we have a foreign amount
+            originalCurrency={selectedSettlementForBreakdown.amountOriginal ? selectedSettlementForBreakdown.originalCurrency : undefined}
             homeCurrency={homeCurrency}
-            convertedAmountHome={selectedSettlementForBreakdown.convertedAmountHome}
+            convertedAmountHome={selectedSettlementForBreakdown.amountOriginal ? selectedSettlementForBreakdown.amount : undefined}
             conversionAvailable={selectedSettlementForBreakdown.conversionAvailable}
             viewMode={viewMode}
-            onToggleViewMode={selectedSettlementForBreakdown.originalCurrency && selectedSettlementForBreakdown.originalCurrency !== homeCurrency ? toggleViewMode : undefined}
+            onToggleViewMode={selectedSettlementForBreakdown.amountOriginal && selectedSettlementForBreakdown.originalCurrency !== homeCurrency ? toggleViewMode : undefined}
             onUploadProof={() => {
               setOpenedFromBreakdown(true);
               handleMarkPaid(selectedSettlementForBreakdown);
@@ -1767,7 +1774,8 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
             }}
             fromUser={settlementToConfirm.fromUser}
             toUser={settlementToConfirm.toUser}
-            netAmount={settlementToConfirm.amount}
+            // Pass foreign amount if available, else home amount
+            netAmount={settlementToConfirm.amountOriginal ?? settlementToConfirm.amount}
             owedToReceiver={breakdown.owedToReceiver.map(e => ({ title: e.title, amount: e.shareAmount }))}
             owedToDebtor={breakdown.owedToDebtor.map(e => ({ title: e.title, amount: e.shareAmount }))}
             grossOwed={breakdown.grossOwed}
@@ -1802,13 +1810,13 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
               setBreakdownModalOpen(true);
               setOpenedFromBreakdown(false);
             } : undefined}
-            // Multi-currency props for synced currency lens
-            originalCurrency={settlementToConfirm.originalCurrency}
+            // Multi-currency props for synced currency lens - only provide if we have a foreign amount
+            originalCurrency={settlementToConfirm.amountOriginal ? settlementToConfirm.originalCurrency : undefined}
             homeCurrency={homeCurrency}
-            convertedAmountHome={settlementToConfirm.convertedAmountHome}
+            convertedAmountHome={settlementToConfirm.amountOriginal ? settlementToConfirm.amount : undefined}
             conversionAvailable={settlementToConfirm.conversionAvailable}
             viewMode={viewMode}
-            onToggleViewMode={
+            onToggleViewMode={settlementToConfirm.amountOriginal && settlementToConfirm.originalCurrency !== homeCurrency ? toggleViewMode :
               settlementToConfirm.originalCurrency && 
               settlementToConfirm.originalCurrency !== homeCurrency 
                 ? toggleViewMode 
