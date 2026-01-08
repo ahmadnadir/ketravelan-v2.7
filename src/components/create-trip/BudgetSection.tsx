@@ -94,13 +94,6 @@ export function BudgetSection({
         
       >
         <div className="space-y-4">
-          {/* Home currency indicator */}
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs font-normal">
-              Home currency: {currencySymbol} {homeCurrency}
-            </Badge>
-          </div>
-          
           <div className="space-y-2">
             <label className="text-xs font-medium text-foreground">
               Budget (per person)
@@ -187,13 +180,6 @@ export function BudgetSection({
         onClick={() => onBudgetTypeChange('detailed')}
       >
         <div className="space-y-3">
-          {/* Home currency indicator */}
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="secondary" className="text-xs font-normal">
-              Home currency: {currencySymbol} {homeCurrency}
-            </Badge>
-          </div>
-          
           {defaultCategories.map((cat) => (
             <div key={cat.id} className="flex items-center gap-3">
               <span className="text-sm text-foreground w-24">{cat.emoji} {cat.label}</span>
