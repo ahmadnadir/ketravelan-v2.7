@@ -1,17 +1,25 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, MapPin, Sparkles, ChevronRight } from "lucide-react";
+import { ArrowLeft, Camera, MapPin, Sparkles, ChevronRight, Instagram, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CurrencyCard, currencyData } from "@/components/onboarding/CurrencyCard";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CountrySelector, Country, countries } from "@/components/onboarding/CountrySelector";
 import { TravelStyleGrid } from "@/components/onboarding/TravelStyleGrid";
 import { ImageCropModal } from "@/components/profile/ImageCropModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { CurrencyCode } from "@/lib/currencyUtils";
+import { CurrencyCode, getCurrencyInfo } from "@/lib/currencyUtils";
 import { cn } from "@/lib/utils";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -22,15 +30,26 @@ export default function Onboarding() {
   
   // Step 1: Profile
   const [name, setName] = useState(user?.name || "");
+  const [gender, setGender] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
 
-  // Step 2: Currency & Location
-  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("MYR");
-  const [location, setLocation] = useState("");
+  // Step 2: Location
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
+  const [derivedCurrency, setDerivedCurrency] = useState<CurrencyCode>("MYR");
+  const [showCurrencyOverride, setShowCurrencyOverride] = useState(false);
 
-  // Step 3: Travel Styles
+  // Step 3: About & Social
+  const [aboutMe, setAboutMe] = useState("");
+  const [socialLinks, setSocialLinks] = useState({
+    instagram: "",
+    tiktok: "",
+    other: "",
+  });
+
+  // Step 4: Travel Styles
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
 
   // Load saved avatar on mount
@@ -40,6 +59,13 @@ export default function Onboarding() {
       setAvatarUrl(savedAvatar);
     }
   }, []);
+
+  // Update derived currency when country changes
+  const handleCountryChange = (selectedCountry: Country) => {
+    setCountry(selectedCountry.name);
+    setDerivedCurrency(selectedCountry.currency);
+    setShowCurrencyOverride(false);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -81,15 +107,25 @@ export default function Onboarding() {
     }
   };
 
-  const handleComplete = () => {
+  const handleComplete = (destination: "/explore" | "/create" = "/explore") => {
     // Save all data
-    setHomeCurrency(selectedCurrency);
+    setHomeCurrency(derivedCurrency);
     localStorage.setItem("ketravelan-onboarded", "true");
     localStorage.setItem("ketravelan-profile-name", name);
-    localStorage.setItem("ketravelan-location", location);
+    if (gender) {
+      localStorage.setItem("ketravelan-profile-gender", gender);
+    }
+    localStorage.setItem("ketravelan-country", country);
+    localStorage.setItem("ketravelan-location", city ? `${city}, ${country}` : country);
+    if (aboutMe) {
+      localStorage.setItem("ketravelan-about-me", aboutMe);
+    }
+    if (socialLinks.instagram || socialLinks.tiktok || socialLinks.other) {
+      localStorage.setItem("ketravelan-social-links", JSON.stringify(socialLinks));
+    }
     localStorage.setItem("ketravelan-travel-styles", JSON.stringify(selectedStyles));
     
-    navigate("/explore");
+    navigate(destination);
   };
 
   const canProceed = () => {
@@ -97,10 +133,12 @@ export default function Onboarding() {
       case 1:
         return name.trim().length > 0;
       case 2:
-        return true; // Currency has default
+        return country !== "";
       case 3:
-        return true; // Styles are optional
+        return true; // All optional
       case 4:
+        return true; // Styles are optional
+      case 5:
         return true;
       default:
         return false;
@@ -116,12 +154,15 @@ export default function Onboarding() {
       .slice(0, 2);
   };
 
+  const currencyInfo = getCurrencyInfo(derivedCurrency);
+  const selectedCountryData = countries.find((c) => c.name === country);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container max-w-lg mx-auto flex h-16 items-center px-4">
-          {currentStep > 1 && currentStep < 4 ? (
+          {currentStep > 1 ? (
             <Button variant="ghost" size="icon" onClick={handleBack} className="mr-3">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -129,7 +170,7 @@ export default function Onboarding() {
             <div className="w-10" />
           )}
           <div className="flex-1" />
-          {currentStep < 4 && (
+          {currentStep < 5 && (
             <span className="text-sm text-muted-foreground">
               {currentStep} of {TOTAL_STEPS - 1}
             </span>
@@ -139,11 +180,11 @@ export default function Onboarding() {
 
       {/* Content */}
       <div className="flex-1 container max-w-lg mx-auto px-4 py-6 flex flex-col">
-        {/* Step 1: Welcome + Avatar */}
+        {/* Step 1: Basic Profile */}
         {currentStep === 1 && (
           <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold mb-2">Let's set up your profile!</h1>
+              <h1 className="text-2xl font-bold mb-2">Let's set up your profile</h1>
               <p className="text-muted-foreground">
                 This helps travel buddies get to know you
               </p>
@@ -179,8 +220,10 @@ export default function Onboarding() {
             </div>
 
             {/* Name Input */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Your name</label>
+            <div className="space-y-2 mb-5">
+              <label className="text-sm font-medium">
+                Your name <span className="text-destructive">*</span>
+              </label>
               <Input
                 type="text"
                 placeholder="Enter your name"
@@ -190,53 +233,197 @@ export default function Onboarding() {
               />
             </div>
 
+            {/* Gender Select */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Gender (optional)</label>
+              <Select value={gender || ""} onValueChange={(v) => setGender(v || null)}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Helps us personalise your profile
+              </p>
+            </div>
+
             <div className="flex-1" />
           </div>
         )}
 
-        {/* Step 2: Currency & Location */}
+        {/* Step 2: Location */}
         {currentStep === 2 && (
           <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold mb-2">Where are you based?</h1>
               <p className="text-muted-foreground">
-                We'll show prices and settlements in your currency
+                We'll use this to set your home currency and show clearer costs
               </p>
             </div>
 
-            {/* Currency Cards Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {currencyData.map((currency) => (
-                <CurrencyCard
-                  key={currency.code}
-                  {...currency}
-                  isSelected={selectedCurrency === currency.code}
-                  onSelect={() => setSelectedCurrency(currency.code)}
-                />
-              ))}
+            {/* Country Selector */}
+            <div className="space-y-2 mb-5">
+              <label className="text-sm font-medium">
+                Country <span className="text-destructive">*</span>
+              </label>
+              <CountrySelector value={country} onChange={handleCountryChange} />
             </div>
 
-            {/* Location Input */}
-            <div className="space-y-2">
+            {/* City Input */}
+            <div className="space-y-2 mb-6">
               <label className="text-sm font-medium flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                Location (optional)
+                City (optional)
               </label>
               <Input
                 type="text"
-                placeholder="City, Country"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g., Kuala Lumpur"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
                 className="h-12 text-base"
               />
+            </div>
+
+            {/* Derived Currency Display */}
+            {country && (
+              <div className="bg-card rounded-xl border border-border p-4 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Suggested Home Currency</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{selectedCountryData?.flag || currencyInfo?.flag}</span>
+                      <div>
+                        <p className="font-semibold">
+                          {currencyInfo?.symbol} {derivedCurrency}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{currencyInfo?.name}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {!showCurrencyOverride ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setShowCurrencyOverride(true)}
+                    >
+                      Change
+                    </Button>
+                  ) : null}
+                </div>
+
+                {showCurrencyOverride && (
+                  <div className="mt-4 pt-4 border-t border-border animate-in fade-in duration-200">
+                    <label className="text-sm font-medium mb-2 block">Override Currency</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {(["MYR", "USD", "EUR", "IDR"] as CurrencyCode[]).map((code) => {
+                        const info = getCurrencyInfo(code);
+                        return (
+                          <button
+                            key={code}
+                            onClick={() => setDerivedCurrency(code)}
+                            className={cn(
+                              "flex flex-col items-center justify-center p-3 rounded-lg border transition-all",
+                              derivedCurrency === code
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50"
+                            )}
+                          >
+                            <span className="text-xl mb-1">{info?.flag}</span>
+                            <span className="text-xs font-medium">{code}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex-1" />
+          </div>
+        )}
+
+        {/* Step 3: About & Social */}
+        {currentStep === 3 && (
+          <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold mb-2">Tell others about you</h1>
+              <p className="text-muted-foreground">
+                A short intro builds trust and better travel matches
+              </p>
+            </div>
+
+            {/* About Me */}
+            <div className="space-y-2 mb-6">
+              <label className="text-sm font-medium">About Me (optional)</label>
+              <Textarea
+                placeholder="Love exploring new places and trying local food!"
+                value={aboutMe}
+                onChange={(e) => setAboutMe(e.target.value.slice(0, 200))}
+                className="min-h-[100px] text-base resize-none"
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {aboutMe.length}/200
+              </p>
+            </div>
+
+            {/* Social Links */}
+            <div className="space-y-4">
+              <label className="text-sm font-medium">Social Links (optional)</label>
+              
+              <div className="space-y-3">
+                <div className="relative">
+                  <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="@yourusername"
+                    value={socialLinks.instagram}
+                    onChange={(e) => setSocialLinks((prev) => ({ ...prev, instagram: e.target.value }))}
+                    className="h-12 text-base pl-10"
+                  />
+                </div>
+
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                  </svg>
+                  <Input
+                    type="text"
+                    placeholder="@yourusername"
+                    value={socialLinks.tiktok}
+                    onChange={(e) => setSocialLinks((prev) => ({ ...prev, tiktok: e.target.value }))}
+                    className="h-12 text-base pl-10"
+                  />
+                </div>
+
+                <div className="relative">
+                  <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="url"
+                    placeholder="https://yoursite.com"
+                    value={socialLinks.other}
+                    onChange={(e) => setSocialLinks((prev) => ({ ...prev, other: e.target.value }))}
+                    className="h-12 text-base pl-10"
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                You can edit this anytime
+              </p>
             </div>
 
             <div className="flex-1" />
           </div>
         )}
 
-        {/* Step 3: Travel Styles */}
-        {currentStep === 3 && (
+        {/* Step 4: Travel Styles */}
+        {currentStep === 4 && (
           <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold mb-2">What's your travel vibe?</h1>
@@ -252,7 +439,12 @@ export default function Onboarding() {
 
             {selectedStyles.length > 0 && (
               <p className="text-center text-sm text-muted-foreground mt-4">
-                {selectedStyles.length} selected
+                {selectedStyles.length} selected {selectedStyles.length >= 3 && selectedStyles.length <= 5 && "✓"}
+              </p>
+            )}
+            {selectedStyles.length === 0 && (
+              <p className="text-center text-xs text-muted-foreground mt-4">
+                Pick 3–5 that describe you
               </p>
             )}
 
@@ -260,8 +452,8 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Step 4: Completion */}
-        {currentStep === 4 && (
+        {/* Step 5: Completion */}
+        {currentStep === 5 && (
           <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-500">
             {/* Celebration */}
             <div className="relative mb-6">
@@ -290,20 +482,16 @@ export default function Onboarding() {
                 </Avatar>
                 <div>
                   <p className="font-semibold text-lg">{name}</p>
-                  {location && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {location}
-                    </p>
-                  )}
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {city ? `${city}, ${country}` : country}
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">
-                  {currencyData.find((c) => c.code === selectedCurrency)?.flag}
-                </span>
-                <span className="font-medium">{selectedCurrency}</span>
+                <span className="text-2xl">{currencyInfo?.flag}</span>
+                <span className="font-medium">{derivedCurrency}</span>
                 <span className="text-muted-foreground">• Home Currency</span>
               </div>
 
@@ -349,7 +537,7 @@ export default function Onboarding() {
             {/* CTAs */}
             <div className="w-full space-y-3">
               <Button
-                onClick={handleComplete}
+                onClick={() => handleComplete("/explore")}
                 className="w-full h-12 text-base font-medium rounded-xl"
               >
                 Start Exploring
@@ -357,10 +545,7 @@ export default function Onboarding() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => {
-                  handleComplete();
-                  navigate("/create");
-                }}
+                onClick={() => handleComplete("/create")}
                 className="w-full h-12 text-base font-medium rounded-xl"
               >
                 Create a Trip
@@ -370,11 +555,11 @@ export default function Onboarding() {
         )}
 
         {/* Progress Dots + Continue Button */}
-        {currentStep < 4 && (
+        {currentStep < 5 && (
           <div className="mt-auto pt-6">
             {/* Progress Dots */}
             <div className="flex justify-center gap-2 mb-6">
-              {[1, 2, 3].map((step) => (
+              {[1, 2, 3, 4].map((step) => (
                 <div
                   key={step}
                   className={cn(
