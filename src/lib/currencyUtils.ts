@@ -1,11 +1,23 @@
 export type CurrencyCode = "MYR" | "USD" | "EUR" | "IDR";
 
-export const currencies: { code: CurrencyCode; symbol: string; name: string }[] = [
-  { code: "MYR", symbol: "RM", name: "Malaysian Ringgit" },
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "IDR", symbol: "Rp", name: "Indonesian Rupiah" },
+export interface CurrencyInfo {
+  code: CurrencyCode;
+  symbol: string;
+  name: string;
+  flag: string;
+}
+
+export const currencies: CurrencyInfo[] = [
+  { code: "MYR", symbol: "RM", name: "Malaysian Ringgit", flag: "🇲🇾" },
+  { code: "USD", symbol: "$", name: "US Dollar", flag: "🇺🇸" },
+  { code: "EUR", symbol: "€", name: "Euro", flag: "🇪🇺" },
+  { code: "IDR", symbol: "Rp", name: "Indonesian Rupiah", flag: "🇮🇩" },
 ];
+
+// Get currency info by code
+export function getCurrencyInfo(code: CurrencyCode): CurrencyInfo | undefined {
+  return currencies.find((c) => c.code === code);
+}
 
 // Travel currencies only (for expense entry)
 export const travelCurrencies = currencies.filter(c => c.code !== "MYR");
