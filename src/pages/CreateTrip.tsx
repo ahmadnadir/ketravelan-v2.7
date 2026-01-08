@@ -69,7 +69,8 @@ import { toast } from "@/hooks/use-toast";
 import { savePublishedTrip, PublishedTrip } from "@/lib/publishedTrips";
 import { tripCategories } from "@/data/categories";
 import { useAuth } from "@/contexts/AuthContext";
-import { suggestCurrencyFromDestination, getCurrencySymbol, CurrencyCode, currencies, travelCurrencies } from "@/lib/currencyUtils";
+import { suggestCurrencyFromDestination, getCurrencySymbol, CurrencyCode, currencies } from "@/lib/currencyUtils";
+import { CurrencyPickerSheet } from "@/components/create-trip/CurrencyPickerSheet";
 
 const steps = [
   { id: 1, title: "Visibility" },
@@ -98,6 +99,7 @@ export default function CreateTrip() {
   const [publishedTripId, setPublishedTripId] = useState<string | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showHomeCurrencySheet, setShowHomeCurrencySheet] = useState(false);
+  const [showTravelCurrencySheet, setShowTravelCurrencySheet] = useState(false);
   const [localHomeCurrency, setLocalHomeCurrency] = useState<CurrencyCode>(user?.homeCurrency || "MYR");
   // Store draft snapshot for share modal (since we clear draft before showing modal)
   const draftSnapshotRef = useRef<TripDraft | null>(null);
@@ -760,15 +762,10 @@ export default function CreateTrip() {
                       onClick={() => updateDraft("travelCurrencies", draft.travelCurrencies.filter(c => c !== code))}
                     />
                   ))}
-                  {travelCurrencies
-                    .filter(c => !draft.travelCurrencies.includes(c.code))
-                    .map((currency) => (
-                      <PillChip
-                        key={currency.code}
-                        label={`${currency.symbol} ${currency.code}`}
-                        onClick={() => updateDraft("travelCurrencies", [...draft.travelCurrencies, currency.code])}
-                      />
-                    ))}
+                  <PillChip
+                    label="+ Add currency"
+                    onClick={() => setShowTravelCurrencySheet(true)}
+                  />
                 </div>
                 
                 <p className="text-[11px] text-muted-foreground/70">
@@ -812,7 +809,21 @@ export default function CreateTrip() {
               </SheetContent>
             </Sheet>
 
-            {/* Itinerary */}
+            {/* Travel Currency Picker Sheet */}
+            <CurrencyPickerSheet
+              open={showTravelCurrencySheet}
+              onOpenChange={setShowTravelCurrencySheet}
+              selectedCurrencies={draft.travelCurrencies}
+              onToggleCurrency={(code) => {
+                if (draft.travelCurrencies.includes(code)) {
+                  updateDraft("travelCurrencies", draft.travelCurrencies.filter(c => c !== code));
+                } else {
+                  updateDraft("travelCurrencies", [...draft.travelCurrencies, code]);
+                }
+              }}
+              suggestedCurrency={suggestedCurrency}
+            />
+
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ClipboardList className="h-4 w-4 text-primary" />
