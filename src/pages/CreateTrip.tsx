@@ -45,6 +45,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Drawer,
   DrawerContent,
   DrawerHeader,
@@ -56,9 +69,7 @@ import { toast } from "@/hooks/use-toast";
 import { savePublishedTrip, PublishedTrip } from "@/lib/publishedTrips";
 import { tripCategories } from "@/data/categories";
 import { useAuth } from "@/contexts/AuthContext";
-import { suggestCurrencyFromDestination, getCurrencySymbol, CurrencyCode } from "@/lib/currencyUtils";
-import { TravelCurrencyPicker } from "@/components/create-trip/TravelCurrencyPicker";
-import { Label } from "@/components/ui/label";
+import { suggestCurrencyFromDestination, getCurrencySymbol, CurrencyCode, currencies, travelCurrencies } from "@/lib/currencyUtils";
 
 const steps = [
   { id: 1, title: "Visibility" },
@@ -86,6 +97,8 @@ export default function CreateTrip() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [publishedTripId, setPublishedTripId] = useState<string | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showHomeCurrencySheet, setShowHomeCurrencySheet] = useState(false);
+  const [localHomeCurrency, setLocalHomeCurrency] = useState<CurrencyCode>(user?.homeCurrency || "MYR");
   // Store draft snapshot for share modal (since we clear draft before showing modal)
   const draftSnapshotRef = useRef<TripDraft | null>(null);
   // File input ref for gallery images
@@ -684,45 +697,120 @@ export default function CreateTrip() {
               />
             </div>
 
-            {/* Currencies */}
+            {/* Currencies for This Trip */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Coins className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold text-foreground">Currencies</h3>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-foreground">Currencies for This Trip</h3>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Used for recording expenses and settling payments during the trip
+                </p>
               </div>
               
-              <Card className="p-4 border-border/50 space-y-4">
-                {/* Home Currency - Read Only */}
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Home Currency</Label>
-                  <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-xl">
-                    <span className="font-medium">
-                      {getCurrencySymbol(user?.homeCurrency || "MYR")} {user?.homeCurrency || "MYR"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">(from your profile)</span>
-                  </div>
+              {/* Home Currency Card */}
+              <Card className="p-4 border-border/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold">Home Currency</h4>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 text-xs text-primary hover:text-primary"
+                    onClick={() => setShowHomeCurrencySheet(true)}
+                  >
+                    Change
+                  </Button>
                 </div>
                 
-                {/* Travel Currencies - Editable */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Travel Currencies</Label>
-                    {suggestedCurrency && !draft.travelCurrencies.includes(suggestedCurrency) && (
-                      <span className="px-1.5 py-0.5 text-[10px] bg-primary/10 text-primary rounded-full">
-                        Suggested: {suggestedCurrency}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Used when recording expenses during the trip
-                  </p>
-                  <TravelCurrencyPicker
-                    selectedCurrencies={draft.travelCurrencies}
-                    onSelectionChange={(currencies) => updateDraft("travelCurrencies", currencies)}
-                  />
+                <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-xl">
+                  <span className="font-semibold text-lg">
+                    {getCurrencySymbol(localHomeCurrency)} {localHomeCurrency}
+                  </span>
+                  <span className="text-xs text-muted-foreground">from your profile</span>
                 </div>
+                
+                <p className="text-xs text-muted-foreground">
+                  Used for settlement and repayments. This is the currency you'll pay and get paid back in.
+                </p>
+              </Card>
+              
+              {/* Travel Currencies Card */}
+              <Card className="p-4 border-border/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold">Travel Currencies</h4>
+                  {suggestedCurrency && !draft.travelCurrencies.includes(suggestedCurrency) && (
+                    <span className="px-1.5 py-0.5 text-[10px] bg-primary/10 text-primary rounded-full">
+                      Suggested: {suggestedCurrency}
+                    </span>
+                  )}
+                </div>
+                
+                <p className="text-xs text-muted-foreground">
+                  Used for receipts and expense reference during the trip.
+                </p>
+                
+                <div className="flex flex-wrap gap-2">
+                  {draft.travelCurrencies.map((code) => (
+                    <PillChip
+                      key={code}
+                      label={`${getCurrencySymbol(code)} ${code}`}
+                      selected
+                      removable
+                      onClick={() => updateDraft("travelCurrencies", draft.travelCurrencies.filter(c => c !== code))}
+                    />
+                  ))}
+                  {travelCurrencies
+                    .filter(c => !draft.travelCurrencies.includes(c.code))
+                    .map((currency) => (
+                      <PillChip
+                        key={currency.code}
+                        label={`${currency.symbol} ${currency.code}`}
+                        onClick={() => updateDraft("travelCurrencies", [...draft.travelCurrencies, currency.code])}
+                      />
+                    ))}
+                </div>
+                
+                <p className="text-[11px] text-muted-foreground/70">
+                  You can add or remove currencies anytime.
+                </p>
               </Card>
             </div>
+            
+            {/* Home Currency Sheet */}
+            <Sheet open={showHomeCurrencySheet} onOpenChange={setShowHomeCurrencySheet}>
+              <SheetContent side="bottom" className="rounded-t-2xl">
+                <SheetHeader className="text-left">
+                  <SheetTitle>Change Home Currency</SheetTitle>
+                </SheetHeader>
+                <div className="py-6">
+                  <Select 
+                    value={localHomeCurrency} 
+                    onValueChange={(value: CurrencyCode) => setLocalHomeCurrency(value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currencies.map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.symbol} {currency.code} - {currency.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    This will be used for settlement and repayments on this trip.
+                  </p>
+                </div>
+                <Button 
+                  className="w-full" 
+                  onClick={() => setShowHomeCurrencySheet(false)}
+                >
+                  Done
+                </Button>
+              </SheetContent>
+            </Sheet>
 
             {/* Itinerary */}
             <div className="space-y-3">
