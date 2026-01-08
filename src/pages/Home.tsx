@@ -8,10 +8,18 @@ import { ExpensesFeatureSection } from "@/components/home/ExpensesFeatureSection
 import { FAQSection } from "@/components/home/FAQSection";
 import { BottomCTASection } from "@/components/home/BottomCTASection";
 import { AnimatedSection } from "@/components/shared/AnimatedSection";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 export default function Home() {
   return (
-    <AppLayout>
+    <>
+      <SEOHead
+        title="Ketravelan - Find Travel Buddies & Group Trips"
+        description="Join group trips, find travel buddies, and explore the world together. Plan trips with friends, not spreadsheets. Coordinate destinations, budgets, and itineraries effortlessly."
+        canonicalUrl="https://ketravelan.com/"
+        keywords={['travel buddies', 'group trips', 'travel group', 'budget travel', 'backpacking', 'travel planning']}
+      />
+      <AppLayout>
       <InstallBanner />
       <div className="py-4 sm:py-6 space-y-10 sm:space-y-14">
         <AnimatedSection>
@@ -36,6 +44,7 @@ export default function Home() {
           <BottomCTASection />
         </AnimatedSection>
       </div>
-    </AppLayout>
+      </AppLayout>
+    </>
   );
 }

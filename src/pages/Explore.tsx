@@ -14,6 +14,7 @@ import { AppliedFiltersBar } from "@/components/explore/AppliedFiltersBar";
 import { isDefaultBudgetRange, formatBudgetRange } from "@/components/explore/BudgetTierSelector";
 import { ExplorePageSkeleton } from "@/components/skeletons/ExplorePageSkeleton";
 import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const defaultFilters: FilterState = {
   destination: "",
@@ -105,7 +106,14 @@ export default function Explore() {
   }
 
   return (
-    <AppLayout>
+    <>
+      <SEOHead
+        title="Discover Group Trips & Travel Buddies | Ketravelan"
+        description="Browse upcoming group trips to Asia, Europe, and beyond. Find your perfect travel group, from budget backpacking to luxury adventures. Join now!"
+        canonicalUrl="https://ketravelan.com/explore"
+        keywords={['group trips', 'travel buddies', 'budget travel', 'backpacking trips', 'adventure travel', 'find travel partners']}
+      />
+      <AppLayout>
       <div className="py-4 sm:py-6 space-y-4 sm:space-y-6">
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">
           Discover Trips
@@ -200,6 +208,7 @@ export default function Explore() {
         onReset={handleReset}
         matchingCount={filteredTrips.length}
       />
-    </AppLayout>
+      </AppLayout>
+    </>
   );
 }
