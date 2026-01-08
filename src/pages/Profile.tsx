@@ -263,9 +263,9 @@ export default function Profile() {
 
           {/* Travel Styles Modal */}
           <Dialog open={showAllStyles} onOpenChange={setShowAllStyles}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Travel Style</DialogTitle>
+            <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-md rounded-2xl">
+              <DialogHeader className="text-center">
+                <DialogTitle className="text-center">Travel Style</DialogTitle>
               </DialogHeader>
               <div className="flex flex-wrap gap-2 pt-2">
                 {userProfile.travelStyles.map((style) => (
