@@ -14,6 +14,8 @@ import {
   Plus,
   X,
   Check,
+  Settings,
+  Coins,
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -24,6 +26,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { ImageCropModal } from "@/components/profile/ImageCropModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { CurrencyCode, currencies } from "@/lib/currencyUtils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Available travel styles
 const availableTravelStyles = [
@@ -57,6 +68,12 @@ const socialPlatforms = [
 export default function EditProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, setHomeCurrency } = useAuth();
+
+  // Home currency state
+  const [selectedHomeCurrency, setSelectedHomeCurrency] = useState<CurrencyCode>(
+    user?.homeCurrency || "MYR"
+  );
 
   // Form state - initialized with mock current user data
   const [formData, setFormData] = useState({
@@ -177,6 +194,11 @@ export default function EditProfile() {
     }
 
     setIsSaving(true);
+
+    // Save home currency to context
+    if (selectedHomeCurrency !== user?.homeCurrency) {
+      setHomeCurrency(selectedHomeCurrency);
+    }
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -383,6 +405,39 @@ export default function EditProfile() {
                 min="0"
               />
             </div>
+          </div>
+        </Card>
+
+        {/* Preferences - Home Currency */}
+        <Card className="p-3 sm:p-4 border-border/50 space-y-3">
+          <h3 className="font-semibold text-foreground text-sm sm:text-base flex items-center gap-2">
+            <Settings className="h-4 w-4 text-muted-foreground" />
+            Preferences
+          </h3>
+
+          <div className="space-y-2">
+            <Label className="text-xs sm:text-sm flex items-center gap-2">
+              <Coins className="h-3.5 w-3.5 text-muted-foreground" />
+              Home Currency
+            </Label>
+            <Select 
+              value={selectedHomeCurrency} 
+              onValueChange={(val) => setSelectedHomeCurrency(val as CurrencyCode)}
+            >
+              <SelectTrigger className="h-10 sm:h-11 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    {c.symbol} {c.code} – {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Used to display expense totals and settlements
+            </p>
           </div>
         </Card>
 

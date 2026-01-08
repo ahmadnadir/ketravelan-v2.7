@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, QrCode, SlidersHorizontal, Info } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, TrendingDown, Wallet, QrCode, SlidersHorizontal, Info, Settings } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { ScrollableTabBar } from "@/components/shared/ScrollableTabBar";
@@ -17,6 +17,7 @@ import { ExpenseDetailsModal } from "@/components/trip-hub/ExpenseDetailsModal";
 import { SettlementBreakdownModal, SettlementExpense } from "@/components/trip-hub/SettlementBreakdownModal";
 import { SettlementConfirmModal } from "@/components/trip-hub/SettlementConfirmModal";
 import { SettlementReceiptsModal } from "@/components/trip-hub/SettlementReceiptsModal";
+import { ExpenseSettingsSheet } from "@/components/trip-hub/ExpenseSettingsSheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -306,6 +307,14 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
 
   // User's own QR
   const [userQRUrl, setUserQRUrl] = useState<string | null>(null);
+
+  // Currency settings sheet state
+  const [settingsSheetOpen, setSettingsSheetOpen] = useState(false);
+  
+  // Trip travel currencies (default to USD and IDR for demo)
+  const [tripTravelCurrencies, setTripTravelCurrencies] = useState<CurrencyCode[]>(
+    allowedCurrencies || ["USD", "IDR"]
+  );
 
   // Expenses data with local state (must be declared before settlements calculation)
   const [expenses, setExpenses] = useState<ExpenseData[]>(initialMockExpenses);
@@ -993,9 +1002,19 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
       {/* Always Visible: Header + Stat Cards */}
       <div className="px-3 sm:px-4 pt-3 sm:pt-4 space-y-4">
         {/* Header */}
-        <div>
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground">Trip Expenses Overview</h2>
-          <p className="text-sm text-muted-foreground">See where the money went and who's settled.</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">Trip Expenses Overview</h2>
+            <p className="text-sm text-muted-foreground">See where the money went and who's settled.</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSettingsSheetOpen(true)}
+            className="h-9 w-9 rounded-full shrink-0"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Interactive Stat Cards - Mobile: 1 full + 2 column, Desktop: 2x2 grid */}
@@ -1941,6 +1960,14 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
           </DrawerContent>
         </Drawer>
       )}
+
+      {/* Currency Settings Sheet */}
+      <ExpenseSettingsSheet
+        open={settingsSheetOpen}
+        onOpenChange={setSettingsSheetOpen}
+        tripTravelCurrencies={tripTravelCurrencies}
+        onTravelCurrenciesChange={setTripTravelCurrencies}
+      />
     </div>
   );
 }

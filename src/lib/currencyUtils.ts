@@ -111,3 +111,69 @@ export function formatBudgetRangeWithCurrency(
   };
   return `${formatPrice(range[0])} – ${formatPrice(range[1])}`;
 }
+
+// Destination to currency mapping for auto-suggestion
+const destinationCurrencyMap: Record<string, CurrencyCode> = {
+  // Indonesia
+  'indonesia': 'IDR',
+  'bali': 'IDR',
+  'jakarta': 'IDR',
+  'lombok': 'IDR',
+  'yogyakarta': 'IDR',
+  'bandung': 'IDR',
+  'surabaya': 'IDR',
+  
+  // USA
+  'united states': 'USD',
+  'usa': 'USD',
+  'america': 'USD',
+  'new york': 'USD',
+  'california': 'USD',
+  'hawaii': 'USD',
+  'los angeles': 'USD',
+  'san francisco': 'USD',
+  'las vegas': 'USD',
+  
+  // Europe (Eurozone)
+  'europe': 'EUR',
+  'france': 'EUR',
+  'paris': 'EUR',
+  'germany': 'EUR',
+  'berlin': 'EUR',
+  'spain': 'EUR',
+  'barcelona': 'EUR',
+  'madrid': 'EUR',
+  'italy': 'EUR',
+  'rome': 'EUR',
+  'milan': 'EUR',
+  'amsterdam': 'EUR',
+  'netherlands': 'EUR',
+  'belgium': 'EUR',
+  'brussels': 'EUR',
+  'portugal': 'EUR',
+  'lisbon': 'EUR',
+  'greece': 'EUR',
+  'athens': 'EUR',
+  'austria': 'EUR',
+  'vienna': 'EUR',
+  
+  // Malaysia (home country)
+  'malaysia': 'MYR',
+  'kuala lumpur': 'MYR',
+  'langkawi': 'MYR',
+  'penang': 'MYR',
+  'malacca': 'MYR',
+  'kota kinabalu': 'MYR',
+};
+
+export function suggestCurrencyFromDestination(destination: string): CurrencyCode | null {
+  if (!destination) return null;
+  
+  const normalized = destination.toLowerCase().trim();
+  for (const [key, currency] of Object.entries(destinationCurrencyMap)) {
+    if (normalized.includes(key)) {
+      return currency;
+    }
+  }
+  return null;
+}
