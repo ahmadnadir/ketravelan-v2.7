@@ -48,7 +48,12 @@ export default function Auth() {
         : "Your account has been created successfully.",
     });
     
-    navigate("/");
+    // Redirect to onboarding for new signups, home for logins
+    if (mode === "signup") {
+      navigate("/onboarding");
+    } else {
+      navigate("/");
+    }
   };
 
   return (
