@@ -26,6 +26,10 @@ import Auth from "./pages/Auth";
 import Feedback from "./pages/Feedback";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
+import DestinationPage from "./pages/DestinationPage";
+import DestinationsIndex from "./pages/DestinationsIndex";
+import TravelStylePage from "./pages/TravelStylePage";
+import TravelStylesIndex from "./pages/TravelStylesIndex";
 
 const queryClient = new QueryClient();
 
@@ -41,8 +45,16 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/explore" element={<Explore />} />
+              {/* SEO-friendly trip routes */}
+              <Route path="/trips/:slug" element={<TripDetails />} />
               <Route path="/trip/:id" element={<TripDetails />} />
               <Route path="/trip/:id/hub" element={<TripHub />} />
+              {/* Destination pages for programmatic SEO */}
+              <Route path="/destinations" element={<DestinationsIndex />} />
+              <Route path="/destinations/:destination" element={<DestinationPage />} />
+              {/* Travel style pages for programmatic SEO */}
+              <Route path="/style" element={<TravelStylesIndex />} />
+              <Route path="/style/:style" element={<TravelStylePage />} />
               <Route path="/create" element={<CreateTrip />} />
               <Route path="/my-trips" element={<MyTrips />} />
               <Route path="/chat" element={<Chat />} />
