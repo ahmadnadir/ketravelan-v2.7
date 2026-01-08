@@ -1,5 +1,11 @@
+# Ketravelan robots.txt - SEO optimized
+
 User-agent: Googlebot
 Allow: /
+Allow: /explore
+Allow: /trips/
+Allow: /destinations/
+Allow: /style/
 
 User-agent: Bingbot
 Allow: /
@@ -12,3 +18,18 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Private/authenticated routes - do not index
+Disallow: /chat/
+Disallow: /profile
+Disallow: /profile/
+Disallow: /settings
+Disallow: /my-trips
+Disallow: /expenses
+Disallow: /approvals
+Disallow: /favourites
+Disallow: /onboarding
+Disallow: /trip/*/hub
+
+# Sitemap location
+Sitemap: https://ketravelan.com/sitemap.xml
