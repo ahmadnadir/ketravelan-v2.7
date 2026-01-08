@@ -154,6 +154,11 @@ export default function Onboarding() {
       .slice(0, 2);
   };
 
+  const handleSkip = () => {
+    localStorage.setItem("ketravelan-onboarded", "skipped");
+    navigate("/explore");
+  };
+
   const currencyInfo = getCurrencyInfo(derivedCurrency);
   const selectedCountryData = countries.find((c) => c.name === country);
 
@@ -170,11 +175,16 @@ export default function Onboarding() {
             <div className="w-10" />
           )}
           <div className="flex-1" />
-          {currentStep < 5 && (
-            <span className="text-sm text-muted-foreground">
-              {currentStep} of {TOTAL_STEPS - 1}
-            </span>
-          )}
+          {currentStep < 5 ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                {currentStep} of {TOTAL_STEPS - 1}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleSkip} className="text-muted-foreground">
+                Skip
+              </Button>
+            </div>
+          ) : null}
         </div>
       </header>
 
