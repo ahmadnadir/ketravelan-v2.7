@@ -35,29 +35,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { travelStyles, getTravelStyleEmoji } from "@/data/travelStyles";
+import { PillChip } from "@/components/shared/PillChip";
 
-// Available travel styles
-const availableTravelStyles = [
-  "Adventure",
-  "Budget-friendly",
-  "Nature",
-  "Food",
-  "City & Urban",
-  "Culture",
-  "Photography",
-  "Hiking",
-  "Wildlife",
-  "Beach",
-  "Luxury",
-  "Backpacking",
-  "Solo",
-  "Family",
-  "Romantic",
-];
+// TikTok icon component
+const TikTok = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 
-// Social platform options
+// Social platform options - includes TikTok from onboarding
 const socialPlatforms = [
   { id: "instagram", label: "Instagram", icon: Instagram, placeholder: "instagram.com/username" },
+  { id: "tiktok", label: "TikTok", icon: TikTok, placeholder: "tiktok.com/@username" },
   { id: "youtube", label: "YouTube", icon: Youtube, placeholder: "youtube.com/@channel" },
   { id: "linkedin", label: "LinkedIn", icon: Linkedin, placeholder: "linkedin.com/in/username" },
   { id: "facebook", label: "Facebook", icon: Facebook, placeholder: "facebook.com/username" },
@@ -80,15 +71,14 @@ export default function EditProfile() {
     name: "Ahmad Razak",
     location: "Kuala Lumpur, Malaysia",
     bio: "Passionate traveler who loves exploring new cultures and cuisines. Always looking for the next adventure! 🌍✈️",
-    budgetMin: "500",
-    budgetMax: "2000",
   });
 
+  // Store style IDs (matching TravelStyleGrid)
   const [selectedStyles, setSelectedStyles] = useState<string[]>([
-    "Adventure",
-    "Budget-friendly",
-    "Nature",
-    "Food",
+    "adventure",
+    "budget",
+    "nature",
+    "food",
   ]);
 
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>({
@@ -330,15 +320,15 @@ export default function EditProfile() {
               onChange={(e) => handleInputChange("bio", e.target.value)}
               placeholder="Tell others about yourself..."
               className="rounded-xl min-h-[80px] sm:min-h-[100px] resize-none text-sm"
-              maxLength={500}
+              maxLength={200}
             />
             <p className="text-xs text-muted-foreground text-right">
-              {formData.bio.length}/500
+              {formData.bio.length}/200
             </p>
           </div>
         </Card>
 
-        {/* Travel Styles */}
+        {/* Travel Styles - Using PillChip for consistent styling */}
         <Card className="p-3 sm:p-4 border-border/50 space-y-2 sm:space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-foreground text-sm sm:text-base">Travel Style</h3>
@@ -350,61 +340,26 @@ export default function EditProfile() {
             Select styles that match your travel preferences
           </p>
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {availableTravelStyles.map((style) => {
-              const isSelected = selectedStyles.includes(style);
+            {travelStyles.map((style) => {
+              const isSelected = selectedStyles.includes(style.id);
               return (
                 <button
-                  key={style}
-                  onClick={() => toggleTravelStyle(style)}
-                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${
-                    isSelected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-muted-foreground hover:bg-secondary/80"
-                  }`}
+                  key={style.id}
+                  onClick={() => toggleTravelStyle(style.id)}
+                  className="transition-all"
                 >
-                  {style}
+                  <PillChip
+                    label={style.label}
+                    icon={style.emoji}
+                    size="sm"
+                    className={isSelected 
+                      ? "bg-primary/10 border-primary text-primary ring-1 ring-primary/30" 
+                      : "opacity-60 hover:opacity-100"
+                    }
+                  />
                 </button>
               );
             })}
-          </div>
-        </Card>
-
-        {/* Budget Range */}
-        <Card className="p-3 sm:p-4 border-border/50 space-y-2 sm:space-y-3">
-          <h3 className="font-semibold text-foreground text-sm sm:text-base">Budget Range</h3>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Your typical budget per trip (RM)
-          </p>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex-1 space-y-1">
-              <Label htmlFor="budgetMin" className="text-xs">
-                Minimum
-              </Label>
-              <Input
-                id="budgetMin"
-                type="number"
-                value={formData.budgetMin}
-                onChange={(e) => handleInputChange("budgetMin", e.target.value)}
-                placeholder="500"
-                className="h-9 sm:h-10 rounded-xl text-sm"
-                min="0"
-              />
-            </div>
-            <span className="text-muted-foreground mt-5 text-sm">—</span>
-            <div className="flex-1 space-y-1">
-              <Label htmlFor="budgetMax" className="text-xs">
-                Maximum
-              </Label>
-              <Input
-                id="budgetMax"
-                type="number"
-                value={formData.budgetMax}
-                onChange={(e) => handleInputChange("budgetMax", e.target.value)}
-                placeholder="2000"
-                className="h-9 sm:h-10 rounded-xl text-sm"
-                min="0"
-              />
-            </div>
           </div>
         </Card>
 
