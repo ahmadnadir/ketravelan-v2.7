@@ -11,6 +11,7 @@ import {
   Ghost,
   AtSign,
   Settings,
+  Coins,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,9 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PillChip } from "@/components/shared/PillChip";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
-import { tripCategories } from "@/data/categories";
+import { getTravelStyleEmoji } from "@/data/travelStyles";
+import { useAuth } from "@/contexts/AuthContext";
+import { currencies } from "@/lib/currencyUtils";
 import {
   Dialog,
   DialogContent,
@@ -26,17 +29,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-// Helper to find category icon by label
-const getCategoryIcon = (styleLabel: string): string | undefined => {
-  const category = tripCategories.find(
-    (cat) => cat.label.toLowerCase() === styleLabel.toLowerCase()
-  );
-  return category?.icon;
-};
+// TikTok icon component
+const TikTok = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 
-// Platform to icon mapping
-const platformIcons: Record<string, LucideIcon> = {
+// Platform to icon mapping - includes TikTok
+const platformIcons: Record<string, LucideIcon | typeof TikTok> = {
   instagram: Instagram,
+  tiktok: TikTok,
   facebook: Facebook,
   youtube: Youtube,
   snapchat: Ghost,
@@ -44,7 +47,6 @@ const platformIcons: Record<string, LucideIcon> = {
   threads: AtSign,
   linkedin: Linkedin,
 };
-
 // Mock user profile data (current logged-in user)
 const userProfile = {
   name: "Ahmad Razak",
@@ -102,6 +104,7 @@ const AboutText = ({ text }: { text: string }) => {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showAllStyles, setShowAllStyles] = useState(false);
   const [coverPhoto, setCoverPhoto] = useState<string | null>(userProfile.coverPhotoUrl);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -247,7 +250,7 @@ export default function Profile() {
               <h3 className="font-semibold text-foreground mb-3 text-sm">Travel Style</h3>
               <div className="flex flex-wrap gap-2 items-center">
                 {displayedStyles.map((style) => (
-                  <PillChip key={style} label={style} icon={getCategoryIcon(style)} size="sm" />
+                  <PillChip key={style} label={style} icon={getTravelStyleEmoji(style)} size="sm" />
                 ))}
                 {userProfile.travelStyles.length > 4 && (
                   <button
@@ -261,6 +264,21 @@ export default function Profile() {
             </Card>
           )}
 
+          {/* Home Currency (visible only to profile owner) */}
+          {user?.homeCurrency && (
+            <Card className="p-4 border-border/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">Home Currency</span>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {currencies.find(c => c.code === user.homeCurrency)?.symbol} {user.homeCurrency}
+                </span>
+              </div>
+            </Card>
+          )}
+
           {/* Travel Styles Modal */}
           <Dialog open={showAllStyles} onOpenChange={setShowAllStyles}>
             <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-md rounded-2xl">
@@ -269,7 +287,7 @@ export default function Profile() {
               </DialogHeader>
               <div className="flex flex-wrap gap-2 pt-2">
                 {userProfile.travelStyles.map((style) => (
-                  <PillChip key={style} label={style} icon={getCategoryIcon(style)} />
+                  <PillChip key={style} label={style} icon={getTravelStyleEmoji(style)} />
                 ))}
               </div>
             </DialogContent>

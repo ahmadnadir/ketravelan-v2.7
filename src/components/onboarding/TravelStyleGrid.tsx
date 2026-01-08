@@ -1,28 +1,8 @@
 import { cn } from "@/lib/utils";
+import { travelStyles, type TravelStyle } from "@/data/travelStyles";
 
-export interface TravelStyle {
-  id: string;
-  label: string;
-  emoji: string;
-}
-
-export const travelStyles: TravelStyle[] = [
-  { id: "adventure", label: "Adventure", emoji: "🏔️" },
-  { id: "budget", label: "Budget-friendly", emoji: "💰" },
-  { id: "nature", label: "Nature", emoji: "🌿" },
-  { id: "food", label: "Food & Culinary", emoji: "🍜" },
-  { id: "city", label: "City & Urban", emoji: "🏙️" },
-  { id: "culture", label: "Culture", emoji: "🏛️" },
-  { id: "photography", label: "Photography", emoji: "📸" },
-  { id: "hiking", label: "Hiking", emoji: "🥾" },
-  { id: "wildlife", label: "Wildlife", emoji: "🦁" },
-  { id: "beach", label: "Beach", emoji: "🏖️" },
-  { id: "luxury", label: "Luxury", emoji: "✨" },
-  { id: "backpacking", label: "Backpacking", emoji: "🎒" },
-  { id: "solo", label: "Solo Travel", emoji: "🧭" },
-  { id: "family", label: "Family", emoji: "👨‍👩‍👧" },
-  { id: "romantic", label: "Romantic", emoji: "💕" },
-];
+export type { TravelStyle };
+export { travelStyles };
 
 interface TravelStyleGridProps {
   selectedStyles: string[];
