@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -21,7 +21,6 @@ import {
   ClipboardList,
   FileText,
   X,
-  Coins,
 } from "lucide-react";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { Button } from "@/components/ui/button";
@@ -55,10 +54,6 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { savePublishedTrip, PublishedTrip } from "@/lib/publishedTrips";
 import { tripCategories } from "@/data/categories";
-import { useAuth } from "@/contexts/AuthContext";
-import { suggestCurrencyFromDestination, getCurrencySymbol, CurrencyCode } from "@/lib/currencyUtils";
-import { TravelCurrencyPicker } from "@/components/create-trip/TravelCurrencyPicker";
-import { Label } from "@/components/ui/label";
 
 const steps = [
   { id: 1, title: "Visibility" },
@@ -70,18 +65,6 @@ const steps = [
 export default function CreateTrip() {
   const navigate = useNavigate();
   const { draft, updateDraft, clearDraft, lastSaved } = useDraftTrip();
-  const { user } = useAuth();
-  
-  // Auto-suggest currency based on destination
-  const suggestedCurrency = suggestCurrencyFromDestination(draft.primaryDestination);
-  
-  useEffect(() => {
-    if (suggestedCurrency && 
-        suggestedCurrency !== user?.homeCurrency && 
-        !draft.travelCurrencies.includes(suggestedCurrency)) {
-      updateDraft("travelCurrencies", [...draft.travelCurrencies, suggestedCurrency]);
-    }
-  }, [draft.primaryDestination, suggestedCurrency]);
   const [currentStep, setCurrentStep] = useState(1);
   const [showShareModal, setShowShareModal] = useState(false);
   const [publishedTripId, setPublishedTripId] = useState<string | null>(null);
@@ -681,47 +664,9 @@ export default function CreateTrip() {
                 onRoughBudgetCategoriesChange={(cats) => updateDraft("roughBudgetCategories", cats)}
                 detailedBudget={draft.detailedBudget}
                 onDetailedBudgetChange={(budget) => updateDraft("detailedBudget", budget)}
+                travelCurrencies={draft.travelCurrencies}
+                onTravelCurrenciesChange={(currencies) => updateDraft("travelCurrencies", currencies)}
               />
-            </div>
-
-            {/* Currencies */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Coins className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold text-foreground">Currencies</h3>
-              </div>
-              
-              <Card className="p-4 border-border/50 space-y-4">
-                {/* Home Currency - Read Only */}
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Home Currency</Label>
-                  <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-xl">
-                    <span className="font-medium">
-                      {getCurrencySymbol(user?.homeCurrency || "MYR")} {user?.homeCurrency || "MYR"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">(from your profile)</span>
-                  </div>
-                </div>
-                
-                {/* Travel Currencies - Editable */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Travel Currencies</Label>
-                    {suggestedCurrency && !draft.travelCurrencies.includes(suggestedCurrency) && (
-                      <span className="px-1.5 py-0.5 text-[10px] bg-primary/10 text-primary rounded-full">
-                        Suggested: {suggestedCurrency}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Used when recording expenses during the trip
-                  </p>
-                  <TravelCurrencyPicker
-                    selectedCurrencies={draft.travelCurrencies}
-                    onSelectionChange={(currencies) => updateDraft("travelCurrencies", currencies)}
-                  />
-                </div>
-              </Card>
             </div>
 
             {/* Itinerary */}

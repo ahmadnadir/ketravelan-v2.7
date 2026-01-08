@@ -325,7 +325,7 @@ export function AddExpenseModal({
           {/* Amount with Currency */}
           <div className="space-y-2">
             <Label htmlFor="amount">Amount *</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex gap-2">
               <Input
                 id="amount"
                 type="number"
@@ -334,24 +334,26 @@ export function AddExpenseModal({
                 onChange={(e) => setAmount(e.target.value)}
                 min="0"
                 step="0.01"
-                className="h-12 rounded-xl"
+                className="h-12 rounded-xl flex-1"
               />
               <Select value={currency} onValueChange={(val) => setCurrency(val as CurrencyCode)}>
-                <SelectTrigger className="h-12 rounded-xl">
-                  <span className="flex items-center gap-2">
-                    <span className="font-medium">{getCurrencySymbol(currency)} {currency}</span>
+                <SelectTrigger className="w-auto min-w-[120px] h-12 rounded-xl">
+                  <span className="flex items-center gap-1.5">
+                    <span>{getCurrencySymbol(currency)}</span>
+                    <span>{currency}</span>
                     {currency === homeCurrency && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary/10 text-primary rounded-full shrink-0">
+                      <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary/10 text-primary rounded-full">
                         Home
                       </span>
                     )}
                   </span>
                 </SelectTrigger>
-                <SelectContent className="rounded-xl bg-popover">
+                <SelectContent className="rounded-xl">
                   {availableCurrencies.map((c) => (
                     <SelectItem key={c.code} value={c.code} className="rounded-lg">
-                      <span className="flex items-center gap-2">
-                        <span className="font-medium">{c.symbol} {c.code}</span>
+                      <span className="flex items-center gap-1.5">
+                        <span>{c.symbol}</span>
+                        <span>{c.code}</span>
                         {c.code === homeCurrency && (
                           <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary/10 text-primary rounded-full">
                             Home
