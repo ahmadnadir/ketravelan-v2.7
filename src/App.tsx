@@ -25,6 +25,7 @@ import Approvals from "./pages/Approvals";
 import Auth from "./pages/Auth";
 import Feedback from "./pages/Feedback";
 import Settings from "./pages/Settings";
+import Onboarding from "./pages/Onboarding";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/feedback" element={<Feedback />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/onboarding" element={<Onboarding />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
