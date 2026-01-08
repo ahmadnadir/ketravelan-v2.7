@@ -1,11 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Mail, Lock, User } from "lucide-react";
+import { ArrowLeft, Mail, Lock, User, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, getCurrencyFromLocale } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { CurrencyCode, currencies } from "@/lib/currencyUtils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -18,6 +26,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [homeCurrency, setHomeCurrency] = useState<CurrencyCode>(getCurrencyFromLocale);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -29,8 +38,8 @@ export default function Auth() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mock authentication - just call login
-    login();
+    // Pass home currency to login for signup
+    login(mode === "signup" ? homeCurrency : undefined);
     
     toast({
       title: mode === "login" ? "Welcome back!" : "Account created!",
@@ -127,6 +136,31 @@ export default function Auth() {
               />
             </div>
           </div>
+
+          {/* Home Currency Picker - Signup Only */}
+          {mode === "signup" && (
+            <div className="space-y-2">
+              <Label htmlFor="homeCurrency" className="flex items-center gap-2">
+                <Coins className="h-4 w-4 text-muted-foreground" />
+                Home Currency
+              </Label>
+              <Select value={homeCurrency} onValueChange={(val) => setHomeCurrency(val as CurrencyCode)}>
+                <SelectTrigger className="h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.symbol} {c.code} – {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Used to display totals and settlements
+              </p>
+            </div>
+          )}
 
           <Button type="submit" className="w-full h-12 text-base font-medium rounded-xl">
             {mode === "login" ? "Log In" : "Create Account"}
