@@ -42,6 +42,10 @@ import { tripCategories } from "@/data/categories";
 import { cn } from "@/lib/utils";
 import { TripDetailsSkeleton } from "@/components/skeletons/TripDetailsSkeleton";
 import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { SEOHead } from "@/components/seo/SEOHead";
+import { TripSchema } from "@/components/seo/TripSchema";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { generateTripSlug, generateTripMeta } from "@/lib/seo";
 
 const iconMap: Record<string, any> = {
   car: Car,
@@ -314,8 +318,66 @@ export default function TripDetails() {
     return <TripDetailsSkeleton />;
   }
 
+  // Generate SEO meta data
+  const seoMeta = useMemo(() => generateTripMeta({
+    id: tripData.id,
+    title: tripData.title,
+    destination: tripData.destination,
+    description: tripData.description,
+    tags: tripData.tags,
+    price: tripData.price,
+    startDate: tripData.startDate,
+    visibility: tripData.visibility,
+  }), [tripData]);
+
+  const tripSlug = useMemo(() => generateTripSlug({
+    id: tripData.id,
+    title: tripData.title,
+    destination: tripData.destination,
+    tags: tripData.tags,
+    startDate: tripData.startDate,
+  }), [tripData]);
+
+  const canonicalUrl = `${window.location.origin}/trips/${tripSlug}`;
+  const isIndexable = tripData.visibility === 'public';
+
   return (
     <>
+      {/* SEO Components */}
+      <SEOHead
+        title={seoMeta.title}
+        description={seoMeta.description}
+        canonicalUrl={canonicalUrl}
+        ogImage={images[0]}
+        noIndex={!isIndexable}
+        keywords={[tripData.destination, ...tripData.tags, 'group trip', 'travel buddies']}
+      />
+      <TripSchema
+        name={tripData.title}
+        description={tripData.description}
+        destination={tripData.destination}
+        startDate={tripData.startDate || undefined}
+        endDate={tripData.endDate || undefined}
+        price={tripData.price}
+        currency="MYR"
+        image={images[0]}
+        url={canonicalUrl}
+        organizer={{ name: organizer.name }}
+        touristTypes={tripData.tags}
+        itinerary={tripData.dayByDayPlan?.map((day: any, index: number) => ({
+          day: index + 1,
+          activities: day.activities || [day.notes || ''],
+        })) || []}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Home', url: `${window.location.origin}/` },
+          { name: 'Explore', url: `${window.location.origin}/explore` },
+          { name: tripData.destination, url: `${window.location.origin}/destinations/${tripData.destination.toLowerCase().replace(/\s+/g, '-')}` },
+          { name: tripData.title, url: canonicalUrl },
+        ]}
+      />
+
       <Dialog open={shareModalOpen} onOpenChange={setShareModalOpen}>
         <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] max-w-sm left-1/2 -translate-x-1/2 rounded-2xl">
           <DialogHeader className="pb-2">
