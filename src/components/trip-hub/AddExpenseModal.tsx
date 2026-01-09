@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockMembers, ExpensePayment } from "@/data/mockData";
+import { mockMembers, ExpensePayment, ExpenseData } from "@/data/mockData";
 import { 
   CurrencyCode, 
   travelCurrencies, 
@@ -55,26 +55,8 @@ export interface NewExpense {
   homeCurrency?: CurrencyCode;
 }
 
-export interface ExpenseData {
-  id: string;
-  title: string;
-  amount: number;
-  paidBy: string;
-  date: string;
-  hasReceipt?: boolean;
-  paymentProgress?: number;
-  category?: string;
-  splitType?: "equal" | "custom";
-  splitWith?: string[];
-  customSplitAmounts?: CustomSplitAmount[];
-  notes?: string;
-  payments?: ExpensePayment[];
-  // Multi-currency fields
-  originalCurrency?: CurrencyCode;
-  fxRateToHome?: number;
-  convertedAmountHome?: number;
-  homeCurrency?: CurrencyCode;
-}
+// ExpenseData is now imported from mockData.ts
+export type { ExpenseData } from "@/data/mockData";
 
 interface AddExpenseModalProps {
   open: boolean;
