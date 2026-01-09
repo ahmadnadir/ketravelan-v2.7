@@ -157,6 +157,11 @@
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   }
 
+  /* Keyboard open state - adjust layout when virtual keyboard is visible */
+  body.keyboard-open {
+    --keyboard-offset: 0px;
+  }
+
   /* iOS-like typography */
   h1 {
     @apply text-2xl font-bold tracking-tight;
