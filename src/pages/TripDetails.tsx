@@ -302,23 +302,7 @@ export default function TripDetails() {
     },
   ];
 
-  const handleFavourite = () => {
-    setIsFavourited(!isFavourited);
-    setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 300);
-    toast({
-      title: isFavourited ? "Removed from favourites" : "Added to favourites",
-      description: isFavourited 
-        ? "Trip has been removed from your saved list" 
-        : "Trip has been saved to your favourites",
-    });
-  };
-
-  if (isLoading) {
-    return <TripDetailsSkeleton />;
-  }
-
-  // Generate SEO meta data
+  // Generate SEO meta data - must be before any early returns
   const seoMeta = useMemo(() => generateTripMeta({
     id: tripData.id,
     title: tripData.title,
@@ -337,6 +321,22 @@ export default function TripDetails() {
     tags: tripData.tags,
     startDate: tripData.startDate,
   }), [tripData]);
+
+  const handleFavourite = () => {
+    setIsFavourited(!isFavourited);
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 300);
+    toast({
+      title: isFavourited ? "Removed from favourites" : "Added to favourites",
+      description: isFavourited 
+        ? "Trip has been removed from your saved list" 
+        : "Trip has been saved to your favourites",
+    });
+  };
+
+  if (isLoading) {
+    return <TripDetailsSkeleton />;
+  }
 
   const canonicalUrl = `${window.location.origin}/trips/${tripSlug}`;
   const isIndexable = tripData.visibility === 'public';
