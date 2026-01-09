@@ -34,7 +34,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { mockExpenses as initialMockExpenses, mockMembers } from "@/data/mockData";
+import { mockMembers } from "@/data/mockData";
+import { useExpenses } from "@/contexts/ExpenseContext";
 import { toast } from "@/hooks/use-toast";
 import { getCategoryFromTitle } from "@/lib/expenseCategories";
 import { useCurrencyViewPreference } from "@/hooks/useCurrencyViewPreference";
@@ -316,8 +317,19 @@ export function TripExpenses({ allowedCurrencies }: TripExpensesProps = {}) {
     allowedCurrencies || ["USD", "IDR"]
   );
 
-  // Expenses data with local state (must be declared before settlements calculation)
-  const [expenses, setExpenses] = useState<ExpenseData[]>(initialMockExpenses);
+  // Use shared expense context instead of local state
+  const { expenses, updateExpense, deleteExpense: removeExpense, addExpense } = useExpenses();
+  
+  // Helper to update multiple expenses (mimics setExpenses for backward compatibility)
+  const setExpenses = (updater: (prev: typeof expenses) => typeof expenses) => {
+    const updated = updater(expenses);
+    updated.forEach(exp => {
+      const original = expenses.find(e => e.id === exp.id);
+      if (original && JSON.stringify(original) !== JSON.stringify(exp)) {
+        updateExpense(exp as any);
+      }
+    });
+  };
 
   // Track settlement status overrides (when user marks as paid)
   const [settlementStatuses, setSettlementStatuses] = useState<Record<string, "pending" | "settled">>({});
