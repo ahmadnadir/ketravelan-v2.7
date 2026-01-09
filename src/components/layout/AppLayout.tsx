@@ -34,7 +34,7 @@ export function AppLayout({ children, hideHeader = false, hideBottomNav = false 
   const showBottomNav = isAuthenticated && !hideBottomNav;
 
   return (
-    <div className="fixed inset-0 flex flex-col h-dvh overflow-hidden bg-background">
+    <div className="fixed inset-0 flex flex-col h-dvh overflow-hidden bg-background pl-safe pr-safe">
       {/* Header zone - anchored at top */}
       {!hideHeader && (
         <div className="flex-none">
