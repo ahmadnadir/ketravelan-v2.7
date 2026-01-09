@@ -15,197 +15,17 @@ import {
   Calendar,
   Receipt,
   ChevronRight,
-  Users
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-// Types for approvals
-type ApprovalStatus = "pending" | "approved" | "rejected";
-type RequestType = "join_request" | "expense_approval" | "receipt_verification";
-
-interface JoinRequest {
-  id: string;
-  type: "join_request";
-  tripId: string;
-  tripTitle: string;
-  tripImage: string;
-  tripDate: string;
-  requester: {
-    id: string;
-    name: string;
-    imageUrl?: string;
-    bio?: string;
-    tripsCount: number;
-  };
-  message?: string;
-  requestedAt: string;
-  status: ApprovalStatus;
-}
-
-interface ExpenseApproval {
-  id: string;
-  type: "expense_approval";
-  tripId: string;
-  tripTitle: string;
-  expense: {
-    title: string;
-    amount: number;
-    category: string;
-    paidBy: string;
-    paidByImage?: string;
-  };
-  requestedAt: string;
-  status: ApprovalStatus;
-}
-
-interface ReceiptVerification {
-  id: string;
-  type: "receipt_verification";
-  tripId: string;
-  tripTitle: string;
-  expense: {
-    title: string;
-    amount: number;
-    yourShare: number;
-  };
-  submittedBy: {
-    id: string;
-    name: string;
-    imageUrl?: string;
-  };
-  receiptUrl: string;
-  note?: string;
-  submittedAt: string;
-  status: ApprovalStatus;
-}
-
-type ApprovalItem = JoinRequest | ExpenseApproval | ReceiptVerification;
-
-// Mock data for approvals
-const mockApprovals: ApprovalItem[] = [
-  // Join Requests (as organizer, you need to approve these)
-  {
-    id: "jr-1",
-    type: "join_request",
-    tripId: "1",
-    tripTitle: "Langkawi Island Adventure",
-    tripImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
-    tripDate: "Jan 15-18, 2025",
-    requester: {
-      id: "new-1",
-      name: "Marcus Chen",
-      imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200",
-      bio: "Adventure seeker from KL, love water sports and hiking",
-      tripsCount: 3,
-    },
-    message: "Hi! I've been wanting to visit Langkawi for ages. I'm comfortable with swimming and have my own snorkeling gear. Would love to join!",
-    requestedAt: "2 hours ago",
-    status: "pending",
-  },
-  {
-    id: "jr-2",
-    type: "join_request",
-    tripId: "1",
-    tripTitle: "Langkawi Island Adventure",
-    tripImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
-    tripDate: "Jan 15-18, 2025",
-    requester: {
-      id: "new-2",
-      name: "Mei Ling",
-      imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200",
-      bio: "Solo traveler, photographer, beach lover",
-      tripsCount: 7,
-    },
-    message: "Experienced DIY traveler here! I can help with photography and I know some great hidden spots in Langkawi.",
-    requestedAt: "5 hours ago",
-    status: "pending",
-  },
-  // Expense Approvals (as member, you need to approve expenses added)
-  {
-    id: "ea-1",
-    type: "expense_approval",
-    tripId: "1",
-    tripTitle: "Langkawi Island Adventure",
-    expense: {
-      title: "Jet Ski Rental",
-      amount: 400,
-      category: "Activities",
-      paidBy: "Sarah Tan",
-      paidByImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200",
-    },
-    requestedAt: "1 hour ago",
-    status: "pending",
-  },
-  {
-    id: "ea-2",
-    type: "expense_approval",
-    tripId: "1",
-    tripTitle: "Langkawi Island Adventure",
-    expense: {
-      title: "Snorkeling Equipment",
-      amount: 150,
-      category: "Activities",
-      paidBy: "John Lee",
-      paidByImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
-    },
-    requestedAt: "3 hours ago",
-    status: "pending",
-  },
-  // Receipt Verifications (as payer, you need to verify receipts submitted)
-  {
-    id: "rv-1",
-    type: "receipt_verification",
-    tripId: "1",
-    tripTitle: "Langkawi Island Adventure",
-    expense: {
-      title: "Accommodation - 3 nights",
-      amount: 1200,
-      yourShare: 300,
-    },
-    submittedBy: {
-      id: "4",
-      name: "John Lee",
-      imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
-    },
-    receiptUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400",
-    note: "Paid via bank transfer on Jan 16",
-    submittedAt: "30 mins ago",
-    status: "pending",
-  },
-  // Some historical items
-  {
-    id: "jr-3",
-    type: "join_request",
-    tripId: "2",
-    tripTitle: "Cameron Highlands Retreat",
-    tripImage: "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400",
-    tripDate: "Feb 5-7, 2025",
-    requester: {
-      id: "new-3",
-      name: "Raj Patel",
-      imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200",
-      bio: "Nature photographer, tea enthusiast",
-      tripsCount: 5,
-    },
-    requestedAt: "2 days ago",
-    status: "approved",
-  },
-  {
-    id: "ea-3",
-    type: "expense_approval",
-    tripId: "1",
-    tripTitle: "Langkawi Island Adventure",
-    expense: {
-      title: "Group Lunch",
-      amount: 180,
-      category: "Food & Drinks",
-      paidBy: "Lisa Wong",
-      paidByImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200",
-    },
-    requestedAt: "1 day ago",
-    status: "approved",
-  },
-];
+import { 
+  useApprovals, 
+  ApprovalItem, 
+  ApprovalStatus, 
+  RequestType,
+  JoinRequest,
+  ExpenseApproval,
+  ReceiptVerification 
+} from "@/contexts/ApprovalsContext";
 
 const segmentOptions = [
   { value: "pending", label: "Pending" },
@@ -215,7 +35,17 @@ const segmentOptions = [
 export default function Approvals() {
   const navigate = useNavigate();
   const [activeSegment, setActiveSegment] = useState("pending");
-  const [approvals, setApprovals] = useState<ApprovalItem[]>(mockApprovals);
+  
+  const { 
+    approvals, 
+    pendingCount,
+    approveJoinRequest,
+    rejectJoinRequest,
+    acknowledgeExpense,
+    disputeExpense,
+    confirmReceipt,
+    rejectReceipt,
+  } = useApprovals();
 
   const filteredApprovals = useMemo(() => {
     if (activeSegment === "pending") {
@@ -224,24 +54,32 @@ export default function Approvals() {
     return approvals.filter((item) => item.status !== "pending");
   }, [approvals, activeSegment]);
 
-  const pendingCount = useMemo(() => {
-    return approvals.filter((item) => item.status === "pending").length;
-  }, [approvals]);
-
-  const handleApprove = (id: string) => {
-    setApprovals((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: "approved" as ApprovalStatus } : item
-      )
-    );
+  const handleApprove = (item: ApprovalItem) => {
+    switch (item.type) {
+      case "join_request":
+        approveJoinRequest(item.id);
+        break;
+      case "expense_approval":
+        acknowledgeExpense(item.expenseId, "1"); // "1" is current user ID
+        break;
+      case "receipt_verification":
+        confirmReceipt(item.expenseId, item.submittedBy.id);
+        break;
+    }
   };
 
-  const handleReject = (id: string) => {
-    setApprovals((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: "rejected" as ApprovalStatus } : item
-      )
-    );
+  const handleReject = (item: ApprovalItem) => {
+    switch (item.type) {
+      case "join_request":
+        rejectJoinRequest(item.id);
+        break;
+      case "expense_approval":
+        disputeExpense(item.expenseId, "1");
+        break;
+      case "receipt_verification":
+        rejectReceipt(item.expenseId, item.submittedBy.id);
+        break;
+    }
   };
 
   const getTypeIcon = (type: RequestType) => {
@@ -356,7 +194,7 @@ export default function Approvals() {
             variant="outline"
             size="sm"
             className="flex-1"
-            onClick={() => handleReject(item.id)}
+            onClick={() => handleReject(item)}
           >
             <X className="h-4 w-4 mr-1" />
             Decline
@@ -364,7 +202,7 @@ export default function Approvals() {
           <Button
             size="sm"
             className="flex-1"
-            onClick={() => handleApprove(item.id)}
+            onClick={() => handleApprove(item)}
           >
             <Check className="h-4 w-4 mr-1" />
             Approve
@@ -417,7 +255,7 @@ export default function Approvals() {
             variant="outline"
             size="sm"
             className="flex-1"
-            onClick={() => handleReject(item.id)}
+            onClick={() => handleReject(item)}
           >
             <X className="h-4 w-4 mr-1" />
             Dispute
@@ -425,7 +263,7 @@ export default function Approvals() {
           <Button
             size="sm"
             className="flex-1"
-            onClick={() => handleApprove(item.id)}
+            onClick={() => handleApprove(item)}
           >
             <Check className="h-4 w-4 mr-1" />
             Acknowledge
@@ -490,7 +328,7 @@ export default function Approvals() {
             variant="outline"
             size="sm"
             className="flex-1"
-            onClick={() => handleReject(item.id)}
+            onClick={() => handleReject(item)}
           >
             <X className="h-4 w-4 mr-1" />
             Reject
@@ -498,7 +336,7 @@ export default function Approvals() {
           <Button
             size="sm"
             className="flex-1"
-            onClick={() => handleApprove(item.id)}
+            onClick={() => handleApprove(item)}
           >
             <Check className="h-4 w-4 mr-1" />
             Confirm Payment

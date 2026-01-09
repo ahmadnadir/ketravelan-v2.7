@@ -4,9 +4,11 @@ import { Receipt, Search, X, Users } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { mockChats, mockExpenses } from "@/data/mockData";
+import { mockChats } from "@/data/mockData";
+import { useExpenses } from "@/contexts/ExpenseContext";
 
 export default function Expenses() {
+  const { expenses } = useExpenses();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter only trip chats (not direct messages)
@@ -21,17 +23,16 @@ export default function Expenses() {
     );
   }, [searchQuery, tripChats]);
 
-  // Calculate expense summary for display
-  const getExpenseSummary = () => {
-    const pendingExpenses = mockExpenses.filter(exp => exp.paymentProgress < 100);
+  // Calculate expense summary from shared context
+  const expenseSummary = useMemo(() => {
+    const pendingExpenses = expenses.filter(exp => exp.paymentProgress < 100);
     const totalPending = pendingExpenses.reduce((sum, exp) => {
       const pendingAmount = exp.amount * (1 - exp.paymentProgress / 100);
       return sum + pendingAmount;
     }, 0);
     return { count: pendingExpenses.length, amount: totalPending };
-  };
+  }, [expenses]);
 
-  const expenseSummary = getExpenseSummary();
 
   return (
     <AppLayout>
