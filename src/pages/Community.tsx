@@ -50,7 +50,7 @@ function CommunityContent() {
         description="Join the Ketravelan community. Read travel stories, ask questions, and connect with fellow DIY travelers."
       />
       <CommunityHeader />
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scroll-container">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scroll-container pb-20">
         {mode === "stories" ? (
           <StoriesFeed />
         ) : (

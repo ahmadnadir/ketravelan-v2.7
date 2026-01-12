@@ -1,17 +1,16 @@
+import { useState } from "react";
 import { useCommunity } from "@/contexts/CommunityContext";
 import { StoryCard } from "./StoryCard";
 import { StoryTypeChips } from "./StoryTypeChips";
+import { CreateStoryModal } from "./CreateStoryModal";
 import { PenSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface StoriesFeedProps {
-  onCreateStory?: () => void;
-}
-
-export function StoriesFeed({ onCreateStory }: StoriesFeedProps) {
+export function StoriesFeed() {
   const { filteredStories } = useCommunity();
   const { isAuthenticated } = useAuth();
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   return (
     <div className="flex flex-col">
@@ -34,9 +33,9 @@ export function StoriesFeed({ onCreateStory }: StoriesFeedProps) {
       </div>
 
       {/* Floating CTA for authenticated users */}
-      {isAuthenticated && onCreateStory && (
+      {isAuthenticated && (
         <Button
-          onClick={onCreateStory}
+          onClick={() => setCreateModalOpen(true)}
           className="fixed bottom-above-nav right-4 rounded-full shadow-lg gap-2"
           size="lg"
         >
@@ -44,6 +43,9 @@ export function StoriesFeed({ onCreateStory }: StoriesFeedProps) {
           Share Your Story
         </Button>
       )}
+
+      {/* Create Story Modal */}
+      <CreateStoryModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
     </div>
   );
 }
