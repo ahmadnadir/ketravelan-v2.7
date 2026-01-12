@@ -32,6 +32,9 @@ import DestinationPage from "./pages/DestinationPage";
 import DestinationsIndex from "./pages/DestinationsIndex";
 import TravelStylePage from "./pages/TravelStylePage";
 import TravelStylesIndex from "./pages/TravelStylesIndex";
+import Community from "./pages/Community";
+import StoryDetail from "./pages/StoryDetail";
+import DiscussionDetail from "./pages/DiscussionDetail";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +77,10 @@ const App = () => (
                   <Route path="/feedback" element={<Feedback />} />
                   <Route path="/install" element={<Install />} />
                   <Route path="/onboarding" element={<Onboarding />} />
+                  {/* Community routes */}
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/community/stories/:slug" element={<StoryDetail />} />
+                  <Route path="/community/discussions/:id" element={<DiscussionDetail />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

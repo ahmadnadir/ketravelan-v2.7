@@ -1,4 +1,4 @@
-import { Home, Map, FileText, Heart, MessageSquare, Settings, LogOut } from "lucide-react";
+import { Home, Map, FileText, Heart, MessageSquare, Settings, LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -16,6 +16,7 @@ interface MenuDrawerProps {
 
 const menuItems = [
   { icon: Home, label: "Home", path: "/" },
+  { icon: User, label: "Profile", path: "/profile" },
   { icon: Map, label: "My Trips", path: "/my-trips" },
   { icon: FileText, label: "Approvals & Requests", path: "/approvals" },
   { icon: FileText, label: "Draft Trips", path: "/my-trips?tab=draft" },
