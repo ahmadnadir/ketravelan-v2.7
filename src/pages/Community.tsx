@@ -50,12 +50,14 @@ function CommunityContent() {
         description="Join the Ketravelan community. Read travel stories, ask questions, and connect with fellow DIY travelers."
       />
       <CommunityHeader />
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scroll-container pb-20">
-        {mode === "stories" ? (
-          <StoriesFeed />
-        ) : (
-          <DiscussionsFeed onAskQuestion={() => setAskQuestionOpen(true)} />
-        )}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scroll-container">
+        <div className="w-full max-w-5xl mx-auto sm:px-4">
+          {mode === "stories" ? (
+            <StoriesFeed />
+          ) : (
+            <DiscussionsFeed onAskQuestion={() => setAskQuestionOpen(true)} />
+          )}
+        </div>
       </div>
       <AskQuestionDrawer open={askQuestionOpen} onOpenChange={setAskQuestionOpen} />
     </>
