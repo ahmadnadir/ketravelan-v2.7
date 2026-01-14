@@ -15,7 +15,7 @@ export function CommunityHeader() {
         options={options}
         value={mode}
         onChange={(value) => setMode(value as "stories" | "discussions")}
-        className="max-w-xs mx-auto"
+        className="w-full sm:w-auto sm:max-w-xs sm:mx-auto"
       />
     </div>
   );

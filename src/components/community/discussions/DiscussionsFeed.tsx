@@ -19,8 +19,8 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
     <div className="flex flex-col">
       {/* Filter bar */}
       <div className="sticky top-[57px] z-30 bg-background/95 backdrop-blur-sm border-b border-border/50 p-4 space-y-3">
-        {/* Location + Search */}
-        <div className="flex items-center gap-2">
+        {/* Mobile: Stack vertically | Desktop: Side by side */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
           <LocationFilter />
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -28,12 +28,12 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
               placeholder="Search discussions..."
               value={filters.searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 rounded-full"
+              className="pl-9 rounded-full w-full"
             />
           </div>
         </div>
 
-        {/* Topic chips */}
+        {/* Topic chips - horizontal scroll with no overflow */}
         <TopicFilter />
 
         {/* Location helper text */}
@@ -44,8 +44,8 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
         )}
       </div>
 
-      {/* Discussions list */}
-      <div className="p-4 space-y-3">
+      {/* Discussions list - extra bottom padding on mobile for sticky CTA */}
+      <div className="p-4 space-y-3 pb-28 sm:pb-4">
         {filteredDiscussions.length > 0 ? (
           filteredDiscussions.map((discussion) => (
             <DiscussionCard key={discussion.id} discussion={discussion} />
@@ -60,16 +60,30 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
         )}
       </div>
 
-      {/* Floating CTA */}
+      {/* Desktop floating button */}
       {isAuthenticated && onAskQuestion && (
         <Button
           onClick={onAskQuestion}
-          className="fixed bottom-above-nav right-4 rounded-full shadow-lg gap-2"
+          className="hidden sm:flex fixed bottom-above-nav right-4 rounded-full shadow-lg gap-2"
           size="lg"
         >
           <MessageSquarePlus className="h-5 w-5" />
           Ask the Community
         </Button>
+      )}
+
+      {/* Mobile sticky full-width button */}
+      {isAuthenticated && onAskQuestion && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 bottom-above-nav">
+          <Button
+            onClick={onAskQuestion}
+            className="w-full gap-2"
+            size="lg"
+          >
+            <MessageSquarePlus className="h-5 w-5" />
+            Ask the Community
+          </Button>
+        </div>
       )}
     </div>
   );
