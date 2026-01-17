@@ -3,6 +3,10 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 
+// Initialize PWA service worker with update handling
+import { initPWA } from "./pwa";
+initPWA();
+
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
     <App />
