@@ -15,7 +15,7 @@ export function StoriesFeed() {
   return (
     <div className="flex flex-col">
       {/* Filter chips - sticky with overflow containment */}
-      <div className="sticky top-[57px] z-30 bg-background/95 backdrop-blur-sm py-3 border-b border-border/50">
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm py-3 border-b border-border/50">
         <StoryTypeChips />
       </div>
 
