@@ -12,7 +12,7 @@ interface DiscussionsFeedProps {
 }
 
 export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
-  const { filteredDiscussions, filters, setSearchQuery } = useCommunity();
+  const { filteredDiscussions, filters, setDiscussionSearchQuery } = useCommunity();
   const { isAuthenticated } = useAuth();
 
   return (
@@ -26,8 +26,8 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search discussions..."
-              value={filters.searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={filters.discussionSearchQuery}
+              onChange={(e) => setDiscussionSearchQuery(e.target.value)}
               className="pl-9 rounded-full w-full"
             />
           </div>
