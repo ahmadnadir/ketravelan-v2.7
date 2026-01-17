@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCommunity } from "@/contexts/CommunityContext";
 import { StoryCard } from "./StoryCard";
 import { StoryTypeChips } from "./StoryTypeChips";
-import { CreateStoryModal } from "./CreateStoryModal";
 import { PenSquare, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function StoriesFeed() {
+  const navigate = useNavigate();
   const { filteredStories, filters, setStorySearchQuery } = useCommunity();
   const { isAuthenticated } = useAuth();
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+
+  const handleCreateStory = () => {
+    navigate("/create-story");
+  };
 
   return (
     <div className="flex flex-col">
@@ -50,7 +53,7 @@ export function StoriesFeed() {
         <div className="hidden sm:block fixed bottom-above-nav left-0 right-0 pointer-events-none z-40">
           <div className="max-w-5xl mx-auto px-4 flex justify-end">
             <Button
-              onClick={() => setCreateModalOpen(true)}
+              onClick={handleCreateStory}
               className="rounded-full shadow-lg gap-2 pointer-events-auto"
               size="lg"
             >
@@ -65,7 +68,7 @@ export function StoriesFeed() {
       {isAuthenticated && (
         <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 bottom-above-nav">
           <Button
-            onClick={() => setCreateModalOpen(true)}
+            onClick={handleCreateStory}
             className="w-full gap-2"
             size="lg"
           >
@@ -74,9 +77,6 @@ export function StoriesFeed() {
           </Button>
         </div>
       )}
-
-      {/* Create Story Modal */}
-      <CreateStoryModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
     </div>
   );
 }

@@ -1,0 +1,140 @@
+import { useState, useEffect, useCallback } from "react";
+import { StoryBlock, StoryType, StoryVisibility, SocialLink } from "@/data/communityMockData";
+
+export interface StoryDraft {
+  title: string;
+  storyType: StoryType | null;
+  country: string;
+  city: string;
+  linkedTripId: string | null;
+  coverImage: string | null;
+  blocks: StoryBlock[];
+  visibility: StoryVisibility;
+  socialLinks: SocialLink[];
+  tags: string[];
+  lastSaved: Date;
+}
+
+const DRAFT_KEY = "ketravelan-story-draft";
+
+const defaultDraft: StoryDraft = {
+  title: "",
+  storyType: null,
+  country: "",
+  city: "",
+  linkedTripId: null,
+  coverImage: null,
+  blocks: [],
+  visibility: "public",
+  socialLinks: [],
+  tags: [],
+  lastSaved: new Date(),
+};
+
+export function useStoryDraft() {
+  const [draft, setDraft] = useState<StoryDraft>(defaultDraft);
+  const [hasDraft, setHasDraft] = useState(false);
+
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        parsed.lastSaved = new Date(parsed.lastSaved);
+        setDraft(parsed);
+        setHasDraft(true);
+      } catch (e) {
+        console.error("Failed to parse story draft:", e);
+      }
+    }
+  }, []);
+
+  // Save draft to localStorage
+  const saveDraft = useCallback((updates: Partial<StoryDraft>) => {
+    setDraft((prev) => {
+      const newDraft = {
+        ...prev,
+        ...updates,
+        lastSaved: new Date(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(newDraft));
+      setHasDraft(true);
+      return newDraft;
+    });
+  }, []);
+
+  // Clear draft from localStorage
+  const clearDraft = useCallback(() => {
+    localStorage.removeItem(DRAFT_KEY);
+    setDraft(defaultDraft);
+    setHasDraft(false);
+  }, []);
+
+  // Update a specific block
+  const updateBlock = useCallback((blockId: string, updates: Partial<StoryBlock>) => {
+    setDraft((prev) => {
+      const newBlocks = prev.blocks.map((block) =>
+        block.id === blockId ? { ...block, ...updates } : block
+      );
+      const newDraft = {
+        ...prev,
+        blocks: newBlocks,
+        lastSaved: new Date(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(newDraft));
+      return newDraft;
+    });
+  }, []);
+
+  // Add a new block
+  const addBlock = useCallback((block: StoryBlock) => {
+    setDraft((prev) => {
+      const newDraft = {
+        ...prev,
+        blocks: [...prev.blocks, block],
+        lastSaved: new Date(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(newDraft));
+      setHasDraft(true);
+      return newDraft;
+    });
+  }, []);
+
+  // Remove a block
+  const removeBlock = useCallback((blockId: string) => {
+    setDraft((prev) => {
+      const newDraft = {
+        ...prev,
+        blocks: prev.blocks.filter((block) => block.id !== blockId),
+        lastSaved: new Date(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(newDraft));
+      return newDraft;
+    });
+  }, []);
+
+  // Reorder blocks
+  const reorderBlocks = useCallback((blocks: StoryBlock[]) => {
+    setDraft((prev) => {
+      const newDraft = {
+        ...prev,
+        blocks,
+        lastSaved: new Date(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(newDraft));
+      return newDraft;
+    });
+  }, []);
+
+  return {
+    draft,
+    hasDraft,
+    saveDraft,
+    clearDraft,
+    updateBlock,
+    addBlock,
+    removeBlock,
+    reorderBlocks,
+  };
+}
