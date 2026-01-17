@@ -60,16 +60,20 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
         )}
       </div>
 
-      {/* Desktop floating button */}
+      {/* Desktop floating button - positioned within content container */}
       {isAuthenticated && onAskQuestion && (
-        <Button
-          onClick={onAskQuestion}
-          className="hidden sm:flex fixed bottom-above-nav right-4 rounded-full shadow-lg gap-2"
-          size="lg"
-        >
-          <MessageSquarePlus className="h-5 w-5" />
-          Ask the Community
-        </Button>
+        <div className="hidden sm:block fixed bottom-above-nav left-0 right-0 pointer-events-none z-40">
+          <div className="max-w-5xl mx-auto px-4 flex justify-end">
+            <Button
+              onClick={onAskQuestion}
+              className="rounded-full shadow-lg gap-2 pointer-events-auto"
+              size="lg"
+            >
+              <MessageSquarePlus className="h-5 w-5" />
+              Ask the Community
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Mobile sticky full-width button */}

@@ -45,16 +45,20 @@ export function StoriesFeed() {
         )}
       </div>
 
-      {/* Desktop floating CTA */}
+      {/* Desktop floating CTA - positioned within content container */}
       {isAuthenticated && (
-        <Button
-          onClick={() => setCreateModalOpen(true)}
-          className="hidden sm:flex fixed bottom-above-nav right-4 rounded-full shadow-lg gap-2"
-          size="lg"
-        >
-          <PenSquare className="h-5 w-5" />
-          Share Your Story
-        </Button>
+        <div className="hidden sm:block fixed bottom-above-nav left-0 right-0 pointer-events-none z-40">
+          <div className="max-w-5xl mx-auto px-4 flex justify-end">
+            <Button
+              onClick={() => setCreateModalOpen(true)}
+              className="rounded-full shadow-lg gap-2 pointer-events-auto"
+              size="lg"
+            >
+              <PenSquare className="h-5 w-5" />
+              Share Your Story
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Mobile sticky full-width CTA */}
