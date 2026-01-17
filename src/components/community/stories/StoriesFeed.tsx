@@ -3,19 +3,32 @@ import { useCommunity } from "@/contexts/CommunityContext";
 import { StoryCard } from "./StoryCard";
 import { StoryTypeChips } from "./StoryTypeChips";
 import { CreateStoryModal } from "./CreateStoryModal";
-import { PenSquare } from "lucide-react";
+import { PenSquare, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function StoriesFeed() {
-  const { filteredStories } = useCommunity();
+  const { filteredStories, filters, setStorySearchQuery } = useCommunity();
   const { isAuthenticated } = useAuth();
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   return (
     <div className="flex flex-col">
-      {/* Filter chips - sticky with overflow containment */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm py-3 border-b border-border/50">
+      {/* Filter section - sticky with search and chips */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/50 p-4 space-y-3">
+        {/* Search input */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search stories..."
+            value={filters.storySearchQuery}
+            onChange={(e) => setStorySearchQuery(e.target.value)}
+            className="pl-9 rounded-full w-full"
+          />
+        </div>
+        
+        {/* Story type chips */}
         <StoryTypeChips />
       </div>
 

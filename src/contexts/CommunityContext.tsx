@@ -14,7 +14,8 @@ interface CommunityFilters {
   storyType: StoryType | "all";
   discussionTopic: DiscussionTopic | "all";
   location: string | "global";
-  searchQuery: string;
+  storySearchQuery: string;
+  discussionSearchQuery: string;
 }
 
 interface CommunityContextType {
@@ -26,7 +27,8 @@ interface CommunityContextType {
   setStoryTypeFilter: (type: StoryType | "all") => void;
   setDiscussionTopicFilter: (topic: DiscussionTopic | "all") => void;
   setLocationFilter: (location: string | "global") => void;
-  setSearchQuery: (query: string) => void;
+  setStorySearchQuery: (query: string) => void;
+  setDiscussionSearchQuery: (query: string) => void;
   toggleStoryLike: (storyId: string) => void;
   toggleStorySave: (storyId: string) => void;
   filteredStories: Story[];
@@ -43,7 +45,8 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
     storyType: "all",
     discussionTopic: "all",
     location: "Malaysia", // Default to user's country
-    searchQuery: "",
+    storySearchQuery: "",
+    discussionSearchQuery: "",
   });
 
   const setStoryTypeFilter = useCallback((type: StoryType | "all") => {
@@ -58,8 +61,12 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
     setFilters((prev) => ({ ...prev, location }));
   }, []);
 
-  const setSearchQuery = useCallback((query: string) => {
-    setFilters((prev) => ({ ...prev, searchQuery: query }));
+  const setStorySearchQuery = useCallback((query: string) => {
+    setFilters((prev) => ({ ...prev, storySearchQuery: query }));
+  }, []);
+
+  const setDiscussionSearchQuery = useCallback((query: string) => {
+    setFilters((prev) => ({ ...prev, discussionSearchQuery: query }));
   }, []);
 
   const toggleStoryLike = useCallback((storyId: string) => {
@@ -94,8 +101,8 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
     if (filters.storyType !== "all" && story.storyType !== filters.storyType) {
       return false;
     }
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
+    if (filters.storySearchQuery) {
+      const query = filters.storySearchQuery.toLowerCase();
       return (
         story.title.toLowerCase().includes(query) ||
         story.excerpt.toLowerCase().includes(query) ||
@@ -118,8 +125,8 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
     ) {
       return false;
     }
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
+    if (filters.discussionSearchQuery) {
+      const query = filters.discussionSearchQuery.toLowerCase();
       return (
         discussion.title.toLowerCase().includes(query) ||
         discussion.details?.toLowerCase().includes(query) ||
@@ -140,7 +147,8 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
         setStoryTypeFilter,
         setDiscussionTopicFilter,
         setLocationFilter,
-        setSearchQuery,
+        setStorySearchQuery,
+        setDiscussionSearchQuery,
         toggleStoryLike,
         toggleStorySave,
         filteredStories,
