@@ -35,6 +35,7 @@ import TravelStylesIndex from "./pages/TravelStylesIndex";
 import Community from "./pages/Community";
 import StoryDetail from "./pages/StoryDetail";
 import DiscussionDetail from "./pages/DiscussionDetail";
+import CreateStory from "./pages/CreateStory";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const App = () => (
                   <Route path="/community" element={<Community />} />
                   <Route path="/community/stories/:slug" element={<StoryDetail />} />
                   <Route path="/community/discussions/:id" element={<DiscussionDetail />} />
+                  <Route path="/create-story" element={<CreateStory />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

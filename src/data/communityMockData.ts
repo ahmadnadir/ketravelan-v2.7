@@ -1,11 +1,19 @@
 // Community Mock Data
 
-export type StoryType = 
+// Legacy story types for backwards compatibility
+export type LegacyStoryType = 
   | "lessons-learned"
   | "budget-breakdown"
   | "first-time-diy"
   | "solo-to-group"
   | "mistakes-wins";
+
+// New story types for guided creation
+export type StoryType = 
+  | LegacyStoryType
+  | "trip-recap"
+  | "lesson-insight"
+  | "destination-snapshot";
 
 export type DiscussionTopic = 
   | "budget"
@@ -17,10 +25,40 @@ export type DiscussionTopic =
   | "activities"
   | "general";
 
+export type BlockType = 
+  | "text"
+  | "image"
+  | "moment"
+  | "lesson"
+  | "tip"
+  | "location"
+  | "social-link";
+
+export type SocialPlatform = "instagram" | "tiktok" | "youtube" | "facebook" | "twitter";
+
+export type StoryVisibility = "public" | "community" | "profile";
+
+export interface StoryBlock {
+  id: string;
+  type: BlockType;
+  content: string;
+  caption?: string;
+  imageUrl?: string;
+  url?: string;
+  platform?: SocialPlatform;
+  locationName?: string;
+}
+
+export interface SocialLink {
+  platform: SocialPlatform;
+  url: string;
+}
+
 export interface StoryAuthor {
   id: string;
   name: string;
   avatar: string;
+  socialLinks?: SocialLink[];
 }
 
 export interface Location {
@@ -36,6 +74,7 @@ export interface Story {
   coverImage: string;
   excerpt: string;
   content: string;
+  blocks?: StoryBlock[];
   author: StoryAuthor;
   location: Location;
   readingTime: number;
@@ -45,6 +84,10 @@ export interface Story {
   saves: number;
   isLiked?: boolean;
   isSaved?: boolean;
+  isDraft?: boolean;
+  visibility?: StoryVisibility;
+  tags?: string[];
+  socialLinks?: SocialLink[];
   createdAt: Date;
   relatedDiscussionId?: string;
 }
@@ -69,7 +112,17 @@ export const storyTypeLabels: Record<StoryType, string> = {
   "first-time-diy": "First-Time DIY",
   "solo-to-group": "Solo → Group",
   "mistakes-wins": "Mistakes & Wins",
+  "trip-recap": "Trip Recap",
+  "lesson-insight": "Lesson / Insight",
+  "destination-snapshot": "Destination Snapshot",
 };
+
+// Story types available for new story creation
+export const newStoryTypes: StoryType[] = [
+  "trip-recap",
+  "lesson-insight",
+  "destination-snapshot",
+];
 
 export const discussionTopicLabels: Record<DiscussionTopic, string> = {
   budget: "Budget",
@@ -82,6 +135,52 @@ export const discussionTopicLabels: Record<DiscussionTopic, string> = {
   general: "General",
 };
 
+// Block type configurations with friendly guidance
+export const blockTypeConfig: Record<BlockType, { label: string; icon: string; description: string; placeholder: string }> = {
+  "text": {
+    label: "Text",
+    icon: "📝",
+    description: "Share your thoughts and experiences",
+    placeholder: "What happened next? Share your thoughts...",
+  },
+  "image": {
+    label: "Photo",
+    icon: "📷",
+    description: "Add a photo with optional caption",
+    placeholder: "Add a caption to your photo...",
+  },
+  "moment": {
+    label: "Key Moment",
+    icon: "✨",
+    description: "Highlight a memorable experience",
+    placeholder: "Describe this special moment...",
+  },
+  "lesson": {
+    label: "Lesson Learned",
+    icon: "💡",
+    description: "Share something you learned",
+    placeholder: "What did this experience teach you?",
+  },
+  "tip": {
+    label: "Tip for Others",
+    icon: "💬",
+    description: "Give advice to future travelers",
+    placeholder: "What advice would you give others?",
+  },
+  "location": {
+    label: "Location",
+    icon: "📍",
+    description: "Highlight a specific place",
+    placeholder: "What was special about this place?",
+  },
+  "social-link": {
+    label: "Social Link",
+    icon: "🔗",
+    description: "Link to your social media content",
+    placeholder: "Add the URL to your post...",
+  },
+};
+
 export const mockStories: Story[] = [
   {
     id: "story-1",
@@ -90,14 +189,26 @@ export const mockStories: Story[] = [
     coverImage: "https://images.unsplash.com/photo-1557750255-c76072a7aad1?w=800",
     excerpt: "A detailed breakdown of every ringgit spent during my solo backpacking adventure through Vietnam.",
     content: "Full story content here...",
+    blocks: [
+      { id: "b1", type: "text", content: "When I first decided to backpack through Vietnam, everyone told me it would be expensive. They were wrong." },
+      { id: "b2", type: "image", content: "", imageUrl: "https://images.unsplash.com/photo-1557750255-c76072a7aad1?w=800", caption: "The streets of Hanoi at sunset" },
+      { id: "b3", type: "moment", content: "The moment I realized I could live on RM80/day including accommodation was life-changing." },
+      { id: "b4", type: "tip", content: "Book overnight buses to save on accommodation costs - you travel and sleep at the same time!" },
+    ],
     author: {
       id: "user-1",
       name: "Sarah Chen",
       avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200",
+      socialLinks: [
+        { platform: "instagram", url: "https://instagram.com/sarahchen" },
+        { platform: "youtube", url: "https://youtube.com/@sarahtravels" },
+      ],
     },
     location: { country: "Vietnam", city: "Hanoi", flag: "🇻🇳" },
     readingTime: 8,
     storyType: "budget-breakdown",
+    visibility: "public",
+    tags: ["budget", "backpacking", "vietnam", "solo-travel"],
     likes: 234,
     saves: 89,
     createdAt: new Date("2025-01-05"),
@@ -109,14 +220,24 @@ export const mockStories: Story[] = [
     coverImage: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800",
     excerpt: "The mistakes I made, the lessons I learned, and why I'd do it all over again.",
     content: "Full story content here...",
+    blocks: [
+      { id: "b1", type: "text", content: "Japan had been on my bucket list for years. When I finally booked that ticket, I had no idea what I was getting into." },
+      { id: "b2", type: "lesson", content: "Learn basic Japanese phrases. Even 'sumimasen' (excuse me) goes a long way." },
+      { id: "b3", type: "moment", content: "Getting lost in Shibuya and finding the most amazing hidden ramen shop." },
+    ],
     author: {
       id: "user-2",
       name: "Ahmad Razak",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+      socialLinks: [
+        { platform: "instagram", url: "https://instagram.com/ahmadrazak" },
+      ],
     },
     location: { country: "Japan", city: "Tokyo", flag: "🇯🇵" },
     readingTime: 12,
     storyType: "first-time-diy",
+    visibility: "public",
+    tags: ["japan", "solo-travel", "first-time", "lessons"],
     likes: 456,
     saves: 178,
     createdAt: new Date("2025-01-03"),
@@ -250,7 +371,7 @@ export const mockDiscussions: Discussion[] = [
     title: "Must-try street food in Penang?",
     details: "Spending 3 days in Penang. What are the absolute must-try dishes and where?",
     author: {
-      id: "user-10",
+      id: "user-6",
       name: "Kevin Lim",
       avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200",
     },
@@ -299,4 +420,13 @@ export const countries = [
   { name: "Italy", flag: "🇮🇹" },
   { name: "Spain", flag: "🇪🇸" },
   { name: "United States", flag: "🇺🇸" },
+];
+
+// Title placeholder examples for story creation
+export const storyTitleExamples = [
+  "How I Spent RM2,500 on 3 Weeks in Vietnam",
+  "My First Solo Trip to Japan: What I Wish I Knew",
+  "5 Expensive Mistakes I Made in Bali",
+  "The Hidden Gems of Langkawi Nobody Talks About",
+  "How I Met My Best Travel Buddy in Thailand",
 ];
