@@ -18,7 +18,7 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
   return (
     <div className="flex flex-col">
       {/* Filter bar */}
-      <div className="sticky top-[57px] z-30 bg-background/95 backdrop-blur-sm border-b border-border/50 p-4 space-y-3">
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/50 p-4 space-y-3">
         {/* Mobile: Stack vertically | Desktop: Side by side */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
           <LocationFilter />

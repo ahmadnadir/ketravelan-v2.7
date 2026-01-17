@@ -10,7 +10,7 @@ export function CommunityHeader() {
   ];
 
   return (
-    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 py-3">
+    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 py-2 -mt-4 -mx-4 sm:-mx-0">
       <SegmentedControl
         options={options}
         value={mode}
