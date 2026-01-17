@@ -14,13 +14,13 @@ export function StoriesFeed() {
 
   return (
     <div className="flex flex-col">
-      {/* Filter chips */}
-      <div className="py-3 border-b border-border/50">
+      {/* Filter chips - sticky with overflow containment */}
+      <div className="sticky top-[57px] z-30 bg-background/95 backdrop-blur-sm py-3 border-b border-border/50">
         <StoryTypeChips />
       </div>
 
-      {/* Stories grid */}
-      <div className="p-4 space-y-4">
+      {/* Stories grid - extra bottom padding on mobile for sticky CTA */}
+      <div className="p-4 space-y-4 pb-28 sm:pb-4">
         {filteredStories.length > 0 ? (
           filteredStories.map((story) => (
             <StoryCard key={story.id} story={story} />
@@ -32,16 +32,30 @@ export function StoriesFeed() {
         )}
       </div>
 
-      {/* Floating CTA for authenticated users */}
+      {/* Desktop floating CTA */}
       {isAuthenticated && (
         <Button
           onClick={() => setCreateModalOpen(true)}
-          className="fixed bottom-above-nav right-4 rounded-full shadow-lg gap-2"
+          className="hidden sm:flex fixed bottom-above-nav right-4 rounded-full shadow-lg gap-2"
           size="lg"
         >
           <PenSquare className="h-5 w-5" />
           Share Your Story
         </Button>
+      )}
+
+      {/* Mobile sticky full-width CTA */}
+      {isAuthenticated && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 bottom-above-nav">
+          <Button
+            onClick={() => setCreateModalOpen(true)}
+            className="w-full gap-2"
+            size="lg"
+          >
+            <PenSquare className="h-5 w-5" />
+            Share Your Story
+          </Button>
+        </div>
       )}
 
       {/* Create Story Modal */}
