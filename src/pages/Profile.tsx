@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   MapPin,
   Camera,
@@ -10,7 +10,6 @@ import {
   Twitter,
   Ghost,
   AtSign,
-  Settings,
   Coins,
   type LucideIcon,
 } from "lucide-react";
@@ -18,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PillChip } from "@/components/shared/PillChip";
-import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { getTravelStyleEmoji } from "@/data/travelStyles";
 import { useAuth } from "@/contexts/AuthContext";
 import { currencies } from "@/lib/currencyUtils";
@@ -103,7 +102,6 @@ const AboutText = ({ text }: { text: string }) => {
 };
 
 export default function Profile() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [showAllStyles, setShowAllStyles] = useState(false);
   const [coverPhoto, setCoverPhoto] = useState<string | null>(userProfile.coverPhotoUrl);
@@ -119,35 +117,8 @@ export default function Profile() {
     }
   };
 
-  const headerContent = (
-    <header className="glass border-b border-border/50">
-      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-4">
-        <div className="flex items-center justify-between h-14">
-          <h1 className="font-semibold text-foreground">Profile</h1>
-          <Link
-            to="/settings"
-            className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Settings"
-          >
-            <Settings className="h-5 w-5" />
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-
-  const footerContent = (
-    <div className="bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
-      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
-        <Link to="/profile/edit" className="block">
-          <Button size="lg" className="w-full rounded-xl">Edit Profile</Button>
-        </Link>
-      </div>
-    </div>
-  );
-
   return (
-    <FocusedFlowLayout headerContent={headerContent} footerContent={footerContent} showBottomNav={true}>
+    <AppLayout>
       {/* Hidden file input for cover photo */}
       <input
         ref={coverInputRef}
@@ -324,8 +295,15 @@ export default function Profile() {
               ))}
             </div>
           </div>
+
+          {/* Edit Profile Button */}
+          <div className="pt-2 pb-4">
+            <Link to="/profile/edit" className="block">
+              <Button size="lg" className="w-full rounded-xl">Edit Profile</Button>
+            </Link>
+          </div>
         </div>
       </div>
-    </FocusedFlowLayout>
+    </AppLayout>
   );
 }
