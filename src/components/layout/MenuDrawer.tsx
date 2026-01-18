@@ -1,4 +1,4 @@
-import { Home, Map, FileText, Heart, MessageSquare, Settings, LogOut, User } from "lucide-react";
+import { Home, Map, FileText, Heart, MessageSquare, Settings, LogOut, Receipt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -16,8 +16,8 @@ interface MenuDrawerProps {
 
 const menuItems = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: User, label: "Profile", path: "/profile" },
   { icon: Map, label: "My Trips", path: "/my-trips" },
+  { icon: Receipt, label: "Expenses", path: "/expenses" },
   { icon: FileText, label: "Approvals & Requests", path: "/approvals" },
   { icon: FileText, label: "Draft Trips", path: "/my-trips?tab=draft" },
   { icon: Heart, label: "Favourites", path: "/favourites" },
@@ -48,15 +48,20 @@ export function MenuDrawer({ open, onOpenChange }: MenuDrawerProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md px-4 sm:px-6">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-3 text-base sm:text-lg">
-            <div className="h-10 w-10 rounded-full overflow-hidden">
-              <img 
-                src={user?.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200"}
-                alt="Profile"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <span>{user?.name || "Guest"}</span>
+          <SheetTitle asChild>
+            <button
+              onClick={() => handleNavigation("/profile")}
+              className="flex items-center gap-3 text-base sm:text-lg hover:opacity-80 transition-opacity cursor-pointer w-full text-left"
+            >
+              <div className="h-10 w-10 rounded-full overflow-hidden">
+                <img 
+                  src={user?.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200"}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <span>{user?.name || "Guest"}</span>
+            </button>
           </SheetTitle>
         </SheetHeader>
         
