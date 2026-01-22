@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { MapPin, Link2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -13,11 +14,10 @@ import {
 } from "@/components/ui/select";
 import { StoryDraft } from "@/hooks/useStoryDraft";
 import {
-  StoryType,
-  newStoryTypes,
-  storyTypeLabels,
   countries,
   storyTitleExamples,
+  storyFocusOptions,
+  StoryFocus,
 } from "@/data/communityMockData";
 
 interface StorySetupStepProps {
@@ -32,24 +32,15 @@ const mockPastTrips = [
   { id: "trip-3", title: "Bali Getaway", destination: "Indonesia" },
 ];
 
-const storyTypeDescriptions: Record<StoryType, string> = {
-  "trip-recap": "Share highlights from your entire trip journey",
-  "lesson-insight": "What did you learn? Share wisdom with others",
-  "destination-snapshot": "Capture the essence of a specific place",
-  "lessons-learned": "What did you learn? Share wisdom with others",
-  "budget-breakdown": "Share how you spent your money",
-  "first-time-diy": "First time traveling somewhere? Share the experience",
-  "solo-to-group": "From solo to group travel stories",
-  "mistakes-wins": "Share your travel mistakes and wins",
-};
-
 export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
   const [title, setTitle] = useState(draft.title);
-  const [storyType, setStoryType] = useState<StoryType | null>(draft.storyType);
+  const [storyFocuses, setStoryFocuses] = useState<StoryFocus[]>(draft.storyFocuses || []);
   const [country, setCountry] = useState(draft.country);
   const [city, setCity] = useState(draft.city);
   const [linkedTripId, setLinkedTripId] = useState<string | null>(draft.linkedTripId);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [tags, setTags] = useState<string[]>(draft.tags || []);
+  const [tagInput, setTagInput] = useState("");
 
   // Rotate placeholder examples
   useEffect(() => {
@@ -78,22 +69,76 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
     }
   };
 
-  const isValid = title.trim() && storyType && country;
+  const normalizedTitle = title.trim();
+  const isValid = normalizedTitle && country;
+
+  const toggleFocus = (focus: StoryFocus) => {
+    setStoryFocuses((prev) =>
+      prev.includes(focus) ? prev.filter((f) => f !== focus) : [...prev, focus]
+    );
+  };
+
+  const normalizeTag = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/^#/, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+  const addTag = (raw: string) => {
+    const next = normalizeTag(raw);
+    if (!next) return;
+    setTags((prev) => (prev.includes(next) ? prev : [...prev, next]));
+    setTagInput("");
+  };
+
+  const removeTag = (tag: string) => {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  const suggestedTags = useMemo(() => {
+    const suggestions = new Set<string>();
+
+    // Location
+    if (country) suggestions.add(normalizeTag(country));
+    if (city) suggestions.add(normalizeTag(city));
+
+    // Focuses
+    storyFocuses.forEach((f) => suggestions.add(normalizeTag(f)));
+
+    // Title keywords (lightweight)
+    normalizedTitle
+      .toLowerCase()
+      .split(/\s+/)
+      .map((w) => w.replace(/[^a-z0-9]/g, ""))
+      .filter((w) => w.length >= 5)
+      .slice(0, 8)
+      .forEach((w) => suggestions.add(normalizeTag(w)));
+
+    // Remove already-selected tags
+    tags.forEach((t) => suggestions.delete(t));
+
+    return Array.from(suggestions).filter(Boolean).slice(0, 10);
+  }, [country, city, normalizedTitle, storyFocuses, tags]);
 
   const handleContinue = () => {
     if (isValid) {
       onComplete({
-        title: title.trim(),
-        storyType,
+        title: normalizedTitle,
+        storyFocuses,
         country,
         city,
         linkedTripId,
+        tags,
       });
     }
   };
 
   return (
-    <div className="p-4 space-y-6 pb-32">
+    <div className="p-4 space-y-6 pb-40">
       {/* Header */}
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-foreground">Let's start your story</h2>
@@ -120,46 +165,92 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
         </p>
       </div>
 
-      {/* Story Type Selection */}
+      {/* Story Focus (Optional) */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">
-          What kind of story is this? <span className="text-destructive">*</span>
+          Story Focus <span className="text-muted-foreground">(optional)</span>
         </Label>
-        <div className="grid gap-3">
-          {newStoryTypes.map((type) => (
-            <Card
-              key={type}
-              onClick={() => setStoryType(type)}
-              className={`p-4 cursor-pointer transition-all ${
-                storyType === type
-                  ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-foreground">
-                    {storyTypeLabels[type]}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {storyTypeDescriptions[type]}
-                  </p>
-                </div>
-                <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    storyType === type
-                      ? "border-primary bg-primary"
-                      : "border-muted-foreground/30"
-                  }`}
-                >
-                  {storyType === type && (
-                    <div className="w-2 h-2 rounded-full bg-white" />
-                  )}
-                </div>
-              </div>
-            </Card>
+        <p className="text-sm text-muted-foreground">
+          Help readers understand your story (optional). You can skip this or choose more than one.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {storyFocusOptions.map((option) => {
+            const selected = storyFocuses.includes(option.value);
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => toggleFocus(option.value)}
+                className={
+                  selected
+                    ? "rounded-full px-3 py-1.5 text-sm border border-primary bg-primary/5 text-foreground"
+                    : "rounded-full px-3 py-1.5 text-sm border border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                }
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Tags */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Tags</Label>
+        <p className="text-sm text-muted-foreground">
+          Tags help others discover your story. Add or edit anytime.
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Badge key={tag} variant="outline" className="gap-1 pr-1">
+              #{tag}
+              <button
+                type="button"
+                onClick={() => removeTag(tag)}
+                className="ml-1 rounded px-1 hover:bg-muted"
+              >
+                ×
+              </button>
+            </Badge>
           ))}
         </div>
+
+        <div className="flex gap-2">
+          <Input
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addTag(tagInput);
+              }
+            }}
+            placeholder="Add a tag (e.g., budget, vietnam)"
+            className="flex-1"
+          />
+          <Button type="button" variant="outline" onClick={() => addTag(tagInput)}>
+            Add
+          </Button>
+        </div>
+
+        {suggestedTags.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">Suggestions</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestedTags.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => addTag(t)}
+                  className="rounded-full px-3 py-1.5 text-sm border border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                >
+                  + {t}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Destination */}
@@ -238,7 +329,7 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
       </div>
 
       {/* Continue Button - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50">
         <div className="container max-w-3xl mx-auto">
           <Button
             onClick={handleContinue}

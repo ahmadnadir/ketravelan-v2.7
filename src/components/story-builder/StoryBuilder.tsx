@@ -7,9 +7,6 @@ import { StoryBlock, BlockType, blockTypeConfig } from "@/data/communityMockData
 import { AddBlockSheet } from "./AddBlockSheet";
 import { TextBlock } from "./blocks/TextBlock";
 import { ImageBlock } from "./blocks/ImageBlock";
-import { MomentBlock } from "./blocks/MomentBlock";
-import { LessonBlock } from "./blocks/LessonBlock";
-import { TipBlock } from "./blocks/TipBlock";
 import { LocationBlock } from "./blocks/LocationBlock";
 import { SocialLinkBlock } from "./blocks/SocialLinkBlock";
 
@@ -89,12 +86,28 @@ export function StoryBuilder({
         return <TextBlock {...commonProps} />;
       case "image":
         return <ImageBlock {...commonProps} />;
+      // Legacy compatibility (older stories/drafts)
       case "moment":
-        return <MomentBlock {...commonProps} />;
+        return (
+          <TextBlock
+            {...commonProps}
+            block={{ ...block, type: "text", textPrompt: block.textPrompt ?? "what-happened" }}
+          />
+        );
       case "lesson":
-        return <LessonBlock {...commonProps} />;
+        return (
+          <TextBlock
+            {...commonProps}
+            block={{ ...block, type: "text", textPrompt: block.textPrompt ?? "lesson" }}
+          />
+        );
       case "tip":
-        return <TipBlock {...commonProps} />;
+        return (
+          <TextBlock
+            {...commonProps}
+            block={{ ...block, type: "text", textPrompt: block.textPrompt ?? "tip" }}
+          />
+        );
       case "location":
         return <LocationBlock {...commonProps} />;
       case "social-link":
@@ -107,7 +120,7 @@ export function StoryBuilder({
   const isValid = draft.coverImage && draft.blocks.length > 0;
 
   return (
-    <div className="p-4 space-y-6 pb-32">
+    <div className="p-4 space-y-6 pb-40">
       {/* Cover Image Upload */}
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground">Cover Image</p>
@@ -237,7 +250,7 @@ export function StoryBuilder({
       />
 
       {/* Continue Button - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50">
         <div className="container max-w-3xl mx-auto">
           <Button
             onClick={onComplete}

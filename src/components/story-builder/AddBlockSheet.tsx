@@ -15,9 +15,6 @@ interface AddBlockSheetProps {
 const blockTypes: BlockType[] = [
   "text",
   "image",
-  "moment",
-  "lesson",
-  "tip",
   "location",
   "social-link",
 ];

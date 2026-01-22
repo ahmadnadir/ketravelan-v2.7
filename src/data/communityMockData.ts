@@ -34,6 +34,33 @@ export type BlockType =
   | "location"
   | "social-link";
 
+// Story focus chips for new story creation (optional, multi-select)
+export type StoryFocus =
+  | "trip-recap"
+  | "lessons-learned"
+  | "tips-for-others"
+  | "destination-guide"
+  | "budget-breakdown"
+  | "solo-travel"
+  | "first-time-experience";
+
+export const storyFocusOptions: { value: StoryFocus; label: string }[] = [
+  { value: "trip-recap", label: "Trip Recap" },
+  { value: "lessons-learned", label: "Lessons Learned" },
+  { value: "tips-for-others", label: "Tips for Others" },
+  { value: "destination-guide", label: "Destination Guide" },
+  { value: "budget-breakdown", label: "Budget Breakdown" },
+  { value: "solo-travel", label: "Solo Travel" },
+  { value: "first-time-experience", label: "First-Time Experience" },
+];
+
+export type TextPrompt =
+  | "free"
+  | "what-happened"
+  | "lesson"
+  | "tip"
+  | "why-place-matters";
+
 export type SocialPlatform = "instagram" | "tiktok" | "youtube" | "facebook" | "twitter";
 
 export type StoryVisibility = "public" | "community" | "profile";
@@ -42,6 +69,8 @@ export interface StoryBlock {
   id: string;
   type: BlockType;
   content: string;
+  // Optional guidance for text blocks (keeps creation flexible)
+  textPrompt?: TextPrompt;
   caption?: string;
   imageUrl?: string;
   url?: string;
