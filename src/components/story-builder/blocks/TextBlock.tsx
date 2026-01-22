@@ -1,5 +1,12 @@
 import { Textarea } from "@/components/ui/textarea";
-import { StoryBlock, blockTypeConfig } from "@/data/communityMockData";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { StoryBlock, TextPrompt, blockTypeConfig } from "@/data/communityMockData";
 
 interface TextBlockProps {
   block: StoryBlock;
@@ -8,12 +15,65 @@ interface TextBlockProps {
 }
 
 export function TextBlock({ block, onUpdate }: TextBlockProps) {
+  const prompt: TextPrompt = block.textPrompt ?? "free";
+
+  const promptOptions: { value: TextPrompt; label: string; placeholder: string }[] = [
+    {
+      value: "free",
+      label: "Free write",
+      placeholder: blockTypeConfig.text.placeholder,
+    },
+    {
+      value: "what-happened",
+      label: "What happened?",
+      placeholder: "Tell the story in your own words — what happened?",
+    },
+    {
+      value: "lesson",
+      label: "What did you learn?",
+      placeholder: "What did you learn from this experience?",
+    },
+    {
+      value: "tip",
+      label: "Any tips for others?",
+      placeholder: "What would you tell someone doing this trip next?",
+    },
+    {
+      value: "why-place-matters",
+      label: "Why this place matters",
+      placeholder: "Why does this place matter to you?",
+    },
+  ];
+
+  const current = promptOptions.find((p) => p.value === prompt) ?? promptOptions[0];
+
   return (
-    <Textarea
-      value={block.content}
-      onChange={(e) => onUpdate({ content: e.target.value })}
-      placeholder={blockTypeConfig.text.placeholder}
-      className="min-h-[100px] resize-none border-0 p-0 focus-visible:ring-0"
-    />
+    <div className="space-y-2">
+      {/* Subtle prompt selector (optional) */}
+      <div className="flex items-center justify-between">
+        <Select
+          value={prompt}
+          onValueChange={(value) => onUpdate({ textPrompt: value as TextPrompt })}
+        >
+          <SelectTrigger className="h-8 w-auto border-0 bg-transparent px-0 text-xs text-muted-foreground hover:text-foreground">
+            <SelectValue placeholder="Free write" />
+          </SelectTrigger>
+          <SelectContent className="z-50 bg-popover">
+            {promptOptions.map((p) => (
+              <SelectItem key={p.value} value={p.value}>
+                {p.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Textarea
+        value={block.content}
+        onChange={(e) => onUpdate({ content: e.target.value })}
+        placeholder={current.placeholder}
+        className="min-h-[100px] resize-none border-0 p-0 focus-visible:ring-0"
+      />
+    </div>
   );
 }

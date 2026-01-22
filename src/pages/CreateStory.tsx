@@ -119,7 +119,7 @@ export default function CreateStory() {
     // Determine which step to resume from
     if (draft.blocks.length > 0) {
       setCurrentStep("builder");
-    } else if (draft.storyType) {
+    } else if (draft.title && draft.country) {
       setCurrentStep("builder");
     }
   };
@@ -177,7 +177,7 @@ export default function CreateStory() {
         description="Share your travel experiences with the Ketravelan community. Write about your adventures, lessons learned, and tips for fellow travelers."
       />
       
-      <FocusedFlowLayout headerContent={headerContent} showBottomNav={false}>
+      <FocusedFlowLayout headerContent={headerContent} showBottomNav={true}>
         {/* Draft Banner */}
         {showDraftBanner && (
           <DraftBanner

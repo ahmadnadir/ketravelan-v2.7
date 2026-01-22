@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { StoryBlock, StoryType, StoryVisibility, SocialLink } from "@/data/communityMockData";
+import { StoryBlock, StoryType, StoryVisibility, SocialLink, StoryFocus } from "@/data/communityMockData";
 
 export interface StoryDraft {
   title: string;
   storyType: StoryType | null;
+  storyFocuses: StoryFocus[];
   country: string;
   city: string;
   linkedTripId: string | null;
@@ -20,6 +21,7 @@ const DRAFT_KEY = "ketravelan-story-draft";
 const defaultDraft: StoryDraft = {
   title: "",
   storyType: null,
+  storyFocuses: [],
   country: "",
   city: "",
   linkedTripId: null,
@@ -41,8 +43,31 @@ export function useStoryDraft() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        parsed.lastSaved = new Date(parsed.lastSaved);
-        setDraft(parsed);
+
+        // Migrate older drafts safely
+        const migrated: StoryDraft = {
+          ...defaultDraft,
+          ...parsed,
+          storyFocuses: Array.isArray(parsed.storyFocuses) ? parsed.storyFocuses : [],
+          blocks: Array.isArray(parsed.blocks) ? parsed.blocks : [],
+          lastSaved: parsed.lastSaved ? new Date(parsed.lastSaved) : new Date(),
+        };
+
+        // Unify legacy text-ish blocks into one flexible text block
+        migrated.blocks = migrated.blocks.map((b: StoryBlock) => {
+          if (b.type === "moment") {
+            return { ...b, type: "text", textPrompt: b.textPrompt ?? "what-happened" };
+          }
+          if (b.type === "lesson") {
+            return { ...b, type: "text", textPrompt: b.textPrompt ?? "lesson" };
+          }
+          if (b.type === "tip") {
+            return { ...b, type: "text", textPrompt: b.textPrompt ?? "tip" };
+          }
+          return b;
+        });
+
+        setDraft(migrated);
         setHasDraft(true);
       } catch (e) {
         console.error("Failed to parse story draft:", e);

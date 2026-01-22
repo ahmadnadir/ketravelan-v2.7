@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Eye, Globe, Users, User, Instagram, Youtube, Link2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -55,24 +55,39 @@ export function PublishStep({
   const [newSocialPlatform, setNewSocialPlatform] = useState<SocialPlatform | null>(null);
   const [newSocialUrl, setNewSocialUrl] = useState("");
 
-  // Generate auto tags based on draft content
-  const generateTags = (): string[] => {
-    const tags: string[] = [];
-    if (draft.country) tags.push(draft.country.toLowerCase());
-    if (draft.city) tags.push(draft.city.toLowerCase());
-    if (draft.storyType) {
-      const typeLabel = storyTypeLabels[draft.storyType];
-      tags.push(typeLabel.toLowerCase().replace(/\s+/g, "-"));
-    }
-    return tags;
-  };
+  const [tagInput, setTagInput] = useState("");
 
-  const [tags, setTags] = useState<string[]>(draft.tags?.length ? draft.tags : generateTags());
+  const normalizeTag = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/^#/, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+  const tags = draft.tags || [];
+
+  const suggestedTags = useMemo(() => {
+    const s = new Set<string>();
+    if (draft.country) s.add(normalizeTag(draft.country));
+    if (draft.city) s.add(normalizeTag(draft.city));
+    (draft.storyFocuses || []).forEach((f) => s.add(normalizeTag(f)));
+    tags.forEach((t) => s.delete(t));
+    return Array.from(s).filter(Boolean).slice(0, 10);
+  }, [draft.country, draft.city, draft.storyFocuses, tags]);
 
   const handleRemoveTag = (tag: string) => {
-    const newTags = tags.filter((t) => t !== tag);
-    setTags(newTags);
-    saveDraft({ tags: newTags });
+    saveDraft({ tags: tags.filter((t) => t !== tag) });
+  };
+
+  const handleAddTag = (raw: string) => {
+    const next = normalizeTag(raw);
+    if (!next) return;
+    if (tags.includes(next)) return;
+    saveDraft({ tags: [...tags, next] });
+    setTagInput("");
   };
 
   const handleVisibilityChange = (visibility: StoryVisibility) => {
@@ -110,7 +125,7 @@ export function PublishStep({
   };
 
   return (
-    <div className="p-4 space-y-6 pb-40">
+    <div className="p-4 space-y-6 pb-48">
       {/* Preview Card */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
@@ -128,9 +143,18 @@ export function PublishStep({
             </div>
           )}
           <div className="p-4 space-y-2">
-            <Badge variant="secondary" className="text-xs">
-              {draft.storyType && storyTypeLabels[draft.storyType]}
-            </Badge>
+            <div className="flex flex-wrap gap-2">
+              {draft.storyType && (
+                <Badge variant="secondary" className="text-xs">
+                  {storyTypeLabels[draft.storyType]}
+                </Badge>
+              )}
+              {(draft.storyFocuses || []).slice(0, 3).map((focus) => (
+                <Badge key={focus} variant="outline" className="text-xs">
+                  {focus.replace(/-/g, " ")}
+                </Badge>
+              ))}
+            </div>
             <h3 className="font-semibold text-lg">{draft.title}</h3>
             <p className="text-sm text-muted-foreground">
               {draft.country}{draft.city && `, ${draft.city}`}
@@ -139,12 +163,10 @@ export function PublishStep({
         </Card>
       </div>
 
-      {/* Auto-generated Tags */}
+      {/* Tags */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">Tags</Label>
-        <p className="text-xs text-muted-foreground">
-          Auto-generated based on your story. Remove any you don't want.
-        </p>
+        <p className="text-xs text-muted-foreground">Tags help others discover your story.</p>
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
             <Badge
@@ -162,6 +184,42 @@ export function PublishStep({
             </Badge>
           ))}
         </div>
+
+        <div className="flex gap-2">
+          <Input
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddTag(tagInput);
+              }
+            }}
+            placeholder="Add a tag"
+            className="flex-1"
+          />
+          <Button type="button" variant="outline" onClick={() => handleAddTag(tagInput)}>
+            Add
+          </Button>
+        </div>
+
+        {tags.length === 0 && suggestedTags.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">Suggestions</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestedTags.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => handleAddTag(t)}
+                  className="rounded-full px-3 py-1.5 text-sm border border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                >
+                  + {t}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Social Links */}
@@ -266,7 +324,7 @@ export function PublishStep({
       </div>
 
       {/* Action Buttons - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50">
         <div className="container max-w-3xl mx-auto space-y-2">
           <Button
             onClick={handlePublish}
