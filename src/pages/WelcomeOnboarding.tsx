@@ -98,10 +98,10 @@ export default function WelcomeOnboarding() {
               {/* Buttons */}
               <div className="w-full max-w-xs space-y-3 animate-fade-in">
                 <Button 
-                  onClick={handleGetStarted}
+                  onClick={handleNext}
                   className="w-full h-12 text-base font-medium rounded-xl"
                 >
-                  Discover Trips
+                  Explore Features
                 </Button>
                 <Button 
                   variant="secondary"
