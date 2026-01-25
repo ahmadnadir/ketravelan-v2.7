@@ -25,6 +25,7 @@ import UserProfileView from "./pages/UserProfileView";
 import Favourites from "./pages/Favourites";
 import Approvals from "./pages/Approvals";
 import Auth from "./pages/Auth";
+import WelcomeOnboarding from "./pages/WelcomeOnboarding";
 import Feedback from "./pages/Feedback";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
@@ -52,6 +53,7 @@ const App = () => (
               <PageTransition>
                 <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/welcome" element={<WelcomeOnboarding />} />
                   <Route path="/explore" element={<Explore />} />
                   {/* SEO-friendly trip routes */}
                   <Route path="/trips/:slug" element={<TripDetails />} />
