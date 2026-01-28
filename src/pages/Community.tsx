@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { CommunityProvider, useCommunity } from "@/contexts/CommunityContext";
 import { CommunityHeader } from "@/components/community/CommunityHeader";
@@ -12,36 +12,11 @@ function CommunityContent() {
   const { mode, setMode } = useCommunity();
   const { isAuthenticated } = useAuth();
   const [askQuestionOpen, setAskQuestionOpen] = useState(false);
-  
-  // Preserve scroll positions for each mode
-  const storiesScrollRef = useRef(0);
-  const discussionsScrollRef = useRef(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Set default mode based on auth state (only on mount)
   useEffect(() => {
     setMode(isAuthenticated ? "discussions" : "stories");
   }, []);
-
-  // Save scroll position before mode change
-  const handleModeChange = (newMode: "stories" | "discussions") => {
-    if (scrollContainerRef.current) {
-      if (mode === "stories") {
-        storiesScrollRef.current = scrollContainerRef.current.scrollTop;
-      } else {
-        discussionsScrollRef.current = scrollContainerRef.current.scrollTop;
-      }
-    }
-    setMode(newMode);
-  };
-
-  // Restore scroll position after mode change
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      const targetScroll = mode === "stories" ? storiesScrollRef.current : discussionsScrollRef.current;
-      scrollContainerRef.current.scrollTop = targetScroll;
-    }
-  }, [mode]);
 
   return (
     <>
@@ -50,14 +25,12 @@ function CommunityContent() {
         description="Join the Ketravelan community. Read travel stories, ask questions, and connect with fellow DIY travelers."
       />
       <CommunityHeader />
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scroll-container">
-        <div className="w-full max-w-5xl mx-auto sm:px-4">
-          {mode === "stories" ? (
-            <StoriesFeed />
-          ) : (
-            <DiscussionsFeed onAskQuestion={() => setAskQuestionOpen(true)} />
-          )}
-        </div>
+      <div className="w-full max-w-5xl mx-auto sm:px-4 -mx-4 sm:mx-auto">
+        {mode === "stories" ? (
+          <StoriesFeed />
+        ) : (
+          <DiscussionsFeed onAskQuestion={() => setAskQuestionOpen(true)} />
+        )}
       </div>
       <AskQuestionDrawer open={askQuestionOpen} onOpenChange={setAskQuestionOpen} />
     </>
