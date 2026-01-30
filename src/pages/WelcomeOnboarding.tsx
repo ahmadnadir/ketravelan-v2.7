@@ -5,6 +5,9 @@ import { Users, Receipt, MapPin, MessageCircle, Plane, Globe, Lock } from "lucid
 import { Button } from "@/components/ui/button";
 import { ProgressDots } from "@/components/welcome/ProgressDots";
 import { Card } from "@/components/ui/card";
+import { ExpensesAtGlanceSlide } from "@/components/welcome/ExpensesAtGlanceSlide";
+import { UpfrontPaymentsSlide } from "@/components/welcome/UpfrontPaymentsSlide";
+import { NetSettlementSlide } from "@/components/welcome/NetSettlementSlide";
 
 export default function WelcomeOnboarding() {
   const navigate = useNavigate();
@@ -36,7 +39,7 @@ export default function WelcomeOnboarding() {
   }, [emblaApi, onSelect]);
 
   const handleNext = () => {
-    if (currentSlide < 2) {
+    if (currentSlide < 5) {
       scrollTo(currentSlide + 1);
     }
   };
@@ -179,7 +182,16 @@ export default function WelcomeOnboarding() {
             </div>
           </div>
 
-          {/* Screen 3: Travel Buddies & Planning */}
+          {/* Screen 3: Expenses at a Glance */}
+          <ExpensesAtGlanceSlide onNext={handleNext} />
+
+          {/* Screen 4: Upfront Payments, Tracked */}
+          <UpfrontPaymentsSlide onNext={handleNext} />
+
+          {/* Screen 5: Net Settlement, Simplified */}
+          <NetSettlementSlide onNext={handleNext} />
+
+          {/* Screen 6: Travel Buddies & Planning */}
           <div className="flex-[0_0_100%] min-w-0 h-full">
             <div className="h-full flex flex-col items-center justify-center px-6 text-center">
               {/* Trip Cards Mockup */}
@@ -255,7 +267,7 @@ export default function WelcomeOnboarding() {
       {/* Progress Dots - Fixed at bottom */}
       <div className="flex-none pb-8 pt-4">
         <ProgressDots 
-          total={3} 
+          total={6} 
           current={currentSlide} 
           onDotClick={scrollTo}
         />
