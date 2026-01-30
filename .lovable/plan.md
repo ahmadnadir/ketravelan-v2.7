@@ -1,153 +1,171 @@
 
 
-## Fix PWA Cache Issue Causing 404 Errors
+## Welcome Onboarding: Add 3 New Expense Feature Slides
 
-### Problem Analysis
-
-The 404 errors on `/community` and `/welcome` routes are caused by stale service worker caches:
-
-1. **Stale JS bundles**: When new routes are deployed, the service worker continues serving old cached JavaScript that doesn't include the new route definitions
-2. **Silent failures**: The `registerType: "autoUpdate"` should auto-update, but the toast notification for updates can be missed or dismissed
-3. **No immediate cache bust**: Users seeing 404s are stuck on old versions until they manually reload
-
-### Root Cause
-
-The current PWA configuration relies on users to:
-1. Notice the "Update available" toast
-2. Click the "Reload" button
-
-If they miss this, they stay on the old cached version indefinitely.
+### Overview
+Add 3 new expense-focused slides to the welcome onboarding flow, positioned after the existing "Track Group Expenses" slide and before the "Travel Buddies" slide. This expands the carousel from 3 slides to 6 slides.
 
 ---
 
-### Solution: Aggressive Cache Invalidation on Navigation Errors
+### New Slide Order
 
-Implement a multi-layered fix:
-
-1. **Auto-skip waiting service worker** - Force new service workers to activate immediately
-2. **Detect stale routes** - When React Router hits a 404 on a known route, trigger cache refresh
-3. **Force update on mount** - Check for updates immediately when app loads, not just every 30 minutes
+| Position | Slide Title | Status |
+|----------|-------------|--------|
+| 1 | Intro (Travel Together. Split Costs.) | Existing |
+| 2 | Track Group Expenses — Fairly and Instantly | Existing |
+| 3 | **Expenses at a Glance** | NEW |
+| 4 | **Upfront Payments, Tracked** | NEW |
+| 5 | **Net Settlement, Simplified** | NEW |
+| 6 | Plan Trips or Find Travel Buddies | Existing (moved) |
 
 ---
 
-### Changes Required
+### New Slide Designs (Based on Reference Images)
 
-#### 1. Update `vite.config.ts` - Force immediate service worker activation
-
-**Current issue**: New service workers wait until all tabs are closed before activating.
-
-**Change**: Add `skipWaiting: true` and `clientsClaim: true` to workbox config:
+#### Screen 3: Expenses at a Glance
 
 ```text
-workbox: {
-  skipWaiting: true,      // NEW: Don't wait, activate immediately
-  clientsClaim: true,     // NEW: Take control of all pages immediately
-  globPatterns: [...],
-  ...
-}
+┌─────────────────────────────────────┐
+│  📋 Your Total Expenses             │
+│  RM 680                             │
+│  Your share of all trip costs       │
+├─────────────────┬───────────────────┤
+│ ↗ You're Owed   │ ↘ You Owe         │
+│ RM 85           │ RM 120            │
+│ Net from others │ Net to others     │
+└─────────────────┴───────────────────┘
+
+Expenses at a Glance
+
+See your total spend, what you owe, and
+what others owe you.
+
+        [ Next ]
 ```
 
-This ensures new service workers activate immediately without waiting.
-
----
-
-#### 2. Update `src/pwa.ts` - Immediate update check + auto-reload
-
-**Changes:**
-- Check for updates immediately on load (not just every 30 min)
-- Auto-reload when update is available (optional toast first)
-- Add a function to force cache clear and reload
+#### Screen 4: Upfront Payments, Tracked
 
 ```text
-export const initPWA = () => {
-  const updateSW = registerSW({
-    immediate: true,  // Check immediately
-    onNeedRefresh() {
-      // Auto-reload after brief delay (give toast time to show)
-      toast("Updating app...", { duration: 1500 });
-      setTimeout(() => updateSW(true), 1500);
-    },
-    ...
-  });
-  
-  // Also check immediately on init
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(reg => reg.update());
-  }
-};
+┌─────────────────────────────────────┐
+│  Paid on Behalf of the Group        │
+│  Total: RM 2,530          Avg: RM 633│
+├─────────────────────────────────────┤
+│ AR  Ahmad Razak    RM 1,200 (47%)   │
+│ ████████████████████░░░░░           │
+│ ST  Sarah Tan      RM 770 (30%)     │
+│ ███████████░░░░░░░░░░░░░░           │
+│ LW  Lisa Wong      RM 380 (15%)     │
+│ █████░░░░░░░░░░░░░░░░░░░░           │
+│ ML  Marcus Lee     RM 180 (8%)      │
+│ ██░░░░░░░░░░░░░░░░░░░░░░░           │
+└─────────────────────────────────────┘
 
-// Export function for manual cache clear
-export const clearCacheAndReload = async () => {
-  if ('caches' in window) {
-    const cacheNames = await caches.keys();
-    await Promise.all(cacheNames.map(name => caches.delete(name)));
-  }
-  if ('serviceWorker' in navigator) {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(registrations.map(reg => reg.unregister()));
-  }
-  window.location.reload();
-};
+Upfront Payments, Tracked
+
+Instantly track who paid upfront and
+manage shared costs fairly.
+
+        [ Next ]
 ```
 
----
-
-#### 3. Update `src/pages/NotFound.tsx` - Smart cache clear on known routes
-
-**Logic**: If user lands on 404 for a route that SHOULD exist (like `/community`), auto-clear cache and reload.
-
-**Changes:**
-- Define list of valid routes
-- Check if current path matches a valid route pattern
-- If yes, auto-trigger cache clear (with toast notification)
-- If no, show normal 404 page
+#### Screen 5: Net Settlement, Simplified
 
 ```text
-const VALID_ROUTES = [
-  '/community', '/welcome', '/explore', '/my-trips', 
-  '/chat', '/profile', '/create', '/settings', '/auth',
-  '/favourites', '/approvals', '/feedback', '/install',
-  '/onboarding', '/destinations', '/style', '/expenses'
-];
+┌─────────────────────────────────────┐
+│         RM 256.00                   │
+│    Net amount to be settled         │
+│  This is the final amount after     │
+│  offsetting shared expenses.        │
+├─────────────────────────────────────┤
+│ View breakdown                   ▼  │
+├─────────────────────────────────────┤
+│ JOHN OWES AHMAD                     │
+│ • Accommodation - 3 nights  RM 300.00│
+│ LESS: AHMAD OWES JOHN               │
+│ • Sky Bridge tickets       -RM 44.00│
+├─────────────────────────────────────┤
+│ Net total                  RM 256.00│
+└─────────────────────────────────────┘
 
-// Check if current path should exist
-const shouldExist = VALID_ROUTES.some(route => 
-  location.pathname === route || location.pathname.startsWith(route + '/')
-);
+Net Settlement, Simplified
 
-if (shouldExist) {
-  // Auto-clear cache and reload
-  useEffect(() => {
-    toast("Fixing cached version...");
-    clearCacheAndReload();
-  }, []);
-}
+We offset expenses automatically —
+no mental maths, no confusion.
+
+        [ Next ]
 ```
 
 ---
 
-### Implementation Summary
+### Technical Changes
 
-| File | Change |
-|------|--------|
-| `vite.config.ts` | Add `skipWaiting: true` and `clientsClaim: true` |
-| `src/pwa.ts` | Add immediate update check, auto-reload on update, export `clearCacheAndReload` |
-| `src/pages/NotFound.tsx` | Detect known routes hitting 404, auto-clear cache |
+#### File: `src/pages/WelcomeOnboarding.tsx`
+
+1. **Update `handleNext` function**
+   - Change condition from `currentSlide < 2` to `currentSlide < 5` (since we now have 6 slides, indices 0-5)
+
+2. **Update `ProgressDots` total**
+   - Change `total={3}` to `total={6}`
+
+3. **Add 3 new slide components** after existing Screen 2:
+
+   **Screen 3: Expenses at a Glance**
+   - Card with "Your Total Expenses" header and icon
+   - Large amount display (RM 680)
+   - Two-column layout: "You're Owed" and "You Owe" boxes
+   - Title: "Expenses at a Glance"
+   - Subtitle: "See your total spend, what you owe, and what others owe you."
+   - Next button
+
+   **Screen 4: Upfront Payments, Tracked**
+   - Card with "Paid on Behalf of the Group" header
+   - Total/Average summary row
+   - List of 4 members with:
+     - Avatar initials with unique colors
+     - Name
+     - Amount paid with percentage
+     - Colored progress bar
+   - Title: "Upfront Payments, Tracked"
+   - Subtitle: "Instantly track who paid upfront and manage shared costs fairly."
+   - Next button
+
+   **Screen 5: Net Settlement, Simplified**
+   - Card with large net amount (RM 256.00)
+   - "Net amount to be settled" subtitle
+   - Expandable "View breakdown" section showing:
+     - Who owes whom
+     - Item details with amounts
+     - Less: offsetting amounts (negative, in red/orange)
+     - Net total
+   - Title: "Net Settlement, Simplified"
+   - Subtitle: "We offset expenses automatically — no mental maths, no confusion."
+   - Next button
+
+4. **Move existing Screen 3 (Travel Buddies)** to position 6
+   - This becomes the final slide with "Get Started" button
 
 ---
 
-### Expected Behavior After Fix
+### Mock Data for New Slides
 
-1. **New deployments**: Service worker activates immediately, users get new code without manual reload
-2. **Stale cache 404**: If user somehow hits 404 on `/community`, page auto-detects this is a known route and clears cache
-3. **Manual recovery**: "Reload App" button on 404 page now does full cache clear, not just `window.location.reload()`
+**Screen 4 - Member Payment Data:**
+```text
+[
+  { initials: "AR", name: "Ahmad Razak", amount: 1200, percent: 47, color: "bg-cyan-500" },
+  { initials: "ST", name: "Sarah Tan", amount: 770, percent: 30, color: "bg-orange-400" },
+  { initials: "LW", name: "Lisa Wong", amount: 380, percent: 15, color: "bg-purple-500" },
+  { initials: "ML", name: "Marcus Lee", amount: 180, percent: 8, color: "bg-blue-500" }
+]
+```
 
 ---
 
-### Technical Notes
-
-- `skipWaiting: true` - Forces new SW to activate immediately (no waiting for tabs to close)
-- `clientsClaim: true` - New SW takes control of all open pages immediately
-- `immediate: true` in registerSW - Checks for updates on every page load
-- Cache clearing targets both `caches` API and service worker registrations
+### Visual Consistency
+- All new slides follow the existing pattern:
+  - Card mockup at top (with subtle backdrop blur)
+  - Bold title below
+  - Muted subtitle text
+  - Full-width button at bottom
+- Progress dots will show 6 dots instead of 3
+- Currency shown as RM (Malaysian Ringgit) to match reference images
 
