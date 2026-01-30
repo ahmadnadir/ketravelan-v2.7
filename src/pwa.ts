@@ -1,20 +1,41 @@
 import { registerSW } from "virtual:pwa-register";
 import { toast } from "sonner";
 
-// Register service worker with update prompt handling
+// Clear all caches and unregister service workers, then reload
+export const clearCacheAndReload = async () => {
+  try {
+    // Clear all caches
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
+    
+    // Unregister all service workers
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(reg => reg.unregister()));
+    }
+  } catch (error) {
+    console.error("Error clearing cache:", error);
+  }
+  
+  // Force reload from server
+  window.location.reload();
+};
+
+// Register service worker with aggressive update handling
 export const initPWA = () => {
   const updateSW = registerSW({
+    immediate: true, // Check for updates immediately on load
     onNeedRefresh() {
-      toast("Update available", {
-        description: "A new version is ready. Reload to update.",
-        duration: Infinity,
-        action: {
-          label: "Reload",
-          onClick: () => {
-            updateSW(true);
-          },
-        },
+      // Auto-reload after brief toast notification
+      toast("Updating app...", { 
+        description: "Please wait while we load the latest version.",
+        duration: 1500 
       });
+      setTimeout(() => {
+        updateSW(true);
+      }, 1500);
     },
     onOfflineReady() {
       toast.success("App ready for offline use", {
@@ -34,4 +55,13 @@ export const initPWA = () => {
       console.error("SW registration error:", error);
     },
   });
+
+  // Also trigger an immediate update check
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.update().catch(err => {
+        console.warn("SW update check failed:", err);
+      });
+    });
+  }
 };
