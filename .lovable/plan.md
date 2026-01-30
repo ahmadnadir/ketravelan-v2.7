@@ -1,157 +1,153 @@
 
 
-## Story Detail Page Enhancement Plan
+## Fix PWA Cache Issue Causing 404 Errors
 
-### Overview
-This plan addresses three key requirements for the Story Detail page:
-1. Make the top navbar visible (show the app header with logo, notifications, menu)
-2. Make the Like, Save, and Share buttons functional
-3. Replace "Discuss This Story" section with a "Leave a Comment" section with a proper comment input
+### Problem Analysis
+
+The 404 errors on `/community` and `/welcome` routes are caused by stale service worker caches:
+
+1. **Stale JS bundles**: When new routes are deployed, the service worker continues serving old cached JavaScript that doesn't include the new route definitions
+2. **Silent failures**: The `registerType: "autoUpdate"` should auto-update, but the toast notification for updates can be missed or dismissed
+3. **No immediate cache bust**: Users seeing 404s are stuck on old versions until they manually reload
+
+### Root Cause
+
+The current PWA configuration relies on users to:
+1. Notice the "Update available" toast
+2. Click the "Reload" button
+
+If they miss this, they stay on the old cached version indefinitely.
 
 ---
 
-### Current Issues (Image 1: Story Detail Page)
+### Solution: Aggressive Cache Invalidation on Navigation Errors
 
-| Issue | Current State | Required |
-|-------|--------------|----------|
-| Top navbar | Hidden (`hideHeader` prop) | Visible (standard app header) |
-| Like button | Non-functional, static | Functional (toggle like state) |
-| Save button | Non-functional, static | Functional (toggle save state) |
-| Share button | Non-functional | Functional (Web Share API) |
-| Bottom CTA | "Discuss This Story" | "Leave a Comment" with input field |
+Implement a multi-layered fix:
+
+1. **Auto-skip waiting service worker** - Force new service workers to activate immediately
+2. **Detect stale routes** - When React Router hits a 404 on a known route, trigger cache refresh
+3. **Force update on mount** - Check for updates immediately when app loads, not just every 30 minutes
 
 ---
 
 ### Changes Required
 
-#### 1. Show Top Navbar
-**File:** `src/pages/StoryDetail.tsx`
+#### 1. Update `vite.config.ts` - Force immediate service worker activation
 
-Remove the `hideHeader` prop from `AppLayout`:
-- **Before:** `<AppLayout hideHeader>`
-- **After:** `<AppLayout>`
+**Current issue**: New service workers wait until all tabs are closed before activating.
 
-This will show the standard app header with logo, notifications, and menu icons.
+**Change**: Add `skipWaiting: true` and `clientsClaim: true` to workbox config:
+
+```text
+workbox: {
+  skipWaiting: true,      // NEW: Don't wait, activate immediately
+  clientsClaim: true,     // NEW: Take control of all pages immediately
+  globPatterns: [...],
+  ...
+}
+```
+
+This ensures new service workers activate immediately without waiting.
 
 ---
 
-#### 2. Make Like/Save/Share Buttons Functional
-
-**Approach:** Use the existing `CommunityContext` which already has `toggleStoryLike` and `toggleStorySave` functions.
+#### 2. Update `src/pwa.ts` - Immediate update check + auto-reload
 
 **Changes:**
-- Wrap `StoryDetail` page content with `CommunityProvider`
-- Use `useCommunity` hook to access toggle functions
-- Get the story from context (to reflect real-time like/save state)
-- Implement Web Share API for the Share button
+- Check for updates immediately on load (not just every 30 min)
+- Auto-reload when update is available (optional toast first)
+- Add a function to force cache clear and reload
 
-**Like Button:**
 ```text
-- On click: Call toggleStoryLike(story.id)
-- Visual: Show filled heart when isLiked = true
-- Count: Update dynamically
-```
+export const initPWA = () => {
+  const updateSW = registerSW({
+    immediate: true,  // Check immediately
+    onNeedRefresh() {
+      // Auto-reload after brief delay (give toast time to show)
+      toast("Updating app...", { duration: 1500 });
+      setTimeout(() => updateSW(true), 1500);
+    },
+    ...
+  });
+  
+  // Also check immediately on init
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => reg.update());
+  }
+};
 
-**Save Button:**
-```text
-- On click: Call toggleStorySave(story.id)
-- Visual: Show filled bookmark when isSaved = true
-- Count: Update dynamically
-```
-
-**Share Button:**
-```text
-- On click: Use navigator.share() if available
-- Fallback: Copy URL to clipboard with toast notification
+// Export function for manual cache clear
+export const clearCacheAndReload = async () => {
+  if ('caches' in window) {
+    const cacheNames = await caches.keys();
+    await Promise.all(cacheNames.map(name => caches.delete(name)));
+  }
+  if ('serviceWorker' in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map(reg => reg.unregister()));
+  }
+  window.location.reload();
+};
 ```
 
 ---
 
-#### 3. Replace "Discuss This Story" with Comment Section
+#### 3. Update `src/pages/NotFound.tsx` - Smart cache clear on known routes
 
-**Current (line 133-141):**
+**Logic**: If user lands on 404 for a route that SHOULD exist (like `/community`), auto-clear cache and reload.
+
+**Changes:**
+- Define list of valid routes
+- Check if current path matches a valid route pattern
+- If yes, auto-trigger cache clear (with toast notification)
+- If no, show normal 404 page
+
 ```text
-Box with "Discuss This Story" button
+const VALID_ROUTES = [
+  '/community', '/welcome', '/explore', '/my-trips', 
+  '/chat', '/profile', '/create', '/settings', '/auth',
+  '/favourites', '/approvals', '/feedback', '/install',
+  '/onboarding', '/destinations', '/style', '/expenses'
+];
+
+// Check if current path should exist
+const shouldExist = VALID_ROUTES.some(route => 
+  location.pathname === route || location.pathname.startsWith(route + '/')
+);
+
+if (shouldExist) {
+  // Auto-clear cache and reload
+  useEffect(() => {
+    toast("Fixing cached version...");
+    clearCacheAndReload();
+  }, []);
+}
 ```
-
-**New Design (matching Discussion Detail - Image 2):**
-
-```text
-┌──────────────────────────────────────────────┐
-│  Comments (X)                                │
-├──────────────────────────────────────────────┤
-│  [Avatar] User Name                          │
-│  about 1 year ago                            │
-│  Comment content here...                     │
-├──────────────────────────────────────────────┤
-│  [Avatar] Another User                       │
-│  2 days ago                                  │
-│  Another comment...                          │
-├──────────────────────────────────────────────┤
-│  ┌────────────────────────────┐  ┌──────┐   │
-│  │ Write a comment...         │  │  ➤   │   │
-│  └────────────────────────────┘  └──────┘   │
-└──────────────────────────────────────────────┘
-```
-
-**Mock Comments Data:**
-- Will add mock comments array similar to `mockReplies` in DiscussionDetail
-- Display with avatar, name, timestamp, and content
-
-**Comment Input:**
-- Text input with placeholder "Write a comment..."
-- Send button (only enabled when text is entered)
-- Only visible for authenticated users
 
 ---
 
-### Technical Implementation
+### Implementation Summary
 
-**File:** `src/pages/StoryDetail.tsx`
-
-1. **Add imports:**
-   - `useState` from React
-   - `CommunityProvider`, `useCommunity` from CommunityContext
-   - `useAuth` from AuthContext
-   - `Input` from UI components
-   - `Send` icon from lucide-react
-   - `toast` from sonner
-
-2. **Add mock comments data** (at top of file):
-   ```text
-   Array of comment objects with:
-   - id, author (name, avatar), content, createdAt
-   ```
-
-3. **Wrap with CommunityProvider** and create inner component to use hooks
-
-4. **Get story from context** instead of mock data to ensure reactivity
-
-5. **Update Like button:**
-   - Add onClick handler calling toggleStoryLike
-   - Add conditional styling for isLiked state
-   - Add fill class when liked
-
-6. **Update Save button:**
-   - Add onClick handler calling toggleStorySave
-   - Add conditional styling for isSaved state
-   - Add fill class when saved
-
-7. **Update Share button:**
-   - Add async onClick handler
-   - Try navigator.share() with title, text, url
-   - Fallback to clipboard copy with toast
-
-8. **Replace "Discuss This Story" section:**
-   - Change header text to "Leave a Comment"
-   - Map through mock comments
-   - Add comment input with send button (auth-gated)
+| File | Change |
+|------|--------|
+| `vite.config.ts` | Add `skipWaiting: true` and `clientsClaim: true` |
+| `src/pwa.ts` | Add immediate update check, auto-reload on update, export `clearCacheAndReload` |
+| `src/pages/NotFound.tsx` | Detect known routes hitting 404, auto-clear cache |
 
 ---
 
-### Dependencies
-- Uses existing `CommunityContext` (no new context needed)
-- Uses existing `useAuth` hook for authentication check
-- Uses existing UI components (Input, Button, Avatar)
-- Uses existing `toast` from sonner for feedback
+### Expected Behavior After Fix
+
+1. **New deployments**: Service worker activates immediately, users get new code without manual reload
+2. **Stale cache 404**: If user somehow hits 404 on `/community`, page auto-detects this is a known route and clears cache
+3. **Manual recovery**: "Reload App" button on 404 page now does full cache clear, not just `window.location.reload()`
+
+---
+
+### Technical Notes
+
+- `skipWaiting: true` - Forces new SW to activate immediately (no waiting for tabs to close)
+- `clientsClaim: true` - New SW takes control of all open pages immediately
+- `immediate: true` in registerSW - Checks for updates on every page load
+- Cache clearing targets both `caches` API and service worker registrations
 
