@@ -86,7 +86,7 @@ function StoryDetailContent() {
       <div className="flex flex-col items-center justify-center min-h-[50vh] p-4">
         <h1 className="text-xl font-semibold mb-2">Story not found</h1>
         <p className="text-muted-foreground mb-4">This story may have been removed or the link is incorrect.</p>
-        <Link to="/community">
+        <Link to="/community?tab=stories">
           <Button>Back to Community</Button>
         </Link>
       </div>
@@ -116,7 +116,7 @@ function StoryDetailContent() {
 
         {/* Back button */}
         <Link
-          to="/community"
+          to="/community?tab=stories"
           className="absolute top-4 left-4 p-2 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />

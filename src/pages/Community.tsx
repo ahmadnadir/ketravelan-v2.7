@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { CommunityProvider, useCommunity } from "@/contexts/CommunityContext";
 import { CommunityHeader } from "@/components/community/CommunityHeader";
@@ -9,13 +10,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SEOHead } from "@/components/seo/SEOHead";
 
 function CommunityContent() {
+  const [searchParams] = useSearchParams();
   const { mode, setMode } = useCommunity();
   const { isAuthenticated } = useAuth();
   const [askQuestionOpen, setAskQuestionOpen] = useState(false);
 
-  // Set default mode based on auth state (only on mount)
+  // Set mode based on URL query param or auth state (only on mount)
   useEffect(() => {
-    setMode(isAuthenticated ? "discussions" : "stories");
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "stories" || tabParam === "discussions") {
+      setMode(tabParam);
+    } else {
+      setMode(isAuthenticated ? "discussions" : "stories");
+    }
   }, []);
 
   return (
