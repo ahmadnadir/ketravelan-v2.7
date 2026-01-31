@@ -1,4 +1,4 @@
-import { Heart, Bookmark, MapPin, Clock } from "lucide-react";
+import { Heart, Bookmark, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Story, storyTypeLabels } from "@/data/communityMockData";
 import { useCommunity } from "@/contexts/CommunityContext";
@@ -46,16 +46,10 @@ export function StoryCard({ story }: StoryCardProps) {
           {story.excerpt}
         </p>
 
-        {/* Meta info - stack on mobile */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-muted-foreground mb-2 sm:mb-3">
-          <span className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {story.location.flag} {story.location.city || story.location.country}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {story.readingTime} min read
-          </span>
+        {/* Location info */}
+        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2 sm:mb-3">
+          <MapPin className="h-3 w-3" />
+          {story.location.flag} {story.location.city || story.location.country}
         </div>
 
         {/* Author and actions */}
