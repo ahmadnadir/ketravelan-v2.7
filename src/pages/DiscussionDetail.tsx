@@ -53,17 +53,17 @@ export default function DiscussionDetail() {
   const timeAgo = formatDistanceToNow(discussion.createdAt, { addSuffix: true });
 
   return (
-    <AppLayout hideHeader>
+    <AppLayout>
       <SEOHead
         title={`${discussion.title} | Ketravelan Discussions`}
         description={discussion.details || discussion.title}
       />
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 py-3">
+      {/* Sub-header */}
+      <header className="bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 py-3 -mx-4 -mt-4 mb-4">
         <div className="flex items-center gap-3">
           <Link
-            to="/community"
+            to="/community?tab=discussions"
             className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
