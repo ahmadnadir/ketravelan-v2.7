@@ -2,18 +2,11 @@ import { useCommunity } from "@/contexts/CommunityContext";
 import { DiscussionCard } from "./DiscussionCard";
 import { LocationFilter } from "./LocationFilter";
 import { TopicFilter } from "./TopicFilter";
-import { MessageSquarePlus, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
 
-interface DiscussionsFeedProps {
-  onAskQuestion?: () => void;
-}
-
-export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
+export function DiscussionsFeed() {
   const { filteredDiscussions, filters, setDiscussionSearchQuery } = useCommunity();
-  const { isAuthenticated } = useAuth();
 
   return (
     <div className="flex flex-col">
@@ -44,8 +37,8 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
         )}
       </div>
 
-      {/* Discussions list - extra bottom padding on mobile for sticky CTA */}
-      <div className="p-4 space-y-3 pb-28 sm:pb-4">
+      {/* Discussions list - bottom padding for CTA clearance */}
+      <div className="p-4 space-y-3 pb-32">
         {filteredDiscussions.length > 0 ? (
           filteredDiscussions.map((discussion) => (
             <DiscussionCard key={discussion.id} discussion={discussion} />
@@ -59,36 +52,6 @@ export function DiscussionsFeed({ onAskQuestion }: DiscussionsFeedProps) {
           </div>
         )}
       </div>
-
-      {/* Desktop floating button - positioned within content container */}
-      {isAuthenticated && onAskQuestion && (
-        <div className="hidden sm:block fixed bottom-above-nav left-0 right-0 pointer-events-none z-40">
-          <div className="max-w-5xl mx-auto px-4 flex justify-end">
-            <Button
-              onClick={onAskQuestion}
-              className="rounded-full shadow-lg gap-2 pointer-events-auto"
-              size="lg"
-            >
-              <MessageSquarePlus className="h-5 w-5" />
-              Ask the Community
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile sticky full-width button */}
-      {isAuthenticated && onAskQuestion && (
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 bottom-above-nav">
-          <Button
-            onClick={onAskQuestion}
-            className="w-full gap-2"
-            size="lg"
-          >
-            <MessageSquarePlus className="h-5 w-5" />
-            Ask the Community
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

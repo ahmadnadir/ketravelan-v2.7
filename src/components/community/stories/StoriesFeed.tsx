@@ -1,20 +1,11 @@
-import { useNavigate } from "react-router-dom";
 import { useCommunity } from "@/contexts/CommunityContext";
 import { StoryCard } from "./StoryCard";
 import { StoryTypeChips } from "./StoryTypeChips";
-import { PenSquare, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
 
 export function StoriesFeed() {
-  const navigate = useNavigate();
   const { filteredStories, filters, setStorySearchQuery } = useCommunity();
-  const { isAuthenticated } = useAuth();
-
-  const handleCreateStory = () => {
-    navigate("/create-story");
-  };
 
   return (
     <div className="flex flex-col">
@@ -35,8 +26,8 @@ export function StoriesFeed() {
         <StoryTypeChips />
       </div>
 
-      {/* Stories grid - extra bottom padding on mobile for sticky CTA */}
-      <div className="p-4 space-y-4 pb-28 sm:pb-4">
+      {/* Stories grid - bottom padding for CTA clearance */}
+      <div className="p-4 space-y-4 pb-32">
         {filteredStories.length > 0 ? (
           filteredStories.map((story) => (
             <StoryCard key={story.id} story={story} />
@@ -47,36 +38,6 @@ export function StoriesFeed() {
           </div>
         )}
       </div>
-
-      {/* Desktop floating CTA - positioned within content container */}
-      {isAuthenticated && (
-        <div className="hidden sm:block fixed bottom-above-nav left-0 right-0 pointer-events-none z-40">
-          <div className="max-w-5xl mx-auto px-4 flex justify-end">
-            <Button
-              onClick={handleCreateStory}
-              className="rounded-full shadow-lg gap-2 pointer-events-auto"
-              size="lg"
-            >
-              <PenSquare className="h-5 w-5" />
-              Share Your Story
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile sticky full-width CTA */}
-      {isAuthenticated && (
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50 bottom-above-nav">
-          <Button
-            onClick={handleCreateStory}
-            className="w-full gap-2"
-            size="lg"
-          >
-            <PenSquare className="h-5 w-5" />
-            Share Your Story
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

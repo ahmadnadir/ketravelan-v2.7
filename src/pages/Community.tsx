@@ -5,6 +5,7 @@ import { CommunityProvider, useCommunity } from "@/contexts/CommunityContext";
 import { CommunityHeader } from "@/components/community/CommunityHeader";
 import { StoriesFeed } from "@/components/community/stories/StoriesFeed";
 import { DiscussionsFeed } from "@/components/community/discussions/DiscussionsFeed";
+import { CommunityCTA } from "@/components/community/CommunityCTA";
 import { AskQuestionDrawer } from "@/components/community/discussions/AskQuestionDrawer";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEOHead } from "@/components/seo/SEOHead";
@@ -33,12 +34,15 @@ function CommunityContent() {
       />
       <CommunityHeader />
       <div className="w-full max-w-5xl mx-auto sm:px-4 -mx-4 sm:mx-auto">
-        {mode === "stories" ? (
-          <StoriesFeed />
-        ) : (
-          <DiscussionsFeed onAskQuestion={() => setAskQuestionOpen(true)} />
-        )}
+        {mode === "stories" ? <StoriesFeed /> : <DiscussionsFeed />}
       </div>
+      
+      {/* Shared CTA component - rendered at page level */}
+      <CommunityCTA 
+        mode={mode} 
+        onAskQuestion={() => setAskQuestionOpen(true)} 
+      />
+      
       <AskQuestionDrawer open={askQuestionOpen} onOpenChange={setAskQuestionOpen} />
     </>
   );
