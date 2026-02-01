@@ -35,7 +35,7 @@ export function BottomNav({ inline = false }: BottomNavProps) {
       "z-50 glass border-t border-border/50 pb-safe transition-all duration-300",
       inline ? "" : "fixed bottom-0 left-0 right-0"
     )}>
-      <div className="flex items-center justify-between h-16 sm:h-18 px-2">
+      <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto flex items-center justify-between h-16 sm:h-18 px-4 sm:px-6">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
             (item.path !== "/" && location.pathname.startsWith(item.path));
