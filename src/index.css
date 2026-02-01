@@ -38,6 +38,10 @@
 
     --radius: 1rem;
 
+    /* Layout spacing */
+    --bottom-nav-height: 4rem;
+    --cta-bottom-offset: 1rem;
+
     /* Ketravelan specific tokens */
     --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
