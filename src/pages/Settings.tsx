@@ -6,8 +6,6 @@ import {
   Shield,
   LogOut,
   ChevronRight,
-  Moon,
-  Globe,
   HelpCircle,
   FileText,
   MessageSquare,
@@ -67,10 +65,6 @@ export default function Settings() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [tripReminders, setTripReminders] = useState(true);
-  
-  // Privacy settings state
-  const [profileVisible, setProfileVisible] = useState(true);
-  const [showTripsPublicly, setShowTripsPublicly] = useState(false);
 
   const handleLogout = () => {
     // In a real app, this would call supabase.auth.signOut()
@@ -141,68 +135,6 @@ export default function Settings() {
                 />
               }
               onClick={() => setTripReminders(!tripReminders)}
-            />
-          </div>
-        </Card>
-
-        {/* Privacy Section */}
-        <Card className="overflow-hidden border-border/50">
-          <div className="px-4 py-3 border-b border-border/50">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
-              <h2 className="font-semibold text-sm text-foreground">Privacy</h2>
-            </div>
-          </div>
-          <div className="divide-y divide-border/50">
-            <SettingItem
-              icon={<Shield className="h-5 w-5" />}
-              label="Profile Visibility"
-              description="Allow others to view your profile"
-              trailing={
-                <Switch
-                  checked={profileVisible}
-                  onCheckedChange={setProfileVisible}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              }
-              onClick={() => setProfileVisible(!profileVisible)}
-            />
-            <SettingItem
-              icon={<Globe className="h-5 w-5" />}
-              label="Show Trips Publicly"
-              description="Display your trips on your profile"
-              trailing={
-                <Switch
-                  checked={showTripsPublicly}
-                  onCheckedChange={setShowTripsPublicly}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              }
-              onClick={() => setShowTripsPublicly(!showTripsPublicly)}
-            />
-          </div>
-        </Card>
-
-        {/* Preferences Section */}
-        <Card className="overflow-hidden border-border/50">
-          <div className="px-4 py-3 border-b border-border/50">
-            <div className="flex items-center gap-2">
-              <Moon className="h-4 w-4 text-primary" />
-              <h2 className="font-semibold text-sm text-foreground">Preferences</h2>
-            </div>
-          </div>
-          <div className="divide-y divide-border/50">
-            <SettingItem
-              icon={<Moon className="h-5 w-5" />}
-              label="Appearance"
-              description="Light, dark, or system theme"
-              onClick={() => toast.info("Theme settings coming soon")}
-            />
-            <SettingItem
-              icon={<Globe className="h-5 w-5" />}
-              label="Language"
-              description="English"
-              onClick={() => toast.info("Language settings coming soon")}
             />
           </div>
         </Card>
