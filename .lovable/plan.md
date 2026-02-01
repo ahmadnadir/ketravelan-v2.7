@@ -1,54 +1,90 @@
 
-
-## Fix: Bottom Navigation Layout Alignment with Header
+## Fix: Show Top Navbar on User Profile View Page
 
 ### Problem
-The bottom navigation icons stretch across the full viewport width, while the header content is constrained within a centered max-width container. This creates visual inconsistency between the two navigation elements.
+The User Profile View page (`/user/:userId`) is missing the global top navigation bar (with logo, notifications, and menu). This is because it uses `FocusedFlowLayout` with a custom header instead of `AppLayout`.
+
+### Current Architecture
+```tsx
+<FocusedFlowLayout
+  headerContent={headerContent}  // Custom header with only back button
+  footerContent={footerContent}
+  showBottomNav={true}
+>
+```
 
 ### Solution
-Add the same container and max-width classes to the bottom navigation that the header uses, so both elements share identical horizontal alignment.
+Switch to `AppLayout` (like other pages) to get the global header, and keep the sub-header as contextual navigation within the content area.
 
 ---
 
 ### Changes Required
 
-#### File: `src/components/layout/BottomNav.tsx`
+#### File: `src/pages/UserProfileView.tsx`
 
-**Current code (line 38):**
-```tsx
-<div className="flex items-center justify-between h-16 sm:h-18 px-2">
-```
+1. **Replace import**: Change from `FocusedFlowLayout` to `AppLayout`
+   - Remove: `import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";`
+   - Add: `import { AppLayout } from "@/components/layout/AppLayout";`
 
-**Updated code:**
-```tsx
-<div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto flex items-center justify-between h-16 sm:h-18 px-4 sm:px-6">
-```
+2. **Remove custom headerContent definition** (lines 75-91)
+   - We'll create an inline sub-header instead
+
+3. **Replace layout wrapper**: Change from `FocusedFlowLayout` to `AppLayout`
+   - Remove `headerContent` and `showBottomNav` props
+   - Keep `footerContent` as a sticky footer at bottom of content
+
+4. **Add sub-header inside content**: Add the back button + "Profile" title as a sub-header within the scrollable content area
+
+5. **Fix footer positioning**: Move the "Message" button footer to be part of the content flow or use a different approach since AppLayout doesn't have a footer slot
 
 ---
 
-### What This Does
+### Before/After
 
-| Element | Before | After |
-|---------|--------|-------|
-| Container | None | `container mx-auto` |
-| Max width | Full viewport | `max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl` |
-| Padding | `px-2` | `px-4 sm:px-6` (matches header) |
+**Before:**
+- No global header (logo, notifications, menu missing)
+- Only custom "Profile" header with back button
+- Uses `FocusedFlowLayout`
+
+**After:**
+- Global header visible at top (Ketravelan logo + notifications + menu)
+- Sub-header below with back arrow + "Profile" title  
+- Bottom navigation visible
+- Uses `AppLayout`
 
 ---
 
 ### Visual Result
-
-- **Mobile**: Navigation fills available width naturally (unchanged)
-- **Tablet/Desktop**: Navigation icons are centered within the same container width as the header
-- **Large displays**: Icons no longer touch screen edges; evenly spaced within the constrained container
-- **Background**: Remains full-width (glass effect spans entire bottom)
+The page will have:
+1. Global header (Ketravelan logo + notifications + menu) at the top
+2. Profile sub-header with back arrow + "Profile" title
+3. Cover photo, avatar, profile content
+4. "Message" button (sticky at bottom)
+5. Bottom navigation bar
 
 ---
 
-### Design Consistency Achieved
+### Technical Approach
 
-- Same `max-w-*` breakpoints as header
-- Same horizontal padding (`px-4 sm:px-6`)
-- Same centered alignment (`mx-auto`)
-- Icons evenly distributed via `justify-between` within the container
-
+The structure will be:
+```tsx
+<AppLayout>
+  {/* Sub-header */}
+  <div className="-mx-4 -mt-4 mb-4 glass border-b border-border/50">
+    <div className="flex items-center gap-3 h-14 px-3">
+      <Button onClick={() => navigate(-1)}>
+        <ChevronLeft />
+      </Button>
+      <h1>Profile</h1>
+    </div>
+  </div>
+  
+  {/* Cover photo + profile content */}
+  ...
+  
+  {/* Sticky footer with Message button */}
+  <div className="sticky bottom-16">
+    <Button>Message {name}</Button>
+  </div>
+</AppLayout>
+```
