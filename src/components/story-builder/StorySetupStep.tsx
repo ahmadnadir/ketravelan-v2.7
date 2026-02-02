@@ -1,10 +1,5 @@
-import { useMemo, useState, useEffect } from "react";
-import { 
-  MapPin, Link2, ChevronRight, Check,
-  Map, Lightbulb, MessageCircle, Compass, Wallet, User, Sparkles,
-  Leaf, Mountain, Waves, Utensils, Building2, Landmark, Footprints, 
-  Camera, Backpack, BadgeDollarSign, LucideIcon
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Link2, ChevronRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,30 +21,6 @@ import {
   StoryFocus,
   TravelStyleId,
 } from "@/data/communityMockData";
-
-// Icon map for dynamic rendering
-const storyTypeIconMap: Record<string, LucideIcon> = {
-  Map,
-  Lightbulb,
-  MessageCircle,
-  Compass,
-  Wallet,
-  User,
-  Sparkles,
-};
-
-const travelStyleIconMap: Record<string, LucideIcon> = {
-  Leaf,
-  Mountain,
-  Waves,
-  Utensils,
-  Building2,
-  Landmark,
-  Footprints,
-  Camera,
-  Backpack,
-  BadgeDollarSign,
-};
 
 interface StorySetupStepProps {
   draft: StoryDraft;
@@ -187,7 +158,6 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
         </p>
         <div className="flex flex-wrap gap-2">
           {storyFocusOptions.map((option) => {
-            const Icon = storyTypeIconMap[option.icon];
             const selected = storyFocuses.includes(option.value);
             return (
               <button
@@ -201,7 +171,7 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
                 }`}
               >
                 {selected && <Check className="h-3.5 w-3.5" />}
-                {Icon && <Icon className="h-4 w-4" />}
+                <span>{option.icon}</span>
                 {option.label}
               </button>
             );
@@ -217,7 +187,6 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
         </p>
         <div className="flex flex-wrap gap-2">
           {travelStyleOptions.map((style) => {
-            const Icon = travelStyleIconMap[style.icon];
             const selected = travelStyles.includes(style.id);
             return (
               <button
@@ -231,7 +200,7 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
                 }`}
               >
                 {selected && <Check className="h-3.5 w-3.5" />}
-                {Icon && <Icon className="h-4 w-4" />}
+                <span>{style.icon}</span>
                 {style.label}
               </button>
             );
