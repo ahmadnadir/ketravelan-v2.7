@@ -1,173 +1,303 @@
 
 
-## Fix: Aggressive PWA Cache Invalidation for Lovable Preview
+## Story Setup Screen Improvements
 
-### Problem Analysis
+This plan addresses three main areas:
+1. **Layout** - Show the global app header while keeping the progress bar
+2. **Story Type** - Rename "Story Focus" and add Lucide icons
+3. **Travel Style** - Replace "Tags" with system categories + custom tags
 
-The app shows a 404 page and old bottom navigation ("Expenses" instead of "Community") when reopening the Lovable preview because:
+---
 
-1. **Service Worker caches stale JavaScript bundles** - The PWA precaches all assets including JS files. When you make code changes, a new bundle is generated, but the service worker still serves the old cached version on the initial load.
+### Current State Analysis
 
-2. **The update check happens too late** - By the time `onNeedRefresh()` fires, the stale bundle has already loaded and rendered the wrong UI.
+**Layout Issue:**
+- Currently uses `FocusedFlowLayout` which does NOT include the global Header (logo + notifications)
+- Only shows a custom step header with back/close buttons and progress bar
 
-3. **Lovable preview rebuilds frequently** - Every code change creates a new build, but the service worker doesn't know about it until after loading the cached version.
+**Story Focus Section:**
+- Called "Story Focus (optional)" with plain text pills
+- Multi-select with no limit
+- Uses emojis from `storyFocusOptions`
 
-### Solution: Force Fresh Bundles on Every Load in Preview
-
-We need to make the PWA more aggressive about checking for updates **before** rendering, especially in the Lovable preview environment.
+**Tags Section:**
+- Free-form tag input with suggestions
+- No connection to system travel categories
 
 ---
 
 ### Technical Changes
 
-#### 1. Add Stale-While-Revalidate with Immediate Reload for JS Assets
+#### 1. Layout: Show Global Header + Keep Progress Bar
 
-**File**: `vite.config.ts`
+**File: `src/pages/CreateStory.tsx`**
 
-Add a runtime caching rule for JavaScript assets that forces a network check on every load:
+Replace `FocusedFlowLayout` with `AppLayout` to get the global header, then render the step header (with progress bar) as content.
 
-```typescript
-runtimeCaching: [
-  // Force network-first for JS bundles to prevent stale code
-  {
-    urlPattern: /\.js$/,
-    handler: "NetworkFirst",
-    options: {
-      cacheName: "js-assets",
-      networkTimeoutSeconds: 3, // Fall back to cache after 3s
-      expiration: {
-        maxAgeSeconds: 60 * 60, // 1 hour max
-      },
-    },
-  },
-  // Existing unsplash images rule...
-]
+```
+Current structure:
+┌─────────────────────────────────────────┐
+│ Custom Step Header (Back + Title + X)   │
+│ Progress Bar                            │
+├─────────────────────────────────────────┤
+│ Form Content                            │
+└─────────────────────────────────────────┘
+
+New structure:
+┌─────────────────────────────────────────┐
+│ Global Header (Logo + Notifications)    │  ← From AppLayout
+├─────────────────────────────────────────┤
+│ Step Sub-Header (Back + Title + X)      │  ← Keep existing
+│ Progress Bar                            │  ← Keep existing
+├─────────────────────────────────────────┤
+│ Form Content                            │
+└─────────────────────────────────────────┘
 ```
 
-#### 2. Add Version Check on App Load
+**Changes:**
+- Import `AppLayout` instead of `FocusedFlowLayout`
+- Move the step header + progress bar INSIDE the page content
+- Make step header sticky within the scroll container
 
-**File**: `src/pwa.ts`
+---
 
-Add a mechanism to detect stale bundles and force reload immediately:
+#### 2. Story Type: Rename + Add Lucide Icons
 
-```typescript
-// Add build version checking
-const BUILD_VERSION = import.meta.env.VITE_BUILD_TIMESTAMP || Date.now().toString();
+**File: `src/data/communityMockData.ts`**
 
-export const checkVersionAndUpdate = async () => {
-  // In Lovable preview, always check for fresh content
-  const isLovablePreview = window.location.hostname.includes('lovable.app') ||
-                           window.location.hostname.includes('localhost');
-  
-  if (isLovablePreview && 'serviceWorker' in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.update();
-      
-      // If there's a waiting worker, activate it immediately
-      if (registration.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        window.location.reload();
-      }
-    } catch (e) {
-      console.warn('Version check failed:', e);
-    }
-  }
-};
+Update `storyFocusOptions` to include Lucide icon names:
+
+| Type | Label | Icon |
+|------|-------|------|
+| trip-recap | Trip Recap | Map |
+| lessons-learned | Lessons Learned | Lightbulb |
+| tips-for-others | Tips for Others | MessageCircle |
+| destination-guide | Destination Guide | Compass |
+| budget-breakdown | Budget Breakdown | Wallet |
+| solo-travel | Solo Travel | User |
+| first-time-experience | First-Time Experience | Sparkles |
+
+**File: `src/components/story-builder/StorySetupStep.tsx`**
+
+Changes:
+- Rename label from "Story Focus" to "Story Type"
+- Update helper text to "Choose one (optional). Helps readers know what to expect."
+- Import Lucide icons (Map, Lightbulb, MessageCircle, Compass, Wallet, User, Sparkles)
+- Render pills with Lucide icon + label
+- Keep multi-select but suggest "pick one" in copy
+- Optional: Cap at max 2 selections
+
+**Pill styling (selected state):**
+```css
+Selected: bg-primary/10 border-primary text-foreground + Check icon
+Unselected: bg-background border-border text-muted-foreground
 ```
 
-#### 3. Trigger Version Check Early in App Load
+---
 
-**File**: `src/main.tsx`
+#### 3. Travel Style: System Categories + Custom Tags
 
-Call the version check before rendering the app:
+**File: `src/data/communityMockData.ts`**
 
+Add new Travel Style options with Lucide icons (mapped to system categories):
+
+| ID | Label | Icon |
+|----|-------|------|
+| nature-outdoor | Nature & Outdoor | Leaf |
+| adventure | Adventure | Mountain |
+| beach | Beach | Waves |
+| food | Food & Culinary | Utensils |
+| city-urban | City & Urban | Building2 |
+| culture | Culture | Landmark |
+| hiking | Hiking | Footprints |
+| photography | Photography | Camera |
+| backpacking | Backpacking | Backpack |
+| budget | Budget-friendly | BadgeDollarSign |
+
+**File: `src/hooks/useStoryDraft.ts`**
+
+Add new field to `StoryDraft` interface:
 ```typescript
-import { initPWA, checkVersionAndUpdate } from "./pwa";
-
-// Check for stale service worker before app renders
-checkVersionAndUpdate();
-
-// Initialize PWA (handles subsequent updates)
-initPWA();
+travelStyles: string[];  // Array of travel style IDs
 ```
 
-#### 4. Add Service Worker Message Handler for Immediate Activation
+**File: `src/components/story-builder/StorySetupStep.tsx`**
 
-**File**: `vite.config.ts`
+Replace the current Tags section with a two-part structure:
 
-Update the Workbox configuration to listen for the SKIP_WAITING message:
+**A) Travel Style (Primary)**
+- Label: "Travel Style"
+- Helper: "Pick the travel styles that match this story."
+- Multi-select pills with Lucide icons
+- Uses system categories for consistency
 
-```typescript
-workbox: {
-  skipWaiting: true,
-  clientsClaim: true,
-  // ... existing config ...
-}
-```
+**B) Add a Tag (Secondary)**
+- Label: "Add a Tag (optional)"
+- Helper: "For extra keywords like destinations, experiences, etc."
+- Keep existing free-form input
+- Move below Travel Style section
 
-Note: `skipWaiting: true` is already set, but we'll add explicit messaging support.
-
-#### 5. Clear Old Caches on App Start (Fallback)
-
-**File**: `src/pwa.ts`
-
-Add a function that clears potentially stale caches when the app detects a mismatch:
-
-```typescript
-// Clear stale caches if they're older than 1 hour
-export const clearStaleCaches = async () => {
-  if (!('caches' in window)) return;
-  
-  const cacheNames = await caches.keys();
-  const now = Date.now();
-  
-  // Check for our version marker in localStorage
-  const lastClearTime = localStorage.getItem('cache_clear_time');
-  const hourAgo = now - (60 * 60 * 1000);
-  
-  if (!lastClearTime || parseInt(lastClearTime) < hourAgo) {
-    // Clear all workbox caches
-    for (const cacheName of cacheNames) {
-      if (cacheName.includes('workbox') || cacheName.includes('js-assets')) {
-        await caches.delete(cacheName);
-      }
-    }
-    localStorage.setItem('cache_clear_time', now.toString());
-  }
-};
-```
+**Form Section Order:**
+1. Story Title
+2. Story Type (optional) - with Lucide icons
+3. Travel Style - system categories with Lucide icons
+4. Add a Tag (optional) - free-form input
+5. Destination
+6. Link to Trip
 
 ---
 
 ### Files to Modify
 
-| File | Change |
-|------|--------|
-| `vite.config.ts` | Add NetworkFirst caching for JS bundles |
-| `src/pwa.ts` | Add `checkVersionAndUpdate()` and `clearStaleCaches()` functions |
-| `src/main.tsx` | Call version check before app renders |
+| File | Changes |
+|------|---------|
+| `src/pages/CreateStory.tsx` | Switch from FocusedFlowLayout to AppLayout; make step header part of content with sticky positioning |
+| `src/components/story-builder/StorySetupStep.tsx` | Rename Story Focus → Story Type; add Lucide icons to pills; add Travel Style section with system categories; reorganize Tags as secondary "Add a Tag" |
+| `src/data/communityMockData.ts` | Add `icon` field to storyFocusOptions; add new `travelStyleOptions` array with Lucide icon names |
+| `src/hooks/useStoryDraft.ts` | Add `travelStyles: string[]` to StoryDraft interface and defaultDraft |
 
 ---
 
-### Why This Works
+### Detailed Component Changes
 
-1. **NetworkFirst for JS** - Instead of serving cached JS first, always try the network. Only fall back to cache if network fails (offline/slow).
+#### StorySetupStep.tsx - New Structure
 
-2. **Early version check** - Before the React app even renders, we check if there's a newer service worker waiting and activate it immediately.
+```tsx
+// Imports: Add Lucide icons
+import { 
+  Map, Lightbulb, MessageCircle, Compass, Wallet, User, Sparkles,
+  Leaf, Mountain, Waves, Utensils, Building2, Landmark, Footprints, 
+  Camera, Backpack, BadgeDollarSign, Check, MapPin, Link2, ChevronRight 
+} from "lucide-react";
 
-3. **Stale cache cleanup** - Periodically clear old caches to prevent buildup of outdated assets.
+// State: Add travelStyles
+const [travelStyles, setTravelStyles] = useState<string[]>(draft.travelStyles || []);
 
-4. **Lovable-aware detection** - Only apply aggressive checks in Lovable preview/localhost, not in production where aggressive caching is beneficial.
+// Story Type section (replaces Story Focus)
+<div className="space-y-3">
+  <Label>Story Type</Label>
+  <p className="text-sm text-muted-foreground">
+    Choose one (optional). Helps readers know what to expect.
+  </p>
+  <div className="flex flex-wrap gap-2">
+    {storyTypeOptions.map((option) => {
+      const Icon = iconMap[option.icon];
+      const selected = storyTypes.includes(option.value);
+      return (
+        <button className={selectedStyles}>
+          {selected && <Check className="h-3.5 w-3.5" />}
+          <Icon className="h-4 w-4" />
+          {option.label}
+        </button>
+      );
+    })}
+  </div>
+</div>
+
+// Travel Style section (new)
+<div className="space-y-3">
+  <Label>Travel Style</Label>
+  <p className="text-sm text-muted-foreground">
+    Pick the travel styles that match this story.
+  </p>
+  <div className="flex flex-wrap gap-2">
+    {travelStyleOptions.map((style) => {
+      const Icon = iconMap[style.icon];
+      const selected = travelStyles.includes(style.id);
+      return (
+        <button className={selectedStyles}>
+          {selected && <Check className="h-3.5 w-3.5" />}
+          <Icon className="h-4 w-4" />
+          {style.label}
+        </button>
+      );
+    })}
+  </div>
+</div>
+
+// Add a Tag section (secondary, below Travel Style)
+<div className="space-y-3">
+  <Label>Add a Tag (optional)</Label>
+  <p className="text-sm text-muted-foreground">
+    For extra keywords like destinations, experiences, etc.
+  </p>
+  {/* Existing tag input UI */}
+</div>
+```
 
 ---
 
-### Expected Behavior After Fix
+### Visual Pill Styling (Consistent with TravelStylePills)
 
-| Scenario | Before | After |
-|----------|--------|-------|
-| Reopen preview after code change | Shows 404 + old navbar | Loads fresh version immediately |
-| Open after being away 1+ hour | Stale cached version | Clears old cache, loads fresh |
-| Offline revisit | Shows 404 | Falls back to cached version (intended for PWA) |
-| Production site | Same as preview | Cached for performance, updates on refresh |
+**Unselected:**
+```css
+bg-secondary text-foreground border border-transparent rounded-full px-4 py-2.5
+hover:bg-secondary/80
+```
+
+**Selected:**
+```css
+bg-foreground text-background border border-foreground rounded-full px-4 py-2.5
++ Check icon prefix
+```
+
+---
+
+### Data Structure Updates
+
+#### communityMockData.ts additions:
+
+```typescript
+// Story Type options with Lucide icon names
+export const storyTypeOptions: { 
+  value: StoryFocus; 
+  label: string; 
+  icon: string; 
+}[] = [
+  { value: "trip-recap", label: "Trip Recap", icon: "Map" },
+  { value: "lessons-learned", label: "Lessons Learned", icon: "Lightbulb" },
+  { value: "tips-for-others", label: "Tips for Others", icon: "MessageCircle" },
+  { value: "destination-guide", label: "Destination Guide", icon: "Compass" },
+  { value: "budget-breakdown", label: "Budget Breakdown", icon: "Wallet" },
+  { value: "solo-travel", label: "Solo Travel", icon: "User" },
+  { value: "first-time-experience", label: "First-Time Experience", icon: "Sparkles" },
+];
+
+// Travel Style options with Lucide icon names
+export type TravelStyleId = 
+  | "nature-outdoor" | "adventure" | "beach" | "food" 
+  | "city-urban" | "culture" | "hiking" | "photography" 
+  | "backpacking" | "budget";
+
+export const travelStyleOptions: { 
+  id: TravelStyleId; 
+  label: string; 
+  icon: string; 
+}[] = [
+  { id: "nature-outdoor", label: "Nature & Outdoor", icon: "Leaf" },
+  { id: "adventure", label: "Adventure", icon: "Mountain" },
+  { id: "beach", label: "Beach", icon: "Waves" },
+  { id: "food", label: "Food & Culinary", icon: "Utensils" },
+  { id: "city-urban", label: "City & Urban", icon: "Building2" },
+  { id: "culture", label: "Culture", icon: "Landmark" },
+  { id: "hiking", label: "Hiking", icon: "Footprints" },
+  { id: "photography", label: "Photography", icon: "Camera" },
+  { id: "backpacking", label: "Backpacking", icon: "Backpack" },
+  { id: "budget", label: "Budget-friendly", icon: "BadgeDollarSign" },
+];
+```
+
+---
+
+### Acceptance Criteria
+
+| Requirement | Solution |
+|-------------|----------|
+| Global header visible | Switch to AppLayout, header included automatically |
+| Progress bar visible | Step sub-header with progress bar rendered as sticky content |
+| "Story Focus" → "Story Type" | Label renamed, helper text updated |
+| Story Type uses Lucide icons | Icon component rendered in each pill |
+| Pill styling matches system | Same styles as TravelStylePills component |
+| "Tags" → "Travel Style" | New section with system categories |
+| Custom tags still available | "Add a Tag" section moved below Travel Style |
 
