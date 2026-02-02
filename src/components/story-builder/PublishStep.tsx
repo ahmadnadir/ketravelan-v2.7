@@ -113,9 +113,8 @@ export function PublishStep({
 
   const handlePublish = async () => {
     setIsPublishing(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    toast.success("Story published successfully!");
+    // Small delay for UX feedback, actual publish happens in parent
+    await new Promise((resolve) => setTimeout(resolve, 500));
     onPublish();
   };
 

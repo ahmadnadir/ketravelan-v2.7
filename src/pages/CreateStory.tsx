@@ -7,8 +7,10 @@ import { StoryBuilder } from "@/components/story-builder/StoryBuilder";
 import { PublishStep } from "@/components/story-builder/PublishStep";
 import { DraftBanner } from "@/components/story-builder/DraftBanner";
 import { useStoryDraft, StoryDraft } from "@/hooks/useStoryDraft";
+import { useCommunity } from "@/contexts/CommunityContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +34,7 @@ export default function CreateStory() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
+  const { publishStory } = useCommunity();
   
   const [currentStep, setCurrentStep] = useState<Step>("setup");
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -103,13 +106,17 @@ export default function CreateStory() {
   };
 
   const handlePublish = () => {
-    // In a real app, this would send to the backend
+    // Actually publish the story via CommunityContext
+    const newStory = publishStory(draft);
     clearDraft();
-    navigate("/community");
+    toast.success("Story published successfully!");
+    // Navigate to the newly created story
+    navigate(`/community/stories/${newStory.slug}`);
   };
 
   const handleSaveAsDraft = () => {
     // Draft is already saved via auto-save
+    toast.success("Story saved as draft");
     navigate("/community");
   };
 
