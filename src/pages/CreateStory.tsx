@@ -7,7 +7,7 @@ import { StoryBuilder } from "@/components/story-builder/StoryBuilder";
 import { PublishStep } from "@/components/story-builder/PublishStep";
 import { DraftBanner } from "@/components/story-builder/DraftBanner";
 import { useStoryDraft, StoryDraft } from "@/hooks/useStoryDraft";
-import { useCommunity } from "@/contexts/CommunityContext";
+import { CommunityProvider, useCommunity } from "@/contexts/CommunityContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { toast } from "sonner";
@@ -30,7 +30,7 @@ const stepLabels: Record<Step, string> = {
   publish: "Review & Publish",
 };
 
-export default function CreateStory() {
+function CreateStoryContent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
@@ -244,5 +244,13 @@ export default function CreateStory() {
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+export default function CreateStory() {
+  return (
+    <CommunityProvider>
+      <CreateStoryContent />
+    </CommunityProvider>
   );
 }
