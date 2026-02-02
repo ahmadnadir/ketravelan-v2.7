@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
 import { StorySetupStep } from "@/components/story-builder/StorySetupStep";
 import { StoryBuilder } from "@/components/story-builder/StoryBuilder";
@@ -171,52 +170,6 @@ export default function CreateStory() {
     </header>
   );
 
-  // Use AppLayout for setup step to show global header, FocusedFlowLayout for builder/publish
-  const renderContent = () => (
-    <>
-      {/* Draft Banner */}
-      {showDraftBanner && (
-        <DraftBanner
-          lastSaved={draft.lastSaved}
-          onResume={handleResumeDraft}
-          onStartFresh={handleStartFresh}
-        />
-      )}
-      
-      {/* Step Content */}
-      <div className="container max-w-3xl mx-auto">
-        {currentStep === "setup" && (
-          <StorySetupStep
-            draft={draft}
-            onComplete={handleSetupComplete}
-          />
-        )}
-        
-        {currentStep === "builder" && (
-          <StoryBuilder
-            draft={draft}
-            saveDraft={saveDraft}
-            addBlock={addBlock}
-            updateBlock={updateBlock}
-            removeBlock={removeBlock}
-            reorderBlocks={reorderBlocks}
-            onComplete={handleBuilderComplete}
-          />
-        )}
-        
-        {currentStep === "publish" && (
-          <PublishStep
-            draft={draft}
-            saveDraft={saveDraft}
-            onPublish={handlePublish}
-            onSaveAsDraft={handleSaveAsDraft}
-            onBack={() => setCurrentStep("builder")}
-          />
-        )}
-      </div>
-    </>
-  );
-
   return (
     <>
       <SEOHead
@@ -224,15 +177,48 @@ export default function CreateStory() {
         description="Share your travel experiences with the Ketravelan community. Write about your adventures, lessons learned, and tips for fellow travelers."
       />
       
-      {currentStep === "setup" ? (
-        <AppLayout>
-          {renderContent()}
-        </AppLayout>
-      ) : (
-        <FocusedFlowLayout headerContent={headerContent} showBottomNav={true}>
-          {renderContent()}
-        </FocusedFlowLayout>
-      )}
+      <FocusedFlowLayout headerContent={headerContent} showBottomNav={true}>
+        {/* Draft Banner */}
+        {showDraftBanner && (
+          <DraftBanner
+            lastSaved={draft.lastSaved}
+            onResume={handleResumeDraft}
+            onStartFresh={handleStartFresh}
+          />
+        )}
+        
+        {/* Step Content */}
+        <div className="container max-w-3xl mx-auto">
+          {currentStep === "setup" && (
+            <StorySetupStep
+              draft={draft}
+              onComplete={handleSetupComplete}
+            />
+          )}
+          
+          {currentStep === "builder" && (
+            <StoryBuilder
+              draft={draft}
+              saveDraft={saveDraft}
+              addBlock={addBlock}
+              updateBlock={updateBlock}
+              removeBlock={removeBlock}
+              reorderBlocks={reorderBlocks}
+              onComplete={handleBuilderComplete}
+            />
+          )}
+          
+          {currentStep === "publish" && (
+            <PublishStep
+              draft={draft}
+              saveDraft={saveDraft}
+              onPublish={handlePublish}
+              onSaveAsDraft={handleSaveAsDraft}
+              onBack={() => setCurrentStep("builder")}
+            />
+          )}
+        </div>
+      </FocusedFlowLayout>
 
       {/* Exit Confirmation Dialog */}
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
