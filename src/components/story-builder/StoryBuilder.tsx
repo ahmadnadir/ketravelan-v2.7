@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StoryDraft } from "@/hooks/useStoryDraft";
 import { StoryBlock, BlockType, blockTypeConfig } from "@/data/communityMockData";
+import { mockTrips } from "@/data/mockData";
 import { AddBlockSheet } from "./AddBlockSheet";
 import { TextBlock } from "./blocks/TextBlock";
 import { ImageBlock } from "./blocks/ImageBlock";
@@ -74,6 +75,15 @@ export function StoryBuilder({
     setDraggedId(null);
   };
 
+  // Resolve linked trip location
+  const linkedTrip = draft.linkedTripId 
+    ? mockTrips.find(t => t.id === draft.linkedTripId) 
+    : null;
+
+  const tripLocation = linkedTrip 
+    ? { destination: linkedTrip.destination } 
+    : null;
+
   const renderBlock = (block: StoryBlock) => {
     const commonProps = {
       block,
@@ -109,7 +119,7 @@ export function StoryBuilder({
           />
         );
       case "location":
-        return <LocationBlock {...commonProps} />;
+        return <LocationBlock {...commonProps} tripLocation={tripLocation} />;
       case "social-link":
         return <SocialLinkBlock {...commonProps} />;
       default:
