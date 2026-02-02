@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Heart, Bookmark, Share2, MapPin, Clock, Send } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -8,41 +8,47 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { CommunityProvider, useCommunity } from "@/contexts/CommunityContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { storyTypeLabels } from "@/data/communityMockData";
+import { storyTypeLabels, blockTypeConfig } from "@/data/communityMockData";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
-// Mock comments data
-const mockComments = [
+// Mock comments for stories that don't have real comments yet
+const defaultMockComments = [
   {
-    id: "1",
+    id: "mock-1",
+    storyId: "",
     author: { name: "Sarah Chen", avatar: "https://i.pravatar.cc/150?u=sarah" },
-    content: "This is such an inspiring story! I've been wanting to visit Langkawi for years. Thanks for sharing your experience!",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    content: "This is such an inspiring story! I've been wanting to visit this place for years. Thanks for sharing your experience!",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
   },
   {
-    id: "2",
+    id: "mock-2",
+    storyId: "",
     author: { name: "Marcus Wong", avatar: "https://i.pravatar.cc/150?u=marcus" },
     content: "Great tips about the local food spots. Adding this to my travel list!",
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-  },
-  {
-    id: "3",
-    author: { name: "Aisha Rahman", avatar: "https://i.pravatar.cc/150?u=aisha" },
-    content: "The photos are stunning! How long did you stay there?",
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
   },
 ];
 
 function StoryDetailContent() {
   const { slug } = useParams<{ slug: string }>();
-  const { stories, toggleStoryLike, toggleStorySave } = useCommunity();
+  const { stories, toggleStoryLike, toggleStorySave, addComment, getCommentsForStory } = useCommunity();
   const { isAuthenticated } = useAuth();
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState(mockComments);
 
   const story = stories.find((s) => s.slug === slug);
+
+  // Get real comments for this story + add mock comments for older stories
+  const storyComments = useMemo(() => {
+    if (!story) return [];
+    const realComments = getCommentsForStory(story.id);
+    // Only show mock comments for mock stories (those without real comments)
+    if (realComments.length === 0 && story.id.startsWith("story-") && !story.id.includes(Date.now().toString(36).slice(0, 4))) {
+      return defaultMockComments.map((c) => ({ ...c, storyId: story.id }));
+    }
+    return realComments;
+  }, [story, getCommentsForStory]);
 
   const handleShare = async () => {
     const shareData = {
@@ -67,16 +73,8 @@ function StoryDetailContent() {
   };
 
   const handleSubmitComment = () => {
-    if (!commentText.trim()) return;
-    
-    const newComment = {
-      id: Date.now().toString(),
-      author: { name: "You", avatar: "https://i.pravatar.cc/150?u=you" },
-      content: commentText.trim(),
-      createdAt: new Date(),
-    };
-    
-    setComments([newComment, ...comments]);
+    if (!commentText.trim() || !story) return;
+    addComment(story.id, commentText.trim());
     setCommentText("");
     toast.success("Comment posted!");
   };
@@ -94,6 +92,65 @@ function StoryDetailContent() {
   }
 
   const timeAgo = formatDistanceToNow(story.createdAt, { addSuffix: true });
+
+  // Render story blocks for user-created stories
+  const renderBlocks = () => {
+    if (!story.blocks || story.blocks.length === 0) {
+      return (
+        <p className="text-muted-foreground">
+          {story.content || "Full story content would appear here. This is placeholder text for the demo."}
+        </p>
+      );
+    }
+
+    return story.blocks.map((block) => {
+      switch (block.type) {
+        case "text":
+        case "moment":
+        case "lesson":
+        case "tip":
+          return (
+            <div key={block.id} className="mb-4">
+              {block.type !== "text" && (
+                <span className="text-sm font-medium text-primary mb-1 block">
+                  {blockTypeConfig[block.type]?.icon} {blockTypeConfig[block.type]?.label}
+                </span>
+              )}
+              <p className="text-foreground whitespace-pre-wrap">{block.content}</p>
+            </div>
+          );
+        case "image":
+          return (
+            <figure key={block.id} className="my-6">
+              <img
+                src={block.imageUrl}
+                alt={block.caption || "Story image"}
+                className="w-full rounded-lg"
+              />
+              {block.caption && (
+                <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                  {block.caption}
+                </figcaption>
+              )}
+            </figure>
+          );
+        case "location":
+          return (
+            <div key={block.id} className="my-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="font-medium">{block.locationName}</span>
+              </div>
+              {block.content && (
+                <p className="text-muted-foreground text-sm">{block.content}</p>
+              )}
+            </div>
+          );
+        default:
+          return null;
+      }
+    });
+  };
 
   return (
     <>
@@ -174,13 +231,19 @@ function StoryDetailContent() {
         {/* Story content */}
         <article className="prose prose-sm sm:prose max-w-none mb-8">
           <p className="text-lg text-foreground leading-relaxed">{story.excerpt}</p>
-          <p className="text-muted-foreground">
-            {story.content || "Full story content would appear here. This is placeholder text for the demo. The actual story would contain rich text, images, and personal experiences from the traveler."}
-          </p>
-          <p className="text-muted-foreground">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-          </p>
+          {renderBlocks()}
         </article>
+
+        {/* Tags */}
+        {story.tags && story.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {story.tags.map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                #{tag}
+              </Badge>
+            ))}
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center justify-between py-4 border-t border-b border-border mb-6">
@@ -212,7 +275,7 @@ function StoryDetailContent() {
 
         {/* Comments Section */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-lg">Comments ({comments.length})</h3>
+          <h3 className="font-semibold text-lg">Comments ({storyComments.length})</h3>
           
           {/* Comment Input */}
           {isAuthenticated ? (
@@ -247,7 +310,7 @@ function StoryDetailContent() {
 
           {/* Comments List */}
           <div className="space-y-4">
-            {comments.map((comment) => (
+            {storyComments.map((comment) => (
               <div key={comment.id} className="flex gap-3">
                 <Avatar className="h-10 w-10 flex-shrink-0">
                   <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
