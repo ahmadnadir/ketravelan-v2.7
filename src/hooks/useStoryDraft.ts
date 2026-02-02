@@ -5,6 +5,7 @@ export interface StoryDraft {
   title: string;
   storyType: StoryType | null;
   storyFocuses: StoryFocus[];
+  travelStyles: string[];
   country: string;
   city: string;
   linkedTripId: string | null;
@@ -22,6 +23,7 @@ const defaultDraft: StoryDraft = {
   title: "",
   storyType: null,
   storyFocuses: [],
+  travelStyles: [],
   country: "",
   city: "",
   linkedTripId: null,
@@ -49,6 +51,7 @@ export function useStoryDraft() {
           ...defaultDraft,
           ...parsed,
           storyFocuses: Array.isArray(parsed.storyFocuses) ? parsed.storyFocuses : [],
+          travelStyles: Array.isArray(parsed.travelStyles) ? parsed.travelStyles : [],
           blocks: Array.isArray(parsed.blocks) ? parsed.blocks : [],
           lastSaved: parsed.lastSaved ? new Date(parsed.lastSaved) : new Date(),
         };
