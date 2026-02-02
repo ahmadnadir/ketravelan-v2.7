@@ -220,7 +220,7 @@ export function StoryBuilder({
                   </div>
                   
                   {/* Block Content */}
-                  <div className="p-3">
+                  <div className="p-4">
                     {renderBlock(block)}
                   </div>
                 </Card>
@@ -250,8 +250,8 @@ export function StoryBuilder({
       />
 
       {/* Continue Button - Fixed at bottom */}
-      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50">
-        <div className="container max-w-3xl mx-auto">
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 px-4 sm:px-6 py-4 bg-background/95 backdrop-blur-sm border-t border-border/50">
+        <div className="max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
           <Button
             onClick={onComplete}
             disabled={!isValid}
