@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { StorySetupStep } from "@/components/story-builder/StorySetupStep";
 import { StoryBuilder } from "@/components/story-builder/StoryBuilder";
 import { PublishStep } from "@/components/story-builder/PublishStep";
@@ -134,42 +133,6 @@ export default function CreateStory() {
     navigate(-1);
   };
 
-  const headerContent = (
-    <header className="glass border-b border-border/50">
-      <div className="container max-w-3xl mx-auto px-4">
-        <div className="flex items-center justify-between h-14">
-          <button
-            onClick={handleBack}
-            className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="font-semibold text-foreground">{stepLabels[currentStep]}</h1>
-          <button
-            onClick={handleClose}
-            className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        
-        {/* Progress indicator */}
-        <div className="flex gap-1.5 pb-3">
-          {(["setup", "builder", "publish"] as Step[]).map((step, index) => (
-            <div
-              key={step}
-              className={`h-1 flex-1 rounded-full transition-colors ${
-                index <= ["setup", "builder", "publish"].indexOf(currentStep)
-                  ? "bg-primary"
-                  : "bg-muted"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-    </header>
-  );
-
   return (
     <>
       <SEOHead
@@ -177,7 +140,40 @@ export default function CreateStory() {
         description="Share your travel experiences with the Ketravelan community. Write about your adventures, lessons learned, and tips for fellow travelers."
       />
       
-      <FocusedFlowLayout headerContent={headerContent} showBottomNav={true}>
+      <AppLayout>
+        {/* Step Sub-Header (sticky within content) */}
+        <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-background/95 backdrop-blur-sm border-b border-border/50 -mt-4 mb-4">
+          <div className="flex items-center justify-between h-14">
+            <button
+              onClick={handleBack}
+              className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="font-semibold text-foreground">{stepLabels[currentStep]}</h1>
+            <button
+              onClick={handleClose}
+              className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          {/* Progress indicator */}
+          <div className="flex gap-1.5 pb-3">
+            {(["setup", "builder", "publish"] as Step[]).map((step, index) => (
+              <div
+                key={step}
+                className={`h-1 flex-1 rounded-full transition-colors ${
+                  index <= ["setup", "builder", "publish"].indexOf(currentStep)
+                    ? "bg-primary"
+                    : "bg-muted"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
         {/* Draft Banner */}
         {showDraftBanner && (
           <DraftBanner
@@ -188,37 +184,35 @@ export default function CreateStory() {
         )}
         
         {/* Step Content */}
-        <div className="container max-w-3xl mx-auto">
-          {currentStep === "setup" && (
-            <StorySetupStep
-              draft={draft}
-              onComplete={handleSetupComplete}
-            />
-          )}
-          
-          {currentStep === "builder" && (
-            <StoryBuilder
-              draft={draft}
-              saveDraft={saveDraft}
-              addBlock={addBlock}
-              updateBlock={updateBlock}
-              removeBlock={removeBlock}
-              reorderBlocks={reorderBlocks}
-              onComplete={handleBuilderComplete}
-            />
-          )}
-          
-          {currentStep === "publish" && (
-            <PublishStep
-              draft={draft}
-              saveDraft={saveDraft}
-              onPublish={handlePublish}
-              onSaveAsDraft={handleSaveAsDraft}
-              onBack={() => setCurrentStep("builder")}
-            />
-          )}
-        </div>
-      </FocusedFlowLayout>
+        {currentStep === "setup" && (
+          <StorySetupStep
+            draft={draft}
+            onComplete={handleSetupComplete}
+          />
+        )}
+        
+        {currentStep === "builder" && (
+          <StoryBuilder
+            draft={draft}
+            saveDraft={saveDraft}
+            addBlock={addBlock}
+            updateBlock={updateBlock}
+            removeBlock={removeBlock}
+            reorderBlocks={reorderBlocks}
+            onComplete={handleBuilderComplete}
+          />
+        )}
+        
+        {currentStep === "publish" && (
+          <PublishStep
+            draft={draft}
+            saveDraft={saveDraft}
+            onPublish={handlePublish}
+            onSaveAsDraft={handleSaveAsDraft}
+            onBack={() => setCurrentStep("builder")}
+          />
+        )}
+      </AppLayout>
 
       {/* Exit Confirmation Dialog */}
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>

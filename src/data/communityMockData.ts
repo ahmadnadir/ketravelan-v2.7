@@ -44,14 +44,40 @@ export type StoryFocus =
   | "solo-travel"
   | "first-time-experience";
 
-export const storyFocusOptions: { value: StoryFocus; label: string }[] = [
-  { value: "trip-recap", label: "Trip Recap" },
-  { value: "lessons-learned", label: "Lessons Learned" },
-  { value: "tips-for-others", label: "Tips for Others" },
-  { value: "destination-guide", label: "Destination Guide" },
-  { value: "budget-breakdown", label: "Budget Breakdown" },
-  { value: "solo-travel", label: "Solo Travel" },
-  { value: "first-time-experience", label: "First-Time Experience" },
+export const storyFocusOptions: { value: StoryFocus; label: string; icon: string }[] = [
+  { value: "trip-recap", label: "Trip Recap", icon: "Map" },
+  { value: "lessons-learned", label: "Lessons Learned", icon: "Lightbulb" },
+  { value: "tips-for-others", label: "Tips for Others", icon: "MessageCircle" },
+  { value: "destination-guide", label: "Destination Guide", icon: "Compass" },
+  { value: "budget-breakdown", label: "Budget Breakdown", icon: "Wallet" },
+  { value: "solo-travel", label: "Solo Travel", icon: "User" },
+  { value: "first-time-experience", label: "First-Time Experience", icon: "Sparkles" },
+];
+
+// Travel Style options with Lucide icon names for story categorization
+export type TravelStyleId =
+  | "nature-outdoor"
+  | "adventure"
+  | "beach"
+  | "food"
+  | "city-urban"
+  | "culture"
+  | "hiking"
+  | "photography"
+  | "backpacking"
+  | "budget";
+
+export const travelStyleOptions: { id: TravelStyleId; label: string; icon: string }[] = [
+  { id: "nature-outdoor", label: "Nature & Outdoor", icon: "Leaf" },
+  { id: "adventure", label: "Adventure", icon: "Mountain" },
+  { id: "beach", label: "Beach", icon: "Waves" },
+  { id: "food", label: "Food & Culinary", icon: "Utensils" },
+  { id: "city-urban", label: "City & Urban", icon: "Building2" },
+  { id: "culture", label: "Culture", icon: "Landmark" },
+  { id: "hiking", label: "Hiking", icon: "Footprints" },
+  { id: "photography", label: "Photography", icon: "Camera" },
+  { id: "backpacking", label: "Backpacking", icon: "Backpack" },
+  { id: "budget", label: "Budget-friendly", icon: "BadgeDollarSign" },
 ];
 
 export type TextPrompt =

@@ -1,5 +1,10 @@
 import { useMemo, useState, useEffect } from "react";
-import { MapPin, Link2, ChevronRight } from "lucide-react";
+import { 
+  MapPin, Link2, ChevronRight, Check,
+  Map, Lightbulb, MessageCircle, Compass, Wallet, User, Sparkles,
+  Leaf, Mountain, Waves, Utensils, Building2, Landmark, Footprints, 
+  Camera, Backpack, BadgeDollarSign, LucideIcon
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,8 +22,34 @@ import {
   countries,
   storyTitleExamples,
   storyFocusOptions,
+  travelStyleOptions,
   StoryFocus,
+  TravelStyleId,
 } from "@/data/communityMockData";
+
+// Icon map for dynamic rendering
+const storyTypeIconMap: Record<string, LucideIcon> = {
+  Map,
+  Lightbulb,
+  MessageCircle,
+  Compass,
+  Wallet,
+  User,
+  Sparkles,
+};
+
+const travelStyleIconMap: Record<string, LucideIcon> = {
+  Leaf,
+  Mountain,
+  Waves,
+  Utensils,
+  Building2,
+  Landmark,
+  Footprints,
+  Camera,
+  Backpack,
+  BadgeDollarSign,
+};
 
 interface StorySetupStepProps {
   draft: StoryDraft;
@@ -35,6 +66,7 @@ const mockPastTrips = [
 export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
   const [title, setTitle] = useState(draft.title);
   const [storyFocuses, setStoryFocuses] = useState<StoryFocus[]>(draft.storyFocuses || []);
+  const [travelStyles, setTravelStyles] = useState<TravelStyleId[]>((draft.travelStyles || []) as TravelStyleId[]);
   const [country, setCountry] = useState(draft.country);
   const [city, setCity] = useState(draft.city);
   const [linkedTripId, setLinkedTripId] = useState<string | null>(draft.linkedTripId);
@@ -78,6 +110,12 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
     );
   };
 
+  const toggleTravelStyle = (styleId: TravelStyleId) => {
+    setTravelStyles((prev) =>
+      prev.includes(styleId) ? prev.filter((s) => s !== styleId) : [...prev, styleId]
+    );
+  };
+
   const normalizeTag = (value: string) =>
     value
       .trim()
@@ -99,36 +137,12 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
     setTags((prev) => prev.filter((t) => t !== tag));
   };
 
-  const suggestedTags = useMemo(() => {
-    const suggestions = new Set<string>();
-
-    // Location
-    if (country) suggestions.add(normalizeTag(country));
-    if (city) suggestions.add(normalizeTag(city));
-
-    // Focuses
-    storyFocuses.forEach((f) => suggestions.add(normalizeTag(f)));
-
-    // Title keywords (lightweight)
-    normalizedTitle
-      .toLowerCase()
-      .split(/\s+/)
-      .map((w) => w.replace(/[^a-z0-9]/g, ""))
-      .filter((w) => w.length >= 5)
-      .slice(0, 8)
-      .forEach((w) => suggestions.add(normalizeTag(w)));
-
-    // Remove already-selected tags
-    tags.forEach((t) => suggestions.delete(t));
-
-    return Array.from(suggestions).filter(Boolean).slice(0, 10);
-  }, [country, city, normalizedTitle, storyFocuses, tags]);
-
   const handleContinue = () => {
     if (isValid) {
       onComplete({
         title: normalizedTitle,
         storyFocuses,
+        travelStyles,
         country,
         city,
         linkedTripId,
@@ -138,7 +152,7 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
   };
 
   return (
-    <div className="p-4 space-y-6 pb-40">
+    <div className="space-y-6 pb-40">
       {/* Header */}
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-foreground">Let's start your story</h2>
@@ -165,28 +179,29 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
         </p>
       </div>
 
-      {/* Story Focus (Optional) */}
+      {/* Story Type (formerly Story Focus) */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium">
-          Story Focus <span className="text-muted-foreground">(optional)</span>
-        </Label>
+        <Label className="text-sm font-medium">Story Type</Label>
         <p className="text-sm text-muted-foreground">
-          Help readers understand your story (optional). You can skip this or choose more than one.
+          Choose one (optional). Helps readers know what to expect.
         </p>
         <div className="flex flex-wrap gap-2">
           {storyFocusOptions.map((option) => {
+            const Icon = storyTypeIconMap[option.icon];
             const selected = storyFocuses.includes(option.value);
             return (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => toggleFocus(option.value)}
-                className={
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
                   selected
-                    ? "rounded-full px-3 py-1.5 text-sm border border-primary bg-primary/5 text-foreground"
-                    : "rounded-full px-3 py-1.5 text-sm border border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
-                }
+                    ? "bg-foreground text-background border border-foreground"
+                    : "bg-secondary text-foreground border border-transparent hover:bg-secondary/80"
+                }`}
               >
+                {selected && <Check className="h-3.5 w-3.5" />}
+                {Icon && <Icon className="h-4 w-4" />}
                 {option.label}
               </button>
             );
@@ -194,11 +209,41 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
         </div>
       </div>
 
-      {/* Tags */}
+      {/* Travel Style */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium">Tags</Label>
+        <Label className="text-sm font-medium">Travel Style</Label>
         <p className="text-sm text-muted-foreground">
-          Tags help others discover your story. Add or edit anytime.
+          Pick the travel styles that match this story.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {travelStyleOptions.map((style) => {
+            const Icon = travelStyleIconMap[style.icon];
+            const selected = travelStyles.includes(style.id);
+            return (
+              <button
+                key={style.id}
+                type="button"
+                onClick={() => toggleTravelStyle(style.id)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
+                  selected
+                    ? "bg-foreground text-background border border-foreground"
+                    : "bg-secondary text-foreground border border-transparent hover:bg-secondary/80"
+                }`}
+              >
+                {selected && <Check className="h-3.5 w-3.5" />}
+                {Icon && <Icon className="h-4 w-4" />}
+                {style.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Add a Tag (optional) */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Add a Tag (optional)</Label>
+        <p className="text-sm text-muted-foreground">
+          For extra keywords like destinations, experiences, etc.
         </p>
 
         <div className="flex flex-wrap gap-2">
@@ -226,31 +271,13 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
                 addTag(tagInput);
               }
             }}
-            placeholder="Add a tag (e.g., budget, vietnam)"
+            placeholder="Add a tag (e.g., vietnam, itinerary)"
             className="flex-1"
           />
           <Button type="button" variant="outline" onClick={() => addTag(tagInput)}>
             Add
           </Button>
         </div>
-
-        {suggestedTags.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Suggestions</p>
-            <div className="flex flex-wrap gap-2">
-              {suggestedTags.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => addTag(t)}
-                  className="rounded-full px-3 py-1.5 text-sm border border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
-                >
-                  + {t}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Destination */}
