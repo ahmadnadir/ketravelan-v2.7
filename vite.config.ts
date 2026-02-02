@@ -52,6 +52,18 @@ export default defineConfig(({ mode }) => ({
         navigateFallback: "index.html",
         navigateFallbackAllowlist: [/^(?!\/__).*/],
         runtimeCaching: [
+          // Force network-first for JS bundles to prevent stale code in preview
+          {
+            urlPattern: /\.js$/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "js-assets",
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxAgeSeconds: 60 * 60,
+              },
+            },
+          },
           {
             urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
             handler: "CacheFirst",

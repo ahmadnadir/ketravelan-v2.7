@@ -1,6 +1,55 @@
 import { registerSW } from "virtual:pwa-register";
 import { toast } from "sonner";
 
+// Check if we're in Lovable preview or localhost
+const isPreviewEnvironment = () => {
+  const hostname = window.location.hostname;
+  return hostname.includes('lovable.app') || hostname.includes('localhost');
+};
+
+// Clear stale caches if they're older than 1 hour (for preview environment)
+export const clearStaleCaches = async () => {
+  if (!('caches' in window) || !isPreviewEnvironment()) return;
+  
+  const cacheNames = await caches.keys();
+  const now = Date.now();
+  
+  // Check for our version marker in localStorage
+  const lastClearTime = localStorage.getItem('pwa_cache_clear_time');
+  const hourAgo = now - (60 * 60 * 1000);
+  
+  if (!lastClearTime || parseInt(lastClearTime) < hourAgo) {
+    // Clear all workbox and js-assets caches
+    for (const cacheName of cacheNames) {
+      if (cacheName.includes('workbox') || cacheName.includes('js-assets')) {
+        await caches.delete(cacheName);
+      }
+    }
+    localStorage.setItem('pwa_cache_clear_time', now.toString());
+  }
+};
+
+// Check for stale service worker and force update in preview environment
+export const checkVersionAndUpdate = async () => {
+  if (!isPreviewEnvironment() || !('serviceWorker' in navigator)) return;
+  
+  try {
+    // First clear stale caches
+    await clearStaleCaches();
+    
+    const registration = await navigator.serviceWorker.ready;
+    await registration.update();
+    
+    // If there's a waiting worker, activate it immediately
+    if (registration.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      window.location.reload();
+    }
+  } catch (e) {
+    console.warn('Version check failed:', e);
+  }
+};
+
 // Clear all caches and unregister service workers, then reload
 export const clearCacheAndReload = async () => {
   try {
