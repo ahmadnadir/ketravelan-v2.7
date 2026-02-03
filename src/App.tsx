@@ -38,6 +38,7 @@ import Community from "./pages/Community";
 import StoryDetail from "./pages/StoryDetail";
 import DiscussionDetail from "./pages/DiscussionDetail";
 import CreateStory from "./pages/CreateStory";
+import MyStories from "./pages/MyStories";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ const App = () => (
                   <Route path="/style/:style" element={<TravelStylePage />} />
                   <Route path="/create" element={<CreateTrip />} />
                   <Route path="/my-trips" element={<MyTrips />} />
+                  <Route path="/my-stories" element={<MyStories />} />
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/expenses" element={<Expenses />} />
                   <Route path="/chat/:id" element={<DirectChat />} />
