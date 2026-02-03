@@ -331,7 +331,7 @@ export function StoryBuilder({
             className="flex-1 min-w-0 gap-1 sm:gap-2 text-sm sm:text-base px-3 sm:px-4"
             size="lg"
           >
-            <span className="truncate">Review & Publish</span>
+            <span className="truncate">Preview</span>
             <ChevronRight className="h-4 w-4 flex-shrink-0" />
           </Button>
         </div>
