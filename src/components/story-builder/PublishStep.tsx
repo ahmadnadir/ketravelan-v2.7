@@ -144,7 +144,7 @@ export function PublishStep({
             {draft.inlineMedia && draft.inlineMedia.length > 0 && (
               <div className="space-y-3 pt-2">
                 {draft.inlineMedia.map((media) => (
-                  <div key={media.id}>
+                  <div key={media.id} className="space-y-3">
                     {media.type === "image" && media.images[0] && (
                       <div className="rounded-lg overflow-hidden">
                         <img
@@ -165,18 +165,25 @@ export function PublishStep({
                           <CarouselContent>
                             {media.images.map((img, index) => (
                               <CarouselItem key={index} className="basis-2/3">
-                                <div className="rounded-lg overflow-hidden">
-                                  <img
-                                    src={img.url}
-                                    alt={img.caption || `Gallery image ${index + 1}`}
-                                    className="w-full h-24 object-cover rounded-lg"
-                                  />
+                                <div className="space-y-1">
+                                  <div className="rounded-lg overflow-hidden">
+                                    <img
+                                      src={img.url}
+                                      alt={img.caption || `Gallery image ${index + 1}`}
+                                      className="w-full h-24 object-cover rounded-lg"
+                                    />
+                                  </div>
+                                  {img.caption && (
+                                    <p className="text-xs text-muted-foreground text-center italic">
+                                      {img.caption}
+                                    </p>
+                                  )}
                                 </div>
                               </CarouselItem>
                             ))}
                           </CarouselContent>
                         </Carousel>
-                        <p className="text-xs text-muted-foreground mt-1 text-center">
+                        <p className="text-xs text-muted-foreground mt-2 text-center">
                           {media.images.length} photos in gallery
                         </p>
                       </div>
@@ -184,6 +191,13 @@ export function PublishStep({
                   </div>
                 ))}
               </div>
+            )}
+            
+            {/* Content After Media */}
+            {draft.contentAfterMedia && (
+              <p className="text-sm text-foreground whitespace-pre-wrap">
+                {draft.contentAfterMedia}
+              </p>
             )}
             
             {/* Social Links Preview */}
@@ -201,70 +215,6 @@ export function PublishStep({
             )}
           </div>
         </Card>
-      </div>
-
-      {/* Social Links */}
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Social Links (Optional)</Label>
-        <p className="text-xs text-muted-foreground">
-          Add links to related content on your social profiles
-        </p>
-        
-        {/* Existing links */}
-        {(draft.socialLinks || []).map((link) => {
-          const platform = socialPlatforms.find((p) => p.value === link.platform);
-          const Icon = platform?.icon || Link2;
-          return (
-            <div key={link.platform} className="flex items-center gap-2">
-              <Icon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm flex-1 truncate">{link.url}</span>
-              <button
-                onClick={() => handleRemoveSocialLink(link.platform)}
-                className="p-1 text-muted-foreground hover:text-destructive"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          );
-        })}
-
-        {/* Add new link */}
-        {newSocialPlatform ? (
-          <div className="flex gap-2">
-            <Input
-              value={newSocialUrl}
-              onChange={(e) => setNewSocialUrl(e.target.value)}
-              placeholder={socialPlatforms.find((p) => p.value === newSocialPlatform)?.placeholder}
-              className="flex-1"
-            />
-            <Button size="sm" onClick={handleAddSocialLink}>
-              Add
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => {
-              setNewSocialPlatform(null);
-              setNewSocialUrl("");
-            }}>
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            {socialPlatforms
-              .filter((p) => !(draft.socialLinks || []).find((l) => l.platform === p.value))
-              .map((platform) => (
-                <Button
-                  key={platform.value}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setNewSocialPlatform(platform.value)}
-                  className="gap-1"
-                >
-                  <platform.icon className="h-4 w-4" />
-                  {platform.label}
-                </Button>
-              ))}
-          </div>
-        )}
       </div>
 
       {/* Visibility */}
