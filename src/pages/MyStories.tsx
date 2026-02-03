@@ -3,72 +3,98 @@ import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StoryCard } from "@/components/community/stories/StoryCard";
+import { DiscussionCard } from "@/components/community/discussions/DiscussionCard";
 import { useCommunity } from "@/contexts/CommunityContext";
 import { useStoryDraft } from "@/hooks/useStoryDraft";
 import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { PenLine, FileEdit, Heart, Bookmark, Plus, Calendar } from "lucide-react";
+import { PenLine, FileEdit, Heart, Bookmark, Plus, Calendar, BookOpen, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+
+type ContentType = "stories" | "discussions";
 
 export default function MyStories() {
   const navigate = useNavigate();
   const isLoading = useSimulatedLoading(500);
   const [tab, setTab] = useState("published");
-  const { stories } = useCommunity();
+  const [contentType, setContentType] = useState<ContentType>("stories");
+  const { stories, discussions } = useCommunity();
   const { draft, hasDraft } = useStoryDraft();
 
-  // Filter stories based on tab
+  // Filter stories based on ownership and interactions
   const { publishedStories, likedStories, savedStories } = useMemo(() => {
-    // In a real app, this would filter by actual user ID
-    const published = stories.filter(s => s.author.id === "current-user" || s.author.name === "Ahmad Razak");
+    const published = stories.filter(s => s.author.id === "current-user" || s.author.name === "You");
     const liked = stories.filter(s => s.isLiked);
     const saved = stories.filter(s => s.isSaved);
 
     return { publishedStories: published, likedStories: liked, savedStories: saved };
   }, [stories]);
 
+  // Filter discussions - currently using mock data patterns
+  const { publishedDiscussions, likedDiscussions, savedDiscussions } = useMemo(() => {
+    // For now, mock "published" discussions by author name matching
+    const published = discussions.filter(d => d.author.name === "You" || d.author.name === "Ahmad Razak");
+    // Mock liked/saved - in a real app these would have isLiked/isSaved properties
+    const liked: typeof discussions = [];
+    const saved: typeof discussions = [];
+
+    return { publishedDiscussions: published, likedDiscussions: liked, savedDiscussions: saved };
+  }, [discussions]);
+
   const getEmptyState = () => {
+    const isStories = contentType === "stories";
+    
     switch (tab) {
       case "published":
         return {
-          icon: <PenLine className="h-12 w-12 text-muted-foreground mx-auto mb-4" />,
-          message: "No published stories yet. Share your first travel story!",
+          icon: isStories 
+            ? <PenLine className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            : <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />,
+          message: isStories 
+            ? "No published stories yet. Share your first travel story!"
+            : "No published discussions yet. Ask a question!",
           cta: (
-            <Button onClick={() => navigate("/create-story")} className="mt-4">
+            <Button onClick={() => navigate(isStories ? "/create-story" : "/community?tab=discussions")} className="mt-4">
               <Plus className="h-4 w-4 mr-2" />
-              Write a Story
+              {isStories ? "Write a Story" : "Start a Discussion"}
             </Button>
           ),
         };
       case "drafts":
         return {
           icon: <FileEdit className="h-12 w-12 text-muted-foreground mx-auto mb-4" />,
-          message: "No drafts. Start writing a new story!",
-          cta: (
+          message: isStories 
+            ? "No story drafts. Start writing a new story!"
+            : "Discussion drafts are not supported yet.",
+          cta: isStories ? (
             <Button onClick={() => navigate("/create-story")} className="mt-4">
               <Plus className="h-4 w-4 mr-2" />
               Start Writing
             </Button>
-          ),
+          ) : null,
         };
       case "liked":
         return {
           icon: <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />,
-          message: "No liked stories yet. Explore the community!",
+          message: isStories 
+            ? "No liked stories yet. Explore the community!"
+            : "No liked discussions yet. Explore the community!",
           cta: (
-            <Button onClick={() => navigate("/community?tab=stories")} variant="outline" className="mt-4">
-              Explore Stories
+            <Button onClick={() => navigate(`/community?tab=${isStories ? "stories" : "discussions"}`)} variant="outline" className="mt-4">
+              {isStories ? "Explore Stories" : "Explore Discussions"}
             </Button>
           ),
         };
       case "saved":
         return {
           icon: <Bookmark className="h-12 w-12 text-muted-foreground mx-auto mb-4" />,
-          message: "No saved stories. Bookmark stories to read later!",
+          message: isStories 
+            ? "No saved stories. Bookmark stories to read later!"
+            : "No saved discussions. Bookmark discussions to read later!",
           cta: (
-            <Button onClick={() => navigate("/community?tab=stories")} variant="outline" className="mt-4">
-              Explore Stories
+            <Button onClick={() => navigate(`/community?tab=${isStories ? "stories" : "discussions"}`)} variant="outline" className="mt-4">
+              {isStories ? "Explore Stories" : "Explore Discussions"}
             </Button>
           ),
         };
@@ -130,9 +156,12 @@ export default function MyStories() {
   };
 
   const renderContent = () => {
+    const isStories = contentType === "stories";
+    
     switch (tab) {
       case "published":
-        if (publishedStories.length === 0) {
+        const publishedItems = isStories ? publishedStories : publishedDiscussions;
+        if (publishedItems.length === 0) {
           const empty = getEmptyState();
           return (
             <div className="text-center py-12">
@@ -144,13 +173,25 @@ export default function MyStories() {
         }
         return (
           <div className="space-y-4">
-            {publishedStories.map((story) => (
-              <StoryCard key={story.id} story={story} />
-            ))}
+            {isStories 
+              ? publishedStories.map((story) => <StoryCard key={story.id} story={story} />)
+              : publishedDiscussions.map((discussion) => <DiscussionCard key={discussion.id} discussion={discussion} />)
+            }
           </div>
         );
 
       case "drafts":
+        // Drafts only supported for stories
+        if (!isStories) {
+          const empty = getEmptyState();
+          return (
+            <div className="text-center py-12">
+              {empty.icon}
+              <p className="text-muted-foreground">{empty.message}</p>
+              {empty.cta}
+            </div>
+          );
+        }
         const draftCard = renderDraftCard();
         if (!draftCard) {
           const empty = getEmptyState();
@@ -165,7 +206,8 @@ export default function MyStories() {
         return <div className="space-y-4">{draftCard}</div>;
 
       case "liked":
-        if (likedStories.length === 0) {
+        const likedItems = isStories ? likedStories : likedDiscussions;
+        if (likedItems.length === 0) {
           const empty = getEmptyState();
           return (
             <div className="text-center py-12">
@@ -177,14 +219,16 @@ export default function MyStories() {
         }
         return (
           <div className="space-y-4">
-            {likedStories.map((story) => (
-              <StoryCard key={story.id} story={story} />
-            ))}
+            {isStories 
+              ? likedStories.map((story) => <StoryCard key={story.id} story={story} />)
+              : likedDiscussions.map((discussion) => <DiscussionCard key={discussion.id} discussion={discussion} />)
+            }
           </div>
         );
 
       case "saved":
-        if (savedStories.length === 0) {
+        const savedItems = isStories ? savedStories : savedDiscussions;
+        if (savedItems.length === 0) {
           const empty = getEmptyState();
           return (
             <div className="text-center py-12">
@@ -196,9 +240,10 @@ export default function MyStories() {
         }
         return (
           <div className="space-y-4">
-            {savedStories.map((story) => (
-              <StoryCard key={story.id} story={story} />
-            ))}
+            {isStories 
+              ? savedStories.map((story) => <StoryCard key={story.id} story={story} />)
+              : savedDiscussions.map((discussion) => <DiscussionCard key={discussion.id} discussion={discussion} />)
+            }
           </div>
         );
 
@@ -207,11 +252,25 @@ export default function MyStories() {
     }
   };
 
+  // Calculate counts for tabs based on content type
+  const getCounts = () => {
+    const isStories = contentType === "stories";
+    return {
+      published: isStories ? publishedStories.length : publishedDiscussions.length,
+      drafts: isStories && hasDraft && draft.title ? 1 : 0,
+      liked: isStories ? likedStories.length : likedDiscussions.length,
+      saved: isStories ? savedStories.length : savedDiscussions.length,
+    };
+  };
+
+  const counts = getCounts();
+
   if (isLoading) {
     return (
       <AppLayout>
         <div className="py-6 space-y-6">
           <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-full rounded-lg" />
           <Skeleton className="h-10 w-full rounded-lg" />
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -228,12 +287,34 @@ export default function MyStories() {
       <div className="py-6 space-y-6">
         <h1 className="text-2xl font-bold text-foreground">My Stories & Discussions</h1>
 
+        {/* Content Type Toggle */}
+        <div className="flex gap-2">
+          <Button
+            variant={contentType === "stories" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setContentType("stories")}
+            className="flex-1"
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Stories
+          </Button>
+          <Button
+            variant={contentType === "discussions" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setContentType("discussions")}
+            className="flex-1"
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Discussions
+          </Button>
+        </div>
+
         <SegmentedControl
           options={[
-            { label: "Published", value: "published", count: publishedStories.length },
-            { label: "Drafts", value: "drafts", count: hasDraft && draft.title ? 1 : 0 },
-            { label: "Liked", value: "liked", count: likedStories.length },
-            { label: "Saved", value: "saved", count: savedStories.length },
+            { label: "Published", value: "published", count: counts.published },
+            { label: "Drafts", value: "drafts", count: counts.drafts },
+            { label: "Liked", value: "liked", count: counts.liked },
+            { label: "Saved", value: "saved", count: counts.saved },
           ]}
           value={tab}
           onChange={setTab}
