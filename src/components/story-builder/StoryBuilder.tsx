@@ -2,8 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronRight, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoryDraft, InlineMedia, UserSocialProfile } from "@/hooks/useStoryDraft";
-import { FloatingToolbar, FormatType } from "./FloatingToolbar";
-import { InlineInsertMenu } from "./InlineInsertMenu";
+import { EditingToolbar, FormatType } from "./EditingToolbar";
 import { SocialLinkSheet } from "./SocialLinkSheet";
 import { InlineImage } from "./InlineImage";
 import { InlineGallery } from "./InlineGallery";
@@ -29,11 +28,8 @@ export function StoryBuilder({
   onComplete,
 }: StoryBuilderProps) {
   const [showSocialSheet, setShowSocialSheet] = useState(false);
-  const [showInsertMenu, setShowInsertMenu] = useState(false);
-  const [insertMenuPosition, setInsertMenuPosition] = useState({ top: 0 });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-focus on mount
   useEffect(() => {
@@ -55,55 +51,6 @@ export function StoryBuilder({
   useEffect(() => {
     adjustTextareaHeight();
   }, [draft.content, adjustTextareaHeight]);
-
-  // Check if cursor is on an empty line for showing + button
-  const checkForEmptyLine = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (!textarea || document.activeElement !== textarea) {
-      setShowInsertMenu(false);
-      return;
-    }
-
-    const cursorPos = textarea.selectionStart;
-    const content = textarea.value;
-    
-    // Find the start and end of the current line
-    const lineStart = content.lastIndexOf("\n", cursorPos - 1) + 1;
-    const lineEnd = content.indexOf("\n", cursorPos);
-    const currentLine = content.substring(lineStart, lineEnd === -1 ? content.length : lineEnd);
-    
-    // Show insert menu only on empty lines
-    if (currentLine.trim() === "") {
-      const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 28;
-      const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 0;
-      const linesBeforeCursor = content.substring(0, cursorPos).split("\n").length - 1;
-      
-      const containerRect = editorContainerRef.current?.getBoundingClientRect();
-      const textareaRect = textarea.getBoundingClientRect();
-      
-      if (containerRect) {
-        const relativeTop = textareaRect.top - containerRect.top + paddingTop + (linesBeforeCursor * lineHeight) + (lineHeight / 2) - 14;
-        setInsertMenuPosition({ top: relativeTop });
-        setShowInsertMenu(true);
-      }
-    } else {
-      setShowInsertMenu(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    textarea.addEventListener("click", checkForEmptyLine);
-    textarea.addEventListener("keyup", checkForEmptyLine);
-    textarea.addEventListener("blur", () => setTimeout(() => setShowInsertMenu(false), 200));
-
-    return () => {
-      textarea.removeEventListener("click", checkForEmptyLine);
-      textarea.removeEventListener("keyup", checkForEmptyLine);
-    };
-  }, [checkForEmptyLine]);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     saveDraft({ content: e.target.value });
@@ -135,6 +82,10 @@ export function StoryBuilder({
         newText = `${beforeText}**${selectedText}**${afterText}`;
         newCursorPos = end + 4;
         break;
+      case "underline":
+        newText = `${beforeText}__${selectedText}__${afterText}`;
+        newCursorPos = end + 4;
+        break;
       case "bullet": {
         const lines = selectedText.split("\n").map((line) => `• ${line}`);
         newText = `${beforeText}${lines.join("\n")}${afterText}`;
@@ -147,16 +98,6 @@ export function StoryBuilder({
         newCursorPos = start + lines.join("\n").length;
         break;
       }
-      case "link": {
-        const url = prompt("Enter URL:");
-        if (url) {
-          newText = `${beforeText}[${selectedText}](${url})${afterText}`;
-          newCursorPos = end + url.length + 4;
-        } else {
-          return;
-        }
-        break;
-      }
     }
 
     saveDraft({ content: newText });
@@ -165,20 +106,6 @@ export function StoryBuilder({
       textarea.focus();
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
-  };
-
-  const handleAddGallery = (files: File[]) => {
-    const images = files.map((file) => ({
-      url: URL.createObjectURL(file),
-    }));
-    const newMedia: InlineMedia = {
-      id: `media-${Date.now()}`,
-      type: files.length === 1 ? "image" : "gallery",
-      images,
-      insertPosition: draft.content.length,
-    };
-    addInlineMedia(newMedia);
-    setShowInsertMenu(false);
   };
 
   const handleUpdateMediaCaption = (mediaId: string, imageIndex: number, caption: string) => {
@@ -194,9 +121,6 @@ export function StoryBuilder({
 
   return (
     <div className="flex flex-col min-h-full">
-      {/* Floating Toolbar - only shows on text selection */}
-      <FloatingToolbar textareaRef={textareaRef} onFormat={handleFormat} />
-
       {/* Editorial Canvas */}
       <div className="flex-1 px-4 sm:px-6 pb-32">
         {/* Cover Image - full bleed, editorial style */}
@@ -238,7 +162,7 @@ export function StoryBuilder({
         </div>
 
         {/* Story Title - editorial display */}
-        <header className="mb-8">
+        <header className="mb-4">
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight mb-2">
             {draft.title || "Untitled Story"}
           </h1>
@@ -249,16 +173,15 @@ export function StoryBuilder({
           )}
         </header>
 
-        {/* Main Writing Canvas - borderless, editorial */}
-        <div ref={editorContainerRef} className="relative">
-          {/* Inline + Insert Menu */}
-          <InlineInsertMenu
-            visible={showInsertMenu}
-            position={insertMenuPosition}
-            onAddGallery={handleAddGallery}
-            onOpenSocialSheet={() => setShowSocialSheet(true)}
-          />
+        {/* Persistent Editing Toolbar */}
+        <EditingToolbar
+          textareaRef={textareaRef}
+          onFormat={handleFormat}
+          onOpenSocialSheet={() => setShowSocialSheet(true)}
+        />
 
+        {/* Main Writing Canvas - borderless, editorial */}
+        <div className="relative">
           <textarea
             ref={textareaRef}
             value={draft.content}
