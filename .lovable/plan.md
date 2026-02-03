@@ -1,135 +1,138 @@
 
+## Plan: Standardize Action Buttons Across Create Story Flow
 
-## Plan: Add Save as Draft Button and Improve Draft Recovery Experience
-
-This plan adds a "Save as Draft" button during the writing phase and improves the draft detection/recovery flow when users start a new story.
+This plan standardizes the action button containers and removes the draft recovery banner across all steps of the story creation process.
 
 ---
 
-### Overview
+### Summary of Changes
 
-Currently, the "Save as Draft" button only appears at the final publish step. Users writing stories should be able to explicitly save and exit at any point. Additionally, when a user has an existing draft and navigates to create a new story, they should be clearly prompted to either continue or start fresh.
+| Step | Current State | After Changes |
+|------|---------------|---------------|
+| Story Setup | Sticky bottom bar | Keep as-is (reference style) |
+| Story Builder | Floating rounded container | Change to sticky bar like Setup |
+| Story Preview | Stacked buttons, title "Review & Publish" | Side-by-side buttons, title "Story Preview" |
+| Draft Banner | Shows on builder step | Remove completely |
 
 ---
 
 ### Changes
 
-#### 1. Add "Save as Draft" Button to Story Builder Step
+#### 1. Story Builder - Change Container to Sticky
 
 **File: `src/components/story-builder/StoryBuilder.tsx`**
 
-Update the bottom CTA area to include a secondary "Save as Draft" button alongside the "Continue to Review" button:
-
-- Add `onSaveAsDraft` prop to the component
-- Show the "Save as Draft" button as a secondary action (ghost/outline variant)
-- Position it below the primary CTA or as a text link
-
+Current floating container with rounded corners and shadow:
 ```text
-Current Layout:
-+----------------------------+
-| [Continue to Review]       |
-| "You can edit later"       |
-+----------------------------+
-
-New Layout:
-+----------------------------+
-| [Continue to Review]       |
-| [Save as Draft]           |
-+----------------------------+
+fixed bottom-20 ... rounded-xl shadow-lg border ...
 ```
 
-#### 2. Pass Save Handler from CreateStory Page
+Change to sticky style matching Story Setup:
+```text
+fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50
+```
+
+This removes the floating card appearance and makes it a full-width sticky bar at the bottom.
+
+#### 2. Story Preview (Publish Step) - Update Layout and Title
 
 **File: `src/pages/CreateStory.tsx`**
 
-- Pass the existing `handleSaveAsDraft` function to the `StoryBuilder` component via a new prop
+Update the step label for the publish step:
+- Change from "Review & Publish" to "Story Preview"
 
-#### 3. Improve Draft Detection Logic
+**File: `src/components/story-builder/PublishStep.tsx`**
+
+Update the action buttons from stacked to side-by-side layout:
+
+Current layout:
+```text
++----------------------------+
+| [Publish Story]            |  <- full width, stacked
++----------------------------+
+| [Save as Draft]            |  <- full width, stacked
++----------------------------+
+```
+
+New layout (matching Story Builder):
+```text
++----------------------------+
+| [Publish] | [Save as Draft]|  <- side-by-side
++----------------------------+
+```
+
+- Publish button on LEFT (primary style)
+- Save as Draft on RIGHT (outline style)
+
+#### 3. Remove Draft Banner
 
 **File: `src/pages/CreateStory.tsx`**
 
-Current logic only shows the banner if `hasDraft && draft.title`. Update to also detect:
-- Any content in the story
-- Any cover image
-- Any inline media
+Remove the draft banner rendering entirely. The banner component can remain in the codebase for potential future use, but it will not be shown during the create story process.
 
-This ensures users see the recovery prompt even if they started writing but didn't add a title yet.
-
-#### 4. Enhance Draft Banner UX
-
-**File: `src/components/story-builder/DraftBanner.tsx`**
-
-- Add a preview of what's in the draft (e.g., title if available, or "Untitled story with X words")
-- Make the banner more visually prominent with better spacing
+Changes:
+- Remove the `showDraftBanner` state logic
+- Remove the `DraftBanner` component from the JSX
+- Keep the draft detection logic for auto-saving, but don't show the visual banner
 
 ---
 
-### Technical Details
+### Technical Implementation
 
-**StoryBuilder.tsx Changes:**
+**StoryBuilder.tsx - Bottom CTA Container:**
 ```tsx
-interface StoryBuilderProps {
-  // ... existing props
-  onSaveAsDraft: () => void;  // NEW
-}
+// BEFORE:
+<div className="fixed bottom-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl sm:px-4 md:max-w-2xl lg:max-w-4xl z-40">
+  <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-3 sm:p-4 flex gap-2 sm:gap-3">
 
-// In the bottom CTA area:
-<Button onClick={handleContinueClick} className="w-full" size="lg">
-  Continue to Review
-</Button>
-<Button onClick={onSaveAsDraft} variant="ghost" className="w-full">
-  Save as Draft
-</Button>
+// AFTER:
+<div className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50">
+  <div className="container max-w-3xl mx-auto flex gap-3">
 ```
 
-**CreateStory.tsx Changes:**
+**PublishStep.tsx - Button Layout:**
 ```tsx
-// Enhanced draft detection
-useEffect(() => {
-  const hasMeaningfulDraft = hasDraft && (
-    draft.title || 
-    draft.content.trim().length > 0 || 
-    draft.coverImage || 
-    draft.inlineMedia.length > 0
-  );
-  if (hasMeaningfulDraft && !editingStoryId) {
-    setShowDraftBanner(true);
-  }
-}, [hasDraft, draft, editingStoryId]);
+// BEFORE (stacked):
+<div className="container max-w-3xl mx-auto space-y-2">
+  <Button onClick={handlePublish} className="w-full" size="lg">
+    {isEditing ? "Update Story" : "Publish Story"}
+  </Button>
+  <Button onClick={handleSaveDraft} variant="outline" className="w-full" size="lg">
+    Save as Draft
+  </Button>
+</div>
 
-// Pass handler to StoryBuilder
-<StoryBuilder
-  // ... existing props
-  onSaveAsDraft={handleSaveAsDraft}
-/>
+// AFTER (side-by-side):
+<div className="container max-w-3xl mx-auto flex gap-3">
+  <Button onClick={handlePublish} className="flex-1" size="lg">
+    {isEditing ? "Update" : "Publish"}
+  </Button>
+  <Button onClick={handleSaveDraft} variant="outline" className="flex-1" size="lg">
+    Save as Draft
+  </Button>
+</div>
 ```
 
-**DraftBanner.tsx Changes:**
+**CreateStory.tsx - Step Label:**
 ```tsx
-interface DraftBannerProps {
-  lastSaved: Date;
-  draftPreview?: string;  // NEW: e.g., "My Trip to Bali" or "Untitled (150 words)"
-  onResume: () => void;
-  onStartFresh: () => void;
-}
+const stepLabels: Record<Step, string> = {
+  setup: "Story Setup",
+  builder: "Story Builder",
+  publish: "Story Preview",  // Changed from "Review & Publish"
+};
 ```
 
----
+**CreateStory.tsx - Remove Draft Banner:**
+```tsx
+// Remove this state:
+// const [showDraftBanner, setShowDraftBanner] = useState(false);
 
-### User Flow After Changes
+// Remove this useEffect:
+// useEffect(() => { ... setShowDraftBanner(true) ... }, [...]);
 
-1. **User opens Create Story with existing draft:**
-   - Banner appears: "You were writing a story recently. Want to continue?"
-   - Shows draft title or "Untitled story" with word count
-   - Options: "Continue writing" or "Start fresh"
-
-2. **User writing a story wants to save and exit:**
-   - In Story Builder step: "Save as Draft" button visible below "Continue to Review"
-   - Clicking saves the draft and navigates back to Community
-   - Toast confirms: "Story saved as draft"
-
-3. **User tries to close/back with unsaved changes:**
-   - Existing exit dialog appears offering "Save Draft" or "Discard"
+// Remove this JSX:
+// {showDraftBanner && ( <DraftBanner ... /> )}
+```
 
 ---
 
@@ -137,7 +140,6 @@ interface DraftBannerProps {
 
 | File | Changes |
 |------|---------|
-| `src/components/story-builder/StoryBuilder.tsx` | Add `onSaveAsDraft` prop, add "Save as Draft" button in CTA area |
-| `src/pages/CreateStory.tsx` | Pass `handleSaveAsDraft` to StoryBuilder, improve draft detection logic |
-| `src/components/story-builder/DraftBanner.tsx` | Add optional draft preview text prop for better context |
-
+| `src/components/story-builder/StoryBuilder.tsx` | Change bottom CTA from floating card to sticky bar |
+| `src/components/story-builder/PublishStep.tsx` | Change buttons from stacked to side-by-side (Publish left, Save as Draft right) |
+| `src/pages/CreateStory.tsx` | Change "Review & Publish" label to "Story Preview", remove draft banner completely |
