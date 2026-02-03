@@ -250,7 +250,7 @@ export function StoryBuilder({
         </header>
 
         {/* Sticky Editing Toolbar - stays at top when scrolling */}
-        <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-background/95 backdrop-blur-sm">
+        <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-background border-b border-border/50">
           <EditingToolbar
             textareaRef={textareaRef}
             onFormat={handleFormat}
