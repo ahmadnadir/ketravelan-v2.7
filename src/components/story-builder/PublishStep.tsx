@@ -8,6 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { StoryDraft } from "@/hooks/useStoryDraft";
 import { StoryVisibility, SocialLink, SocialPlatform, storyTypeLabels } from "@/data/communityMockData";
 import { toast } from "sonner";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface PublishStepProps {
   draft: StoryDraft;
@@ -108,7 +115,7 @@ export function PublishStep({
               />
             </div>
           )}
-          <div className="p-4 space-y-2">
+          <div className="p-4 space-y-3">
             <div className="flex flex-wrap gap-2">
               {draft.storyType && (
                 <Badge variant="secondary" className="text-xs">
@@ -125,6 +132,73 @@ export function PublishStep({
             <p className="text-sm text-muted-foreground">
               {draft.country}{draft.city && `, ${draft.city}`}
             </p>
+            
+            {/* Story Content Preview */}
+            {draft.content && (
+              <p className="text-sm text-foreground line-clamp-3 whitespace-pre-wrap">
+                {draft.content}
+              </p>
+            )}
+            
+            {/* Inline Media Preview */}
+            {draft.inlineMedia && draft.inlineMedia.length > 0 && (
+              <div className="space-y-3 pt-2">
+                {draft.inlineMedia.map((media) => (
+                  <div key={media.id}>
+                    {media.type === "image" && media.images[0] && (
+                      <div className="rounded-lg overflow-hidden">
+                        <img
+                          src={media.images[0].url}
+                          alt={media.images[0].caption || "Story image"}
+                          className="w-full h-32 object-cover"
+                        />
+                        {media.images[0].caption && (
+                          <p className="text-xs text-muted-foreground mt-1 text-center">
+                            {media.images[0].caption}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {media.type === "gallery" && media.images.length > 0 && (
+                      <div>
+                        <Carousel className="w-full">
+                          <CarouselContent>
+                            {media.images.map((img, index) => (
+                              <CarouselItem key={index} className="basis-2/3">
+                                <div className="rounded-lg overflow-hidden">
+                                  <img
+                                    src={img.url}
+                                    alt={img.caption || `Gallery image ${index + 1}`}
+                                    className="w-full h-24 object-cover rounded-lg"
+                                  />
+                                </div>
+                              </CarouselItem>
+                            ))}
+                          </CarouselContent>
+                        </Carousel>
+                        <p className="text-xs text-muted-foreground mt-1 text-center">
+                          {media.images.length} photos in gallery
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Social Links Preview */}
+            {draft.selectedSocialLinks && draft.selectedSocialLinks.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-border/50">
+                {draft.selectedSocialLinks.map((link) => (
+                  <span key={`${link.platform}-${link.handle}`} className="text-xs text-muted-foreground">
+                    {link.platform === "instagram" && "📸"}
+                    {link.platform === "youtube" && "🎬"}
+                    {link.platform === "tiktok" && "🎵"}
+                    {" "}{link.handle}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </Card>
       </div>
