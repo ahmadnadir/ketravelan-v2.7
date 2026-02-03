@@ -59,6 +59,13 @@ function CreateStoryContent() {
       const existingStory = getStoryById(storyId);
       if (existingStory && existingStory.author.id === "current-user") {
         setEditingStoryId(storyId);
+        // Convert story inline media back to draft format
+        const draftInlineMedia = (existingStory.inlineMedia || []).map((media) => ({
+          id: media.id,
+          type: media.type as "image" | "gallery",
+          images: media.images,
+          insertPosition: media.insertPosition,
+        }));
         // Load story data into draft
         saveDraft({
           title: existingStory.title,
@@ -68,6 +75,7 @@ function CreateStoryContent() {
           coverImage: existingStory.coverImage,
           content: existingStory.content || "",
           blocks: existingStory.blocks || [],
+          inlineMedia: draftInlineMedia,
           visibility: existingStory.visibility,
           socialLinks: existingStory.socialLinks || [],
           linkedTripId: existingStory.linkedTripId || null,

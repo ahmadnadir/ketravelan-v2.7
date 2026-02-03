@@ -263,6 +263,50 @@ function StoryDetailContent() {
               {story.content || story.excerpt}
             </p>
           )}
+          
+          {/* Inline Media (images/galleries) */}
+          {story.inlineMedia && story.inlineMedia.length > 0 && (
+            <div className="space-y-6 mt-6">
+              {story.inlineMedia.map((media) => (
+                <div key={media.id}>
+                  {media.type === "image" && media.images[0] && (
+                    <figure className="my-6">
+                      <img
+                        src={media.images[0].url}
+                        alt={media.images[0].caption || "Story image"}
+                        className="w-full rounded-lg"
+                      />
+                      {media.images[0].caption && (
+                        <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                          {media.images[0].caption}
+                        </figcaption>
+                      )}
+                    </figure>
+                  )}
+                  {media.type === "gallery" && media.images.length > 0 && (
+                    <div className="my-6">
+                      <div className="grid grid-cols-2 gap-2">
+                        {media.images.map((img, index) => (
+                          <figure key={index} className="relative">
+                            <img
+                              src={img.url}
+                              alt={img.caption || `Gallery image ${index + 1}`}
+                              className="w-full h-40 object-cover rounded-lg"
+                            />
+                            {img.caption && (
+                              <figcaption className="text-xs text-muted-foreground mt-1 text-center truncate">
+                                {img.caption}
+                              </figcaption>
+                            )}
+                          </figure>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </article>
 
         {/* Tags */}
