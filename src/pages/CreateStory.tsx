@@ -144,6 +144,18 @@ function CreateStoryContent() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Determine the return destination based on where the user came from
+  const getReturnDestination = () => {
+    const fromDraft = searchParams.get("draftId");
+    const fromSource = searchParams.get("from");
+    
+    if (fromDraft || fromSource === "drafts") {
+      return "/my-stories?tab=drafts";
+    }
+    // Default to community stories tab
+    return "/community?tab=stories";
+  };
+
   const handleBack = () => {
     if (currentStep === "setup") {
       // Check if there's unsaved content
@@ -154,7 +166,7 @@ function CreateStoryContent() {
         if (activeDraftId) {
           deleteDraft(activeDraftId);
         }
-        navigate(-1);
+        navigate(getReturnDestination());
       }
     } else if (currentStep === "builder") {
       setCurrentStep("setup");
@@ -171,7 +183,7 @@ function CreateStoryContent() {
       if (activeDraftId) {
         deleteDraft(activeDraftId);
       }
-      navigate(-1);
+      navigate(getReturnDestination());
     }
   };
 
@@ -236,7 +248,7 @@ function CreateStoryContent() {
 
   const handleExitConfirm = () => {
     setShowExitDialog(false);
-    navigate(-1);
+    navigate(getReturnDestination());
   };
 
   // Get step label based on edit mode
