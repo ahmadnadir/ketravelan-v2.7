@@ -137,7 +137,7 @@ export function StoryBuilder({
       {/* Editorial Canvas */}
       <div className="flex-1 px-4 sm:px-6 pb-32">
         {/* Cover Image - full bleed, editorial style */}
-        <div className="-mx-4 sm:-mx-6 mb-8">
+        <div className="-mx-4 sm:-mx-6 mb-4">
           <input
             ref={coverInputRef}
             type="file"
@@ -175,7 +175,7 @@ export function StoryBuilder({
         </div>
 
         {/* Story Title - editorial display */}
-        <header className="mb-4">
+        <header className="mb-2">
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight mb-2">
             {draft.title || "Untitled Story"}
           </h1>
