@@ -1,101 +1,88 @@
 
-
-# Story Builder Writing Experience Polish
+# Sticky Editing Toolbar for Long Stories
 
 ## Overview
-Improve the Story Builder's writing experience by updating the placeholder text and refining the CTA button styling to match the visual language of the Story Setup step while making the button feel more intentional and premium.
+Make the editing toolbar remain fixed at the top of the content area when users scroll through long stories. This ensures formatting tools are always accessible without scrolling back up.
 
 ---
 
-## Changes Summary
+## Current Issue
 
-| Element | Current | After |
-|---------|---------|-------|
-| Placeholder text | "Start writing…" | "Write your experience here" |
-| CTA button | Full-width inside container | Centered, auto-width button |
-| CTA container | `rounded-xl` with `p-4` | Refined styling with centered content |
+When writing a long story, the editing toolbar scrolls away with the content, requiring users to scroll back up to access formatting tools.
 
 ---
 
-## Implementation Details
+## Solution
 
-### 1. Update Writing Area Placeholder
+Make the `EditingToolbar` sticky so it stays visible at the top of the scrollable content area while the user writes.
 
-Change the placeholder text in the textarea from "Start writing…" to "Write your experience here":
+---
 
+## Implementation
+
+### StoryBuilder.tsx Changes
+
+**Current structure (lines 189-195):**
 ```tsx
-// Line 203 in StoryBuilder.tsx
-placeholder="Write your experience here"
-```
-
-The placeholder styling is already correct:
-- Light grey color (`placeholder:text-muted-foreground/40`)
-- Visible only when empty (native HTML behavior)
-- Disappears on first keystroke
-- Reappears when content is cleared
-
----
-
-### 2. Update CTA Button Styling
-
-**Current structure (lines 239-257):**
-```tsx
-<div className="fixed bottom-20 left-4 right-4 ...">
-  <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border p-4">
-    <Button className="w-full gap-2" size="lg">
-      Review & Publish
-    </Button>
-  </div>
-</div>
+{/* Persistent Editing Toolbar */}
+<EditingToolbar
+  textareaRef={textareaRef}
+  onFormat={handleFormat}
+  onAddGallery={handleAddGallery}
+  onOpenSocialSheet={() => setShowSocialSheet(true)}
+/>
 ```
 
 **Updated structure:**
 ```tsx
-<div className="fixed bottom-20 left-4 right-4 ...">
-  <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border p-4 flex flex-col items-center">
-    <Button className="px-8 gap-2" size="lg">
-      Review & Publish
-    </Button>
-    {/* Validation message centered below */}
-  </div>
+{/* Sticky Editing Toolbar - stays at top when scrolling */}
+<div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-background/95 backdrop-blur-sm">
+  <EditingToolbar
+    textareaRef={textareaRef}
+    onFormat={handleFormat}
+    onAddGallery={handleAddGallery}
+    onOpenSocialSheet={() => setShowSocialSheet(true)}
+  />
 </div>
 ```
 
 **Key changes:**
-- Add `flex flex-col items-center` to container for centering
-- Remove `w-full` from button (make it auto-width)
-- Add `px-8` for comfortable horizontal padding on button
-- Keep validation text centered with `text-center`
+- Wrap toolbar in a `sticky top-0` container
+- Use `z-20` to ensure it stays above content
+- Apply negative margins (`-mx-4 sm:-mx-6`) to extend full width
+- Add matching padding (`px-4 sm:px-6`) for content alignment
+- Use `bg-background/95 backdrop-blur-sm` for a subtle frosted glass effect when content scrolls behind
 
 ---
 
-### 3. Visual Result
+## Visual Result
 
 ```text
 ┌─────────────────────────────────────┐
-│ ← Story Builder              ✕      │
+│ ← Story Builder              ✕      │  ← Page header (already sticky)
+├─────────────────────────────────────┤
+│  [B] [U] [•] [1.] [📷] [@]         │  ← Toolbar (NOW STICKY)
+│  ─────────────────────────────────  │
 ├─────────────────────────────────────┤
 │                                     │
-│  [Cover Image]                      │
-│                                     │
-│  Story Title                        │
-│  Location                           │
-│                                     │
-│  [B] [U] [•] [1.] [📷] [@]         │  ← Toolbar
-│  ─────────────────────────────────  │
-│                                     │
-│  Write your experience here         │  ← Updated placeholder
-│  │                                  │
+│  Long story content scrolls here... │  ← Content scrolls
+│  ...                                │
+│  ...                                │
+│  ...                                │
 │                                     │
 │  ┌───────────────────────────────┐  │
-│  │    [ Review & Publish → ]     │  │  ← Centered button
-│  │   Add a cover image and...    │  │
+│  │   [ Review & Publish → ]      │  │  ← Fixed CTA
 │  └───────────────────────────────┘  │
-│                                     │
 ├─────────────────────────────────────┤
 │  🧭  💬  ➕  👥  👤                  │
 └─────────────────────────────────────┘
 ```
+
+When user scrolls down:
+- Cover image scrolls away
+- Title/location scrolls away
+- Toolbar stays pinned at top
+- Writing area scrolls underneath the toolbar
 
 ---
 
@@ -103,54 +90,13 @@ The placeholder styling is already correct:
 
 | File | Changes |
 |------|---------|
-| `src/components/story-builder/StoryBuilder.tsx` | Update placeholder, refine CTA styling |
+| `src/components/story-builder/StoryBuilder.tsx` | Wrap EditingToolbar in sticky container |
 
 ---
 
-## Technical Changes
+## Technical Notes
 
-### StoryBuilder.tsx Changes
-
-**Line 203 - Placeholder update:**
-```tsx
-placeholder="Write your experience here"
-```
-
-**Lines 239-257 - CTA container update:**
-```tsx
-{/* Bottom CTA - positioned above bottom nav */}
-<div className="fixed bottom-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl z-40">
-  <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4 flex flex-col items-center gap-2">
-    <Button
-      onClick={onComplete}
-      disabled={!isValid}
-      className="px-8 gap-2"
-      size="lg"
-    >
-      Review & Publish
-      <ChevronRight className="h-4 w-4" />
-    </Button>
-    {!isValid && (
-      <p className="text-xs text-muted-foreground text-center">
-        Add a cover image and start writing
-      </p>
-    )}
-  </div>
-</div>
-```
-
----
-
-## Success Criteria Alignment
-
-| Requirement | Implementation |
-|-------------|----------------|
-| Placeholder "Write your experience here" | Updated in textarea |
-| Light grey, visible when empty | Already using `placeholder:text-muted-foreground/40` |
-| Floating container with rounded corners | Already has `rounded-xl` |
-| Light background with subtle shadow | Already has `bg-background/95` and `shadow-lg` |
-| Button centered, not full-width | Changed to `px-8` without `w-full`, container uses `flex items-center` |
-| Container inset from edges | Already has `left-4 right-4` |
-| Button disabled until valid | Already checks `!isValid` (cover image + content) |
-| Never overlaps bottom nav | Already positioned at `bottom-20` |
-
+- The `sticky top-0` works because the content area inside AppLayout is scrollable
+- `z-20` ensures toolbar stays above the textarea and other content
+- The backdrop blur creates a subtle visual separation when content scrolls behind
+- This matches the sticky header pattern already used in the CreateStory page header
