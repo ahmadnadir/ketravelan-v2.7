@@ -33,6 +33,7 @@ export interface StoryDraft {
   coverImage: string | null;
   // Rich text editor content
   content: string;
+  contentAfterMedia: string;
   inlineMedia: InlineMedia[];
   // Selected social links from profile
   selectedSocialLinks: UserSocialProfile[];
@@ -57,6 +58,7 @@ const defaultDraft: StoryDraft = {
   linkedTripId: null,
   coverImage: null,
   content: "",
+  contentAfterMedia: "",
   inlineMedia: [],
   selectedSocialLinks: [],
   blocks: [],
@@ -93,6 +95,7 @@ export function useStoryDraft() {
           customTravelStyles: Array.isArray(parsed.customTravelStyles) ? parsed.customTravelStyles : [],
           blocks: Array.isArray(parsed.blocks) ? parsed.blocks : [],
           content: parsed.content || "",
+          contentAfterMedia: parsed.contentAfterMedia || "",
           inlineMedia: Array.isArray(parsed.inlineMedia) ? parsed.inlineMedia : [],
           selectedSocialLinks: Array.isArray(parsed.selectedSocialLinks) ? parsed.selectedSocialLinks : [],
           lastSaved: parsed.lastSaved ? new Date(parsed.lastSaved) : new Date(),

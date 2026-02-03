@@ -231,6 +231,19 @@ export function StoryBuilder({
           )
         ))}
 
+        {/* Continuation writing area - appears after images */}
+        {draft.inlineMedia.length > 0 && (
+          <div className="relative mt-6">
+            <textarea
+              value={draft.contentAfterMedia || ""}
+              onChange={(e) => saveDraft({ contentAfterMedia: e.target.value })}
+              placeholder="Continue writing..."
+              className="w-full min-h-[150px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40"
+              style={{ overflow: "hidden", lineHeight: "1.8" }}
+            />
+          </div>
+        )}
+
         {/* Social Links - plain text, editorial style */}
         <SocialLinksInline
           links={draft.selectedSocialLinks}
