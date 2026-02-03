@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { UserSocialProfile } from "@/hooks/useStoryDraft";
+import { UserSocialProfile } from "@/hooks/useStoryDrafts";
 import { SocialPlatform } from "@/data/communityMockData";
 
 interface SocialLinksInlineProps {

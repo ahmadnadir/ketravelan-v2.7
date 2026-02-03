@@ -5,8 +5,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { StorySetupStep } from "@/components/story-builder/StorySetupStep";
 import { StoryBuilder } from "@/components/story-builder/StoryBuilder";
 import { PublishStep } from "@/components/story-builder/PublishStep";
-import { DraftBanner } from "@/components/story-builder/DraftBanner";
-import { useStoryDraft, StoryDraft } from "@/hooks/useStoryDraft";
+import { DraftPickerDialog } from "@/components/story-builder/DraftPickerDialog";
+import { useStoryDrafts, StoryDraft } from "@/hooks/useStoryDrafts";
 import { useCommunity } from "@/contexts/CommunityContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEOHead } from "@/components/seo/SEOHead";
@@ -38,26 +38,40 @@ function CreateStoryContent() {
   
   const [currentStep, setCurrentStep] = useState<Step>("setup");
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [showDraftPicker, setShowDraftPicker] = useState(false);
   const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
   
   const {
-    draft,
-    hasDraft,
-    saveDraft,
-    clearDraft,
+    drafts,
+    activeDraft,
+    activeDraftId,
+    isLoaded,
+    hasDrafts,
+    createDraft,
+    selectDraft,
+    updateActiveDraft,
+    deleteDraft,
+    clearActiveDraft,
     addInlineMedia,
     updateInlineMedia,
     removeInlineMedia,
     toggleSocialLink,
-  } = useStoryDraft();
+  } = useStoryDrafts();
 
   // Check for edit mode from URL
   useEffect(() => {
+    if (!isLoaded || initialized) return;
+    
     const storyId = searchParams.get("edit");
     if (storyId) {
       const existingStory = getStoryById(storyId);
       if (existingStory && existingStory.author.id === "current-user") {
         setEditingStoryId(storyId);
+        
+        // Create a new draft from the existing story
+        const newDraft = createDraft();
+        
         // Convert story inline media back to draft format
         const draftInlineMedia = (existingStory.inlineMedia || []).map((media) => ({
           id: media.id,
@@ -65,8 +79,9 @@ function CreateStoryContent() {
           images: media.images,
           insertPosition: media.insertPosition,
         }));
+        
         // Load story data into draft
-        saveDraft({
+        updateActiveDraft({
           title: existingStory.title,
           storyType: existingStory.storyType,
           country: existingStory.location.country,
@@ -81,20 +96,46 @@ function CreateStoryContent() {
           socialLinks: existingStory.socialLinks || [],
           linkedTripId: existingStory.linkedTripId || null,
         });
+        
         // Skip setup step and go directly to builder
         setCurrentStep("builder");
+        setInitialized(true);
+        return;
       }
     }
-  }, [searchParams, getStoryById, saveDraft]);
 
-  // Check for linked trip from URL
-  useEffect(() => {
-    const tripId = searchParams.get("tripId");
-    if (tripId && !editingStoryId) {
-      saveDraft({ linkedTripId: tripId });
+    // Check for draftId param (coming from My Stories page)
+    const draftId = searchParams.get("draftId");
+    if (draftId) {
+      const selectedDraft = selectDraft(draftId);
+      if (selectedDraft) {
+        // Go to appropriate step based on draft content
+        if (selectedDraft.content.trim().length > 0 || selectedDraft.title) {
+          setCurrentStep("builder");
+        }
+        setInitialized(true);
+        return;
+      }
     }
-  }, [searchParams, saveDraft, editingStoryId]);
 
+    // Check for linked trip from URL
+    const tripId = searchParams.get("tripId");
+    if (tripId) {
+      // Create a new draft with linked trip
+      createDraft();
+      updateActiveDraft({ linkedTripId: tripId });
+      setInitialized(true);
+      return;
+    }
+
+    // Show draft picker if user has drafts, otherwise create new draft
+    if (hasDrafts) {
+      setShowDraftPicker(true);
+    } else {
+      createDraft();
+    }
+    setInitialized(true);
+  }, [isLoaded, initialized, searchParams, getStoryById, hasDrafts, createDraft, selectDraft, updateActiveDraft]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -106,9 +147,13 @@ function CreateStoryContent() {
   const handleBack = () => {
     if (currentStep === "setup") {
       // Check if there's unsaved content
-      if (draft.title || draft.content.trim().length > 0) {
+      if (activeDraft?.title || (activeDraft?.content?.trim().length ?? 0) > 0) {
         setShowExitDialog(true);
       } else {
+        // Delete empty draft and go back
+        if (activeDraftId) {
+          deleteDraft(activeDraftId);
+        }
         navigate(-1);
       }
     } else if (currentStep === "builder") {
@@ -119,15 +164,19 @@ function CreateStoryContent() {
   };
 
   const handleClose = () => {
-    if (draft.title || draft.content.trim().length > 0) {
+    if (activeDraft?.title || (activeDraft?.content?.trim().length ?? 0) > 0) {
       setShowExitDialog(true);
     } else {
+      // Delete empty draft and go back
+      if (activeDraftId) {
+        deleteDraft(activeDraftId);
+      }
       navigate(-1);
     }
   };
 
   const handleSetupComplete = (data: Partial<StoryDraft>) => {
-    saveDraft(data);
+    updateActiveDraft(data);
     setCurrentStep("builder");
   };
 
@@ -136,18 +185,20 @@ function CreateStoryContent() {
   };
 
   const handlePublish = () => {
+    if (!activeDraft) return;
+    
     if (editingStoryId) {
       // Update existing story
-      const updatedStory = updateStory(editingStoryId, draft);
+      const updatedStory = updateStory(editingStoryId, activeDraft);
       if (updatedStory) {
-        clearDraft();
+        clearActiveDraft();
         toast.success("Story updated successfully!");
         navigate(`/community/stories/${updatedStory.slug}`);
       }
     } else {
       // Create new story
-      const newStory = publishStory(draft);
-      clearDraft();
+      const newStory = publishStory(activeDraft);
+      clearActiveDraft();
       toast.success("Story published successfully!");
       navigate(`/community/stories/${newStory.slug}`);
     }
@@ -159,17 +210,28 @@ function CreateStoryContent() {
     navigate("/community");
   };
 
-  const handleResumeDraft = () => {
-    // Determine which step to resume from
-    if (draft.content.trim().length > 0) {
-      setCurrentStep("builder");
-    } else if (draft.title) {
+  const handleDraftSelect = (draftId: string) => {
+    selectDraft(draftId);
+    setShowDraftPicker(false);
+    // Go to appropriate step based on draft content
+    const selectedDraft = drafts.find(d => d.id === draftId);
+    if (selectedDraft && (selectedDraft.content.trim().length > 0 || selectedDraft.title)) {
       setCurrentStep("builder");
     }
   };
 
   const handleStartFresh = () => {
-    clearDraft();
+    createDraft();
+    setShowDraftPicker(false);
+  };
+
+  const handleDeleteDraftFromPicker = (draftId: string) => {
+    deleteDraft(draftId);
+    // If no more drafts, close picker and create new
+    if (drafts.length <= 1) {
+      setShowDraftPicker(false);
+      createDraft();
+    }
   };
 
   const handleExitConfirm = () => {
@@ -189,11 +251,56 @@ function CreateStoryContent() {
     return stepLabels[step];
   };
 
+  // Use activeDraft for rendering
+  const draft = activeDraft || {
+    id: "",
+    title: "",
+    storyType: null,
+    storyFocuses: [],
+    travelStyles: [],
+    customStoryTypes: [],
+    customTravelStyles: [],
+    country: "",
+    city: "",
+    linkedTripId: null,
+    coverImage: null,
+    content: "",
+    contentAfterMedia: "",
+    inlineMedia: [],
+    selectedSocialLinks: [],
+    blocks: [],
+    visibility: "public" as const,
+    socialLinks: [],
+    lastSaved: new Date(),
+    createdAt: new Date(),
+  };
+
+  // Show loading until drafts are loaded
+  if (!isLoaded) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <>
       <SEOHead
         title={editingStoryId ? "Edit Your Story | Ketravelan" : "Share Your Story | Ketravelan"}
         description="Share your travel experiences with the Ketravelan community. Write about your adventures, lessons learned, and tips for fellow travelers."
+      />
+      
+      {/* Draft Picker Dialog */}
+      <DraftPickerDialog
+        open={showDraftPicker}
+        onOpenChange={setShowDraftPicker}
+        drafts={drafts}
+        onSelectDraft={handleDraftSelect}
+        onStartFresh={handleStartFresh}
+        onDeleteDraft={handleDeleteDraftFromPicker}
       />
       
       <AppLayout>
@@ -242,7 +349,7 @@ function CreateStoryContent() {
         {currentStep === "builder" && (
           <StoryBuilder
             draft={draft}
-            saveDraft={saveDraft}
+            saveDraft={updateActiveDraft}
             addInlineMedia={addInlineMedia}
             updateInlineMedia={updateInlineMedia}
             removeInlineMedia={removeInlineMedia}
@@ -255,7 +362,7 @@ function CreateStoryContent() {
         {currentStep === "publish" && (
           <PublishStep
             draft={draft}
-            saveDraft={saveDraft}
+            saveDraft={updateActiveDraft}
             onPublish={handlePublish}
             onSaveAsDraft={handleSaveAsDraft}
             onBack={() => setCurrentStep("builder")}

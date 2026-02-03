@@ -10,7 +10,7 @@ import {
   StoryVisibility,
   SocialLink,
 } from "@/data/communityMockData";
-import { StoryDraft } from "@/hooks/useStoryDraft";
+import { StoryDraft } from "@/hooks/useStoryDrafts";
 
 type CommunityMode = "stories" | "discussions";
 

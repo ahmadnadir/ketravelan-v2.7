@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { InlineMedia } from "@/hooks/useStoryDraft";
+import { InlineMedia } from "@/hooks/useStoryDrafts";
 
 interface InlineImageProps {
   media: InlineMedia;

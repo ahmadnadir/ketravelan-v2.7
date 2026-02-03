@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { InlineMedia, InlineMediaImage } from "@/hooks/useStoryDraft";
+import { InlineMedia, InlineMediaImage } from "@/hooks/useStoryDrafts";
 
 interface InlineGalleryProps {
   media: InlineMedia;
