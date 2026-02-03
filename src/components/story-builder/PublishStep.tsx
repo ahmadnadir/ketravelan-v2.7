@@ -306,21 +306,21 @@ export function PublishStep({
 
       {/* Action Buttons - Fixed at bottom */}
       <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border/50">
-        <div className="container max-w-3xl mx-auto space-y-2">
+        <div className="container max-w-3xl mx-auto flex gap-3">
           <Button
             onClick={handlePublish}
             disabled={isPublishing}
-            className="w-full"
+            className="flex-1"
             size="lg"
           >
             {isPublishing 
               ? (isEditing ? "Updating..." : "Publishing...") 
-              : (isEditing ? "Update Story" : "Publish Story")}
+              : (isEditing ? "Update" : "Publish")}
           </Button>
           <Button
             onClick={handleSaveDraft}
             variant="outline"
-            className="w-full"
+            className="flex-1"
             size="lg"
           >
             Save as Draft
