@@ -16,13 +16,13 @@ function CommunityContent() {
   const { isAuthenticated } = useAuth();
   const [askQuestionOpen, setAskQuestionOpen] = useState(false);
 
-  // Set mode based on URL query param or auth state (only on mount)
+  // Set mode based on URL query param (only on mount), default to stories
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam === "stories" || tabParam === "discussions") {
       setMode(tabParam);
     } else {
-      setMode(isAuthenticated ? "discussions" : "stories");
+      setMode("stories");
     }
   }, []);
 
