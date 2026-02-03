@@ -397,4 +397,6 @@ function CreateStoryContent() {
   );
 }
 
-export default CreateStoryContent;
+export default function CreateStory() {
+  return <CreateStoryContent />;
+}
