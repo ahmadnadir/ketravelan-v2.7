@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Bookmark, Share2, MapPin, Clock, Send, Pencil } from "lucide-react";
+import { ArrowLeft, Heart, Bookmark, Share2, MapPin, Clock, Send, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,6 +12,13 @@ import { storyTypeLabels, blockTypeConfig } from "@/data/communityMockData";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 // Mock comments for stories that don't have real comments yet
 const defaultMockComments = [
@@ -284,23 +291,44 @@ function StoryDetailContent() {
                     </figure>
                   )}
                   {media.type === "gallery" && media.images.length > 0 && (
-                    <div className="my-6">
-                      <div className="grid grid-cols-2 gap-2">
-                        {media.images.map((img, index) => (
-                          <figure key={index} className="relative">
-                            <img
-                              src={img.url}
-                              alt={img.caption || `Gallery image ${index + 1}`}
-                              className="w-full h-40 object-cover rounded-lg"
+                    <div className="my-6 -mx-4 sm:mx-0">
+                      <Carousel className="w-full">
+                        <CarouselContent>
+                          {media.images.map((img, index) => (
+                            <CarouselItem key={index}>
+                              <figure className="px-4 sm:px-0">
+                                <img
+                                  src={img.url}
+                                  alt={img.caption || `Gallery image ${index + 1}`}
+                                  className="w-full aspect-[4/3] object-cover rounded-lg"
+                                />
+                                {img.caption && (
+                                  <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                                    {img.caption}
+                                  </figcaption>
+                                )}
+                              </figure>
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        {media.images.length > 1 && (
+                          <>
+                            <CarouselPrevious className="left-6 sm:left-2" />
+                            <CarouselNext className="right-6 sm:right-2" />
+                          </>
+                        )}
+                      </Carousel>
+                      {/* Dots indicator */}
+                      {media.images.length > 1 && (
+                        <div className="flex justify-center gap-1.5 mt-3">
+                          {media.images.map((_, index) => (
+                            <div
+                              key={index}
+                              className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30"
                             />
-                            {img.caption && (
-                              <figcaption className="text-xs text-muted-foreground mt-1 text-center truncate">
-                                {img.caption}
-                              </figcaption>
-                            )}
-                          </figure>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
