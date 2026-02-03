@@ -242,7 +242,7 @@ export function StoryBuilder({
           <Button
             onClick={onComplete}
             disabled={!isValid}
-            className="px-8 gap-2"
+            className="w-full gap-2"
             size="lg"
           >
             Review & Publish
