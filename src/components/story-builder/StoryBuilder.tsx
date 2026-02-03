@@ -316,23 +316,23 @@ export function StoryBuilder({
       </div>
 
       {/* Bottom CTA - positioned above bottom nav */}
-      <div className="fixed bottom-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl z-40">
-        <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4 flex gap-3">
+      <div className="fixed bottom-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl sm:px-4 md:max-w-2xl lg:max-w-4xl z-40">
+        <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-3 sm:p-4 flex gap-2 sm:gap-3">
           <Button
             onClick={onSaveAsDraft}
             variant="outline"
-            className="flex-1"
+            className="flex-1 min-w-0 text-sm sm:text-base px-3 sm:px-4"
             size="lg"
           >
             Save as Draft
           </Button>
           <Button
             onClick={handleContinueClick}
-            className="flex-1 gap-2"
+            className="flex-1 min-w-0 gap-1 sm:gap-2 text-sm sm:text-base px-3 sm:px-4"
             size="lg"
           >
-            Review & Publish
-            <ChevronRight className="h-4 w-4" />
+            <span className="truncate">Review & Publish</span>
+            <ChevronRight className="h-4 w-4 flex-shrink-0" />
           </Button>
         </div>
       </div>
