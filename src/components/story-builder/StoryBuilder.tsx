@@ -17,6 +17,7 @@ interface StoryBuilderProps {
   removeInlineMedia: (mediaId: string) => void;
   toggleSocialLink: (profile: UserSocialProfile) => void;
   onComplete: () => void;
+  onSaveAsDraft: () => void;
 }
 
 export function StoryBuilder({
@@ -27,6 +28,7 @@ export function StoryBuilder({
   removeInlineMedia,
   toggleSocialLink,
   onComplete,
+  onSaveAsDraft,
 }: StoryBuilderProps) {
   const [showSocialSheet, setShowSocialSheet] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -324,9 +326,13 @@ export function StoryBuilder({
             Continue to Review
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <p className="text-xs text-muted-foreground text-center">
-            You can edit and publish later
-          </p>
+          <Button
+            onClick={onSaveAsDraft}
+            variant="ghost"
+            className="w-full"
+          >
+            Save as Draft
+          </Button>
         </div>
       </div>
 

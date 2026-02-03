@@ -99,10 +99,16 @@ function CreateStoryContent() {
 
   // Show draft banner if there's an existing draft (only when not editing)
   useEffect(() => {
-    if (hasDraft && draft.title && !editingStoryId) {
+    const hasMeaningfulDraft = hasDraft && (
+      draft.title || 
+      draft.content.trim().length > 0 || 
+      draft.coverImage || 
+      draft.inlineMedia.length > 0
+    );
+    if (hasMeaningfulDraft && !editingStoryId) {
       setShowDraftBanner(true);
     }
-  }, [hasDraft, draft.title, editingStoryId]);
+  }, [hasDraft, draft.title, draft.content, draft.coverImage, draft.inlineMedia, editingStoryId]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -244,6 +250,7 @@ function CreateStoryContent() {
         {showDraftBanner && (
           <DraftBanner
             lastSaved={draft.lastSaved}
+            draftPreview={draft.title || (draft.content.trim().length > 0 ? `Untitled (${draft.content.split(/\s+/).filter(Boolean).length} words)` : undefined)}
             onResume={handleResumeDraft}
             onStartFresh={handleStartFresh}
           />
@@ -266,6 +273,7 @@ function CreateStoryContent() {
             removeInlineMedia={removeInlineMedia}
             toggleSocialLink={toggleSocialLink}
             onComplete={handleBuilderComplete}
+            onSaveAsDraft={handleSaveAsDraft}
           />
         )}
         

@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 
 interface DraftBannerProps {
   lastSaved: Date;
+  draftPreview?: string;
   onResume: () => void;
   onStartFresh: () => void;
 }
 
-export function DraftBanner({ lastSaved, onResume, onStartFresh }: DraftBannerProps) {
+export function DraftBanner({ lastSaved, draftPreview, onResume, onStartFresh }: DraftBannerProps) {
   const timeAgo = formatDistanceToNow(lastSaved, { addSuffix: true });
 
   return (
@@ -21,7 +22,12 @@ export function DraftBanner({ lastSaved, onResume, onStartFresh }: DraftBannerPr
           <p className="font-medium text-foreground">
             You were writing a story recently. Want to continue?
           </p>
-          <p className="text-sm text-muted-foreground">Last saved {timeAgo}</p>
+          {draftPreview && (
+            <p className="text-sm font-medium text-foreground/80 mt-0.5 truncate">
+              "{draftPreview}"
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground mt-0.5">Last saved {timeAgo}</p>
           <div className="flex gap-2 mt-3">
             <Button size="sm" onClick={onResume}>
               Continue writing
