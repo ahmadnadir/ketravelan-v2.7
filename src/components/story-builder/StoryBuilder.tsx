@@ -203,7 +203,7 @@ export function StoryBuilder({
             value={draft.content}
             onChange={handleContentChange}
             placeholder="Write your experience here"
-            className="w-full min-h-[300px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40"
+            className="w-full min-h-[60px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40"
             style={{ overflow: "hidden", lineHeight: "1.8" }}
           />
         </div>
