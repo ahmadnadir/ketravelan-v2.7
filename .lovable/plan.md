@@ -1,98 +1,170 @@
 
-## Fix: Story Not Found After Publishing
+# Story Setup Flow Improvements
 
-### Problem Analysis
+## Overview
+Streamline the Story Setup screen to reduce friction, increase flexibility, and make it feel less like a rigid form. Users should be able to express their stories naturally while keeping content discoverable.
 
-The "Story not found" error occurs because **each page creates its own isolated `CommunityProvider`** with separate state:
+---
 
+## Changes Summary
+
+| Section | Current State | Change |
+|---------|---------------|--------|
+| Story Type | Fixed pills only | Add "+ Add custom" inline input |
+| Travel Style | Fixed pills only | Add "+ Add custom" inline input |
+| Tags section | Full input + display | **Remove entirely** |
+| Country field | Required (*) | Make optional, remove asterisk |
+| Trip linking | Always shows trip cards | Add yes/no question first |
+| Continue button | Requires title + country | Requires title only |
+
+---
+
+## Detailed Implementation
+
+### 1. Custom Story Type & Travel Style Pills
+
+**Behaviour:**
+- Add a "+ Add custom" pill at the end of each pills row
+- On tap, shows an inline text input (styled as a chip with an embedded input)
+- User types custom label (e.g., "Van Life", "Ramadan Trip")
+- On Enter/blur/submit: converts to a regular pill and auto-selects it
+- Custom pills are visually identical to predefined ones
+- Custom pills include an "x" to remove them
+
+**State updates:**
+- Add `customStoryTypes: string[]` to track user-created story types
+- Add `customTravelStyles: string[]` to track user-created travel styles  
+- Selected custom items stored in existing `storyFocuses` and `travelStyles` arrays
+
+**UI pattern:**
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  CreateStory Page                                           │
-│  └── CommunityProvider (Instance A)                         │
-│       └── publishes story → state updated                   │
-│           └── useEffect saves to localStorage               │
-│           └── navigate to /community/stories/{slug}         │
-└─────────────────────────────────────────────────────────────┘
-                            ↓ (navigation)
-┌─────────────────────────────────────────────────────────────┐
-│  StoryDetail Page                                           │
-│  └── CommunityProvider (Instance B) ← NEW instance!         │
-│       └── loads from localStorage                           │
-│       └── story NOT found (race condition or timing)        │
-└─────────────────────────────────────────────────────────────┘
+[Trip Recap] [Lessons Learned] [...] [+ Add custom]
+                                         ↓ (on tap)
+[Trip Recap] [Lessons Learned] [...] [__________] [Add]
+                                         ↓ (on submit)
+[Trip Recap] [Lessons Learned] [...] [Van Life x] [+ Add custom]
 ```
 
-**Two issues:**
-1. Each provider has independent state - they don't share the published story
-2. localStorage save may not complete before navigation
+---
+
+### 2. Remove Tags Section
+
+**Remove entirely:**
+- "Add a Tag (optional)" label
+- Helper text
+- Tags display badges
+- Tag input field + Add button
+- All tag-related state (`tags`, `tagInput`, `addTag`, `removeTag`, `normalizeTag`)
+
+**Rationale:** Redundant with Story Type, Travel Style, and destination data.
 
 ---
 
-### Solution: Global CommunityProvider at App Level
+### 3. Make Country Optional
 
-Move `CommunityProvider` to the app root so all community-related pages share the same state.
+**Changes:**
+- Remove `<span className="text-destructive">*</span>` from country label
+- Update label from "Where did this happen? *" to "Where did this happen?"
+- Update validation: `isValid = normalizedTitle` (title only required)
+- Keep country/city inputs functional but optional
 
 ---
 
-### Implementation Steps
+### 4. Trip Linking - Conditional with Yes/No Question
 
-#### Step 1: Add CommunityProvider to App.tsx
+**New flow:**
+```text
+"Do you want to link this story to a trip?"
+[ Yes ]  [ No ]
 
-Wrap the entire app (or at minimum the Routes) with a single `CommunityProvider`:
-
-```tsx
-// App.tsx
-import { CommunityProvider } from "./contexts/CommunityContext";
-
-const App = () => (
-  <AuthProvider>
-    <QueryClientProvider client={queryClient}>
-      <ExpenseProvider>
-        <ApprovalsProvider>
-          <CommunityProvider>  {/* Add here */}
-            <TooltipProvider>
-              {/* ... existing content ... */}
-            </TooltipProvider>
-          </CommunityProvider>
-        </ApprovalsProvider>
-      </ExpenseProvider>
-    </QueryClientProvider>
-  </AuthProvider>
-);
+If Yes is selected:
+  ↓ (reveal with animation)
+  
+  Upcoming Trips
+  ┌────────────────────────────┐
+  │ Bali Getaway               │
+  │ Indonesia • Starts in 3d   │
+  └────────────────────────────┘
+  
+  Past Trips  
+  ┌────────────────────────────┐
+  │ Vietnam Adventure          │
+  │ Vietnam                    │
+  └────────────────────────────┘
+  ┌────────────────────────────┐
+  │ Japan Solo Trip            │
+  │ Japan                      │
+  └────────────────────────────┘
 ```
 
-#### Step 2: Remove Duplicate Providers from Pages
+**State:**
+- Add `wantToLinkTrip: boolean | null` (null = not answered yet)
+- When "No" selected: hide trip cards, clear any linked trip
+- When "Yes" selected: reveal trip sections with smooth animation
+- Trip selection remains optional even after selecting "Yes"
 
-Remove the local `CommunityProvider` wrapper from:
+**Mock data structure:**
+```ts
+const mockUpcomingTrips = [
+  { id: "trip-upcoming-1", title: "Bali Getaway", destination: "Indonesia", startsIn: "3 days" }
+];
 
-| File | Change |
-|------|--------|
-| `src/pages/CreateStory.tsx` | Remove `<CommunityProvider>` wrapper, just export `CreateStoryContent` as default |
-| `src/pages/StoryDetail.tsx` | Remove `<CommunityProvider>` wrapper, just use `AppLayout` directly |
-| `src/pages/Community.tsx` | Remove `<CommunityProvider>` wrapper |
+const mockPastTrips = [
+  { id: "trip-1", title: "Vietnam Adventure", destination: "Vietnam" },
+  { id: "trip-2", title: "Japan Solo Trip", destination: "Japan" },
+];
+```
 
 ---
 
-### Files to Modify
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/App.tsx` | Import and wrap routes with `CommunityProvider` |
-| `src/pages/CreateStory.tsx` | Remove local provider wrapper |
-| `src/pages/StoryDetail.tsx` | Remove local provider wrapper |
-| `src/pages/Community.tsx` | Remove local provider wrapper |
+| `src/components/story-builder/StorySetupStep.tsx` | All UI changes above |
+| `src/hooks/useStoryDraft.ts` | Add `customStoryTypes`, `customTravelStyles` to draft interface |
 
 ---
 
-### Why This Works
+## Technical Details
 
-- **Single source of truth**: All pages read from the same provider state
-- **Immediate availability**: When `publishStory` is called, the story is added to state that all pages share
-- **No race condition**: Navigation to StoryDetail will find the story in the shared state
-- **localStorage still works**: For persistence across page refreshes, the shared provider handles loading/saving
+### New State Variables in StorySetupStep
+```ts
+// Custom entries
+const [customStoryTypes, setCustomStoryTypes] = useState<string[]>([]);
+const [customTravelStyles, setCustomTravelStyles] = useState<string[]>([]);
+const [showCustomStoryInput, setShowCustomStoryInput] = useState(false);
+const [showCustomStyleInput, setShowCustomStyleInput] = useState(false);
+const [customStoryInput, setCustomStoryInput] = useState("");
+const [customStyleInput, setCustomStyleInput] = useState("");
+
+// Trip linking
+const [wantToLinkTrip, setWantToLinkTrip] = useState<boolean | null>(null);
+```
+
+### Updated Draft Interface
+```ts
+export interface StoryDraft {
+  // ... existing fields
+  customStoryTypes: string[];   // NEW
+  customTravelStyles: string[]; // NEW
+}
+```
+
+### Validation Logic
+```ts
+// Before: const isValid = normalizedTitle && country;
+// After:
+const isValid = Boolean(normalizedTitle);
+```
 
 ---
 
-### Technical Notes
+## UX Principles Maintained
 
-The CommunityProvider is lightweight (just holds stories/discussions in memory + localStorage sync) so placing it at the app level has minimal performance impact. This follows the same pattern already used for `AuthProvider`, `ExpenseProvider`, and `ApprovalsProvider`.
+- All inputs optional except title
+- No hard stops before "Continue to Story Builder"
+- Progressive disclosure for trip linking
+- Inline interactions only (no modals)
+- Custom entries visually match system pills
+- Screen feels lighter and more creator-friendly
