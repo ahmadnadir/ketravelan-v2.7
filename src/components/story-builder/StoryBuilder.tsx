@@ -264,8 +264,8 @@ export function StoryBuilder({
             value={draft.content}
             onChange={handleContentChange}
             placeholder="Start writing…"
-            className="w-full min-h-[300px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40 leading-relaxed"
-            style={{ overflow: "hidden" }}
+            className="w-full min-h-[300px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40"
+            style={{ overflow: "hidden", lineHeight: "1.8" }}
           />
         </div>
 
@@ -299,9 +299,9 @@ export function StoryBuilder({
         />
       </div>
 
-      {/* Bottom CTA Only - no action bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border safe-area-bottom">
-        <div className="max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-4">
+      {/* Bottom CTA - positioned above bottom nav */}
+      <div className="fixed bottom-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl z-40">
+        <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4">
           <Button
             onClick={onComplete}
             disabled={!isValid}
