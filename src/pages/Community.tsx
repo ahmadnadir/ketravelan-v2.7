@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { CommunityProvider, useCommunity } from "@/contexts/CommunityContext";
+import { useCommunity } from "@/contexts/CommunityContext";
 import { CommunityHeader } from "@/components/community/CommunityHeader";
 import { StoriesFeed } from "@/components/community/stories/StoriesFeed";
 import { DiscussionsFeed } from "@/components/community/discussions/DiscussionsFeed";
@@ -50,10 +50,8 @@ function CommunityContent() {
 
 export default function Community() {
   return (
-    <CommunityProvider>
-      <AppLayout>
-        <CommunityContent />
-      </AppLayout>
-    </CommunityProvider>
+    <AppLayout>
+      <CommunityContent />
+    </AppLayout>
   );
 }

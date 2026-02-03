@@ -8,6 +8,7 @@ import { PageTransition } from "./components/layout/PageTransition";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ExpenseProvider } from "./contexts/ExpenseContext";
 import { ApprovalsProvider } from "./contexts/ApprovalsContext";
+import { CommunityProvider } from "./contexts/CommunityContext";
 import Home from "./pages/Home";
 import Explore from "./pages/Explore";
 import TripDetails from "./pages/TripDetails";
@@ -45,7 +46,8 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ExpenseProvider>
         <ApprovalsProvider>
-          <TooltipProvider>
+          <CommunityProvider>
+            <TooltipProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -90,7 +92,8 @@ const App = () => (
                 </Routes>
               </PageTransition>
             </BrowserRouter>
-          </TooltipProvider>
+            </TooltipProvider>
+          </CommunityProvider>
         </ApprovalsProvider>
       </ExpenseProvider>
     </QueryClientProvider>
