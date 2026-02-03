@@ -165,7 +165,7 @@ export default function MyStories() {
         {/* Actions */}
         <div className="px-4 pb-4 flex gap-2">
           <Button
-            onClick={() => navigate(`/create-story?draftId=${draft.id}`)}
+            onClick={() => navigate(`/create-story?draftId=${draft.id}&from=drafts`)}
             variant="outline"
             className="flex-1"
           >
