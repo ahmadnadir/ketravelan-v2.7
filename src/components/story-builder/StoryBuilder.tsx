@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronRight, Image as ImageIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { StoryDraft, InlineMedia, UserSocialProfile } from "@/hooks/useStoryDraft";
 import { EditingToolbar, FormatType } from "./EditingToolbar";
@@ -178,7 +179,19 @@ export function StoryBuilder({
     updateInlineMedia(mediaId, { images: updatedImages });
   };
 
-  const isValid = draft.coverImage && draft.content.trim().length > 0;
+  const handleContinueClick = () => {
+    if (!draft.coverImage) {
+      toast.error("Please add a cover image to continue");
+      coverInputRef.current?.click();
+      return;
+    }
+    if (!draft.content.trim()) {
+      toast.error("Please write something about your experience");
+      textareaRef.current?.focus();
+      return;
+    }
+    onComplete();
+  };
 
   return (
     <div className="flex flex-col min-h-full">
@@ -304,19 +317,16 @@ export function StoryBuilder({
       <div className="fixed bottom-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl z-40">
         <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4 flex flex-col items-center gap-2">
           <Button
-            onClick={onComplete}
-            disabled={!isValid}
+            onClick={handleContinueClick}
             className="w-full gap-2"
             size="lg"
           >
-            Review & Publish
+            Continue to Review
             <ChevronRight className="h-4 w-4" />
           </Button>
-          {!isValid && (
-            <p className="text-xs text-muted-foreground text-center">
-              Add a cover image and start writing
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground text-center">
+            You can edit and publish later
+          </p>
         </div>
       </div>
 
