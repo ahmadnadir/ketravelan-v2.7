@@ -3,11 +3,11 @@ import { ChevronRight, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoryDraft, InlineMedia, UserSocialProfile } from "@/hooks/useStoryDraft";
 import { FloatingToolbar, FormatType } from "./FloatingToolbar";
-import { BottomActionBar } from "./BottomActionBar";
+import { InlineInsertMenu } from "./InlineInsertMenu";
 import { SocialLinkSheet } from "./SocialLinkSheet";
 import { InlineImage } from "./InlineImage";
 import { InlineGallery } from "./InlineGallery";
-import { SocialLinksCard } from "./SocialLinksCard";
+import { SocialLinksInline } from "./SocialLinksInline";
 
 interface StoryBuilderProps {
   draft: StoryDraft;
@@ -29,30 +29,81 @@ export function StoryBuilder({
   onComplete,
 }: StoryBuilderProps) {
   const [showSocialSheet, setShowSocialSheet] = useState(false);
+  const [showInsertMenu, setShowInsertMenu] = useState(false);
+  const [insertMenuPosition, setInsertMenuPosition] = useState({ top: 0 });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-focus on mount
   useEffect(() => {
-    // Small delay to ensure the component is fully mounted
     const timer = setTimeout(() => {
       textareaRef.current?.focus();
     }, 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-grow textarea
+  // Auto-grow textarea - no max height for editorial feel
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 400)}px`;
+      textarea.style.height = `${textarea.scrollHeight}px`;
     }
   }, []);
 
   useEffect(() => {
     adjustTextareaHeight();
   }, [draft.content, adjustTextareaHeight]);
+
+  // Check if cursor is on an empty line for showing + button
+  const checkForEmptyLine = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea || document.activeElement !== textarea) {
+      setShowInsertMenu(false);
+      return;
+    }
+
+    const cursorPos = textarea.selectionStart;
+    const content = textarea.value;
+    
+    // Find the start and end of the current line
+    const lineStart = content.lastIndexOf("\n", cursorPos - 1) + 1;
+    const lineEnd = content.indexOf("\n", cursorPos);
+    const currentLine = content.substring(lineStart, lineEnd === -1 ? content.length : lineEnd);
+    
+    // Show insert menu only on empty lines
+    if (currentLine.trim() === "") {
+      const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 28;
+      const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 0;
+      const linesBeforeCursor = content.substring(0, cursorPos).split("\n").length - 1;
+      
+      const containerRect = editorContainerRef.current?.getBoundingClientRect();
+      const textareaRect = textarea.getBoundingClientRect();
+      
+      if (containerRect) {
+        const relativeTop = textareaRect.top - containerRect.top + paddingTop + (linesBeforeCursor * lineHeight) + (lineHeight / 2) - 14;
+        setInsertMenuPosition({ top: relativeTop });
+        setShowInsertMenu(true);
+      }
+    } else {
+      setShowInsertMenu(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.addEventListener("click", checkForEmptyLine);
+    textarea.addEventListener("keyup", checkForEmptyLine);
+    textarea.addEventListener("blur", () => setTimeout(() => setShowInsertMenu(false), 200));
+
+    return () => {
+      textarea.removeEventListener("click", checkForEmptyLine);
+      textarea.removeEventListener("keyup", checkForEmptyLine);
+    };
+  }, [checkForEmptyLine]);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     saveDraft({ content: e.target.value });
@@ -110,22 +161,10 @@ export function StoryBuilder({
 
     saveDraft({ content: newText });
     
-    // Restore focus and cursor position
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
-  };
-
-  const handleAddPhoto = (file: File) => {
-    const url = URL.createObjectURL(file);
-    const newMedia: InlineMedia = {
-      id: `media-${Date.now()}`,
-      type: "image",
-      images: [{ url }],
-      insertPosition: draft.content.length,
-    };
-    addInlineMedia(newMedia);
   };
 
   const handleAddGallery = (files: File[]) => {
@@ -134,11 +173,12 @@ export function StoryBuilder({
     }));
     const newMedia: InlineMedia = {
       id: `media-${Date.now()}`,
-      type: "gallery",
+      type: files.length === 1 ? "image" : "gallery",
       images,
       insertPosition: draft.content.length,
     };
     addInlineMedia(newMedia);
+    setShowInsertMenu(false);
   };
 
   const handleUpdateMediaCaption = (mediaId: string, imageIndex: number, caption: string) => {
@@ -153,15 +193,14 @@ export function StoryBuilder({
   const isValid = draft.coverImage && draft.content.trim().length > 0;
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Floating Toolbar */}
+    <div className="flex flex-col min-h-full">
+      {/* Floating Toolbar - only shows on text selection */}
       <FloatingToolbar textareaRef={textareaRef} onFormat={handleFormat} />
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-4 pb-48 space-y-6">
-        {/* Cover Image Upload */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-foreground">Cover Image</p>
+      {/* Editorial Canvas */}
+      <div className="flex-1 px-4 sm:px-6 pb-32">
+        {/* Cover Image - full bleed, editorial style */}
+        <div className="-mx-4 sm:-mx-6 mb-8">
           <input
             ref={coverInputRef}
             type="file"
@@ -171,7 +210,7 @@ export function StoryBuilder({
           />
           {draft.coverImage ? (
             <div className="relative group">
-              <div className="aspect-[16/9] rounded-xl overflow-hidden">
+              <div className="aspect-[16/9] sm:aspect-[21/9]">
                 <img
                   src={draft.coverImage}
                   alt="Cover"
@@ -180,42 +219,53 @@ export function StoryBuilder({
               </div>
               <button
                 onClick={() => coverInputRef.current?.click()}
-                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"
+                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <span className="text-white font-medium">Change Cover</span>
+                <span className="text-white font-medium text-lg">Change Cover</span>
               </button>
             </div>
           ) : (
             <button
               onClick={() => coverInputRef.current?.click()}
-              className="w-full aspect-[16/9] rounded-xl border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-colors"
+              className="w-full aspect-[16/9] sm:aspect-[21/9] bg-muted/30 flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
             >
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Upload cover image
+              <ImageIcon className="h-10 w-10 text-muted-foreground/50" />
+              <span className="text-muted-foreground">
+                Add cover image
               </span>
             </button>
           )}
         </div>
 
-        {/* Story Info */}
-        <div className="bg-muted/50 rounded-lg p-3 space-y-1">
-          <p className="font-medium text-foreground">{draft.title}</p>
-          <p className="text-sm text-muted-foreground">
-            {draft.country}{draft.city && `, ${draft.city}`}
-          </p>
-        </div>
+        {/* Story Title - editorial display */}
+        <header className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight mb-2">
+            {draft.title || "Untitled Story"}
+          </h1>
+          {(draft.country || draft.city) && (
+            <p className="text-lg text-muted-foreground">
+              {draft.city && `${draft.city}, `}{draft.country}
+            </p>
+          )}
+        </header>
 
-        {/* Main Writing Area */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-foreground">Your Story</p>
+        {/* Main Writing Canvas - borderless, editorial */}
+        <div ref={editorContainerRef} className="relative">
+          {/* Inline + Insert Menu */}
+          <InlineInsertMenu
+            visible={showInsertMenu}
+            position={insertMenuPosition}
+            onAddGallery={handleAddGallery}
+            onOpenSocialSheet={() => setShowSocialSheet(true)}
+          />
+
           <textarea
             ref={textareaRef}
             value={draft.content}
             onChange={handleContentChange}
-            placeholder="Start writing your story…"
-            className="w-full min-h-[200px] max-h-[400px] p-4 bg-background border border-border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground leading-relaxed"
-            style={{ overflow: "auto" }}
+            placeholder="Start writing…"
+            className="w-full min-h-[300px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40 leading-relaxed"
+            style={{ overflow: "hidden" }}
           />
         </div>
 
@@ -242,39 +292,30 @@ export function StoryBuilder({
           )
         ))}
 
-        {/* Social Links Card */}
-        <SocialLinksCard
+        {/* Social Links - plain text, editorial style */}
+        <SocialLinksInline
           links={draft.selectedSocialLinks}
           onRemoveLink={toggleSocialLink}
         />
       </div>
 
-      {/* Bottom Action Bar */}
-      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+64px)] left-0 right-0 bg-background border-t border-border">
-        <div className="max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
-          <BottomActionBar
-            onAddPhoto={handleAddPhoto}
-            onAddGallery={handleAddGallery}
-            onOpenSocialSheet={() => setShowSocialSheet(true)}
-          />
-          
-          {/* Continue Button */}
-          <div className="px-4 pb-4">
-            <Button
-              onClick={onComplete}
-              disabled={!isValid}
-              className="w-full gap-2"
-              size="lg"
-            >
-              Review & Publish
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            {!isValid && (
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Add a cover image and start writing your story
-              </p>
-            )}
-          </div>
+      {/* Bottom CTA Only - no action bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border safe-area-bottom">
+        <div className="max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-4">
+          <Button
+            onClick={onComplete}
+            disabled={!isValid}
+            className="w-full gap-2"
+            size="lg"
+          >
+            Review & Publish
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          {!isValid && (
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Add a cover image and start writing
+            </p>
+          )}
         </div>
       </div>
 
