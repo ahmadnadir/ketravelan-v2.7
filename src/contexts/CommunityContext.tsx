@@ -215,7 +215,7 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
       storyType: draft.storyType || "trip-recap",
       linkedTripId: draft.linkedTripId || undefined,
       visibility: draft.visibility,
-      tags: draft.tags,
+      tags: [],
       socialLinks: draft.socialLinks,
       likes: 0,
       saves: 0,
