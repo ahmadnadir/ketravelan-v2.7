@@ -253,6 +253,7 @@ function CreateStoryContent() {
             draftPreview={draft.title || (draft.content.trim().length > 0 ? `Untitled (${draft.content.split(/\s+/).filter(Boolean).length} words)` : undefined)}
             onResume={handleResumeDraft}
             onStartFresh={handleStartFresh}
+            onDismiss={() => setShowDraftBanner(false)}
           />
         )}
         
