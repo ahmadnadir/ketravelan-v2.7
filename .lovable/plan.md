@@ -1,170 +1,271 @@
 
-# Story Setup Flow Improvements
+
+# Story Builder Redesign: Rich Text Editor
 
 ## Overview
-Streamline the Story Setup screen to reduce friction, increase flexibility, and make it feel less like a rigid form. Users should be able to express their stories naturally while keeping content discoverable.
+
+Transform the Story Builder from a structured block-based editor into a fluid, writing-first experience that feels like a modern notes app (similar to Apple Notes or Medium).
 
 ---
 
 ## Changes Summary
 
-| Section | Current State | Change |
-|---------|---------------|--------|
-| Story Type | Fixed pills only | Add "+ Add custom" inline input |
-| Travel Style | Fixed pills only | Add "+ Add custom" inline input |
-| Tags section | Full input + display | **Remove entirely** |
-| Country field | Required (*) | Make optional, remove asterisk |
-| Trip linking | Always shows trip cards | Add yes/no question first |
-| Continue button | Requires title + country | Requires title only |
+| Area | Current | New |
+|------|---------|-----|
+| Editor | Block-based with cards (Text, Image, Location, etc.) | Single continuous rich-text area |
+| Toolbar | "Add Block" bottom sheet | Inline floating toolbar + bottom action bar |
+| Media | Separate Image blocks | Inline photos/galleries within text flow |
+| Social Links | Block type with manual URL entry | Select from linked profile accounts |
+| Draft Banner | System-style warning | Warm, encouraging tone |
 
 ---
 
 ## Detailed Implementation
 
-### 1. Custom Story Type & Travel Style Pills
+### 1. Replace Block Editor with Unified Rich Text Area
 
-**Behaviour:**
-- Add a "+ Add custom" pill at the end of each pills row
-- On tap, shows an inline text input (styled as a chip with an embedded input)
-- User types custom label (e.g., "Van Life", "Ramadan Trip")
-- On Enter/blur/submit: converts to a regular pill and auto-selects it
-- Custom pills are visually identical to predefined ones
-- Custom pills include an "x" to remove them
+**Remove:**
+- `AddBlockSheet.tsx` component
+- Block rendering logic with drag handles
+- Individual block components: `TextBlock`, `LocationBlock` (keep `ImageBlock` logic for reference)
+- "Add First Block" empty state CTA
 
-**State updates:**
-- Add `customStoryTypes: string[]` to track user-created story types
-- Add `customTravelStyles: string[]` to track user-created travel styles  
-- Selected custom items stored in existing `storyFocuses` and `travelStyles` arrays
+**Add:**
+- Single auto-growing textarea/contenteditable area
+- Auto-focus on mount
+- Placeholder: "Start writing your story..."
+- Support for:
+  - Paragraph text (default)
+  - Bullet lists (prefix `• ` or `- `)
+  - Numbered lists (prefix `1. `)
+  - Inline links (via toolbar)
 
-**UI pattern:**
-```text
-[Trip Recap] [Lessons Learned] [...] [+ Add custom]
-                                         ↓ (on tap)
-[Trip Recap] [Lessons Learned] [...] [__________] [Add]
-                                         ↓ (on submit)
-[Trip Recap] [Lessons Learned] [...] [Van Life x] [+ Add custom]
+**Technical approach:**
+```tsx
+// New state in StoryBuilder
+const [content, setContent] = useState<string>(draft.content || "");
+const editorRef = useRef<HTMLTextAreaElement>(null);
+
+// Auto-focus on mount
+useEffect(() => {
+  editorRef.current?.focus();
+}, []);
+```
+
+Update `StoryDraft` interface to include a single `content: string` field for the rich text body (blocks array becomes legacy/migration only).
+
+---
+
+### 2. Inline Floating Toolbar (Text Selection)
+
+**Trigger:** Show when user selects text (highlights)
+
+**Actions:**
+| Icon | Action |
+|------|--------|
+| **B** | Bold (wrap in `**text**`) |
+| List | Bullet list (prefix lines with `• `) |
+| ListOrdered | Numbered list |
+| Link2 | Insert inline link |
+
+**Implementation:**
+- Use `document.getSelection()` to detect selection
+- Position toolbar above selection using `getBoundingClientRect()`
+- Apply Markdown-style formatting (for simplicity, no WYSIWYG)
+
+```tsx
+// FloatingToolbar component
+interface FloatingToolbarProps {
+  selection: Selection | null;
+  onFormat: (type: "bold" | "bullet" | "numbered" | "link") => void;
+}
 ```
 
 ---
 
-### 2. Remove Tags Section
+### 3. Bottom Action Bar (Always Visible)
 
-**Remove entirely:**
-- "Add a Tag (optional)" label
-- Helper text
-- Tags display badges
-- Tag input field + Add button
-- All tag-related state (`tags`, `tagInput`, `addTag`, `removeTag`, `normalizeTag`)
+Fixed bottom bar with icon-only actions:
 
-**Rationale:** Redundant with Story Type, Travel Style, and destination data.
+| Icon | Label | Action |
+|------|-------|--------|
+| Image | Add Photo | Opens image picker, inserts inline |
+| Images | Add Gallery | Opens multi-image picker |
+| AtSign | Social Link | Opens profile social selector sheet |
+| MoreHorizontal | More | Future expansion |
 
----
-
-### 3. Make Country Optional
-
-**Changes:**
-- Remove `<span className="text-destructive">*</span>` from country label
-- Update label from "Where did this happen? *" to "Where did this happen?"
-- Update validation: `isValid = normalizedTitle` (title only required)
-- Keep country/city inputs functional but optional
+**Behavior:**
+- Sits above the keyboard on mobile
+- Icons only (no labels) for minimal footprint
+- Each action inserts content at cursor position
 
 ---
 
-### 4. Trip Linking - Conditional with Yes/No Question
+### 4. Inline Media Insertion
 
-**New flow:**
-```text
-"Do you want to link this story to a trip?"
-[ Yes ]  [ No ]
+**Single Photo:**
+```
+[After selecting image]
+↓ Inserted into content flow
 
-If Yes is selected:
-  ↓ (reveal with animation)
-  
-  Upcoming Trips
-  ┌────────────────────────────┐
-  │ Bali Getaway               │
-  │ Indonesia • Starts in 3d   │
-  └────────────────────────────┘
-  
-  Past Trips  
-  ┌────────────────────────────┐
-  │ Vietnam Adventure          │
-  │ Vietnam                    │
-  └────────────────────────────┘
-  ┌────────────────────────────┐
-  │ Japan Solo Trip            │
-  │ Japan                      │
-  └────────────────────────────┘
+┌──────────────────────────────┐
+│       [Full-width image]     │
+│                              │
+└──────────────────────────────┘
+  📝 Add caption (tap to expand)
 ```
 
-**State:**
-- Add `wantToLinkTrip: boolean | null` (null = not answered yet)
-- When "No" selected: hide trip cards, clear any linked trip
-- When "Yes" selected: reveal trip sections with smooth animation
-- Trip selection remains optional even after selecting "Yes"
+- Full-width display
+- Caption collapsed by default
+- Caption revealed on tap/focus
 
-**Mock data structure:**
+**Gallery:**
+- Horizontal swipeable carousel
+- Each image has optional caption
+- Treated as single unit in flow
+
+**Data structure:**
 ```ts
-const mockUpcomingTrips = [
-  { id: "trip-upcoming-1", title: "Bali Getaway", destination: "Indonesia", startsIn: "3 days" }
-];
-
-const mockPastTrips = [
-  { id: "trip-1", title: "Vietnam Adventure", destination: "Vietnam" },
-  { id: "trip-2", title: "Japan Solo Trip", destination: "Japan" },
-];
+interface InlineMedia {
+  id: string;
+  type: "image" | "gallery";
+  images: { url: string; caption?: string }[];
+  position: number; // cursor position in content
+}
 ```
 
 ---
 
-## Files to Modify
+### 5. Social Media Link Insertion (Profile-Aware)
 
-| File | Changes |
-|------|---------|
-| `src/components/story-builder/StorySetupStep.tsx` | All UI changes above |
-| `src/hooks/useStoryDraft.ts` | Add `customStoryTypes`, `customTravelStyles` to draft interface |
+**Flow:**
+1. User taps "Add Social Link" in bottom bar
+2. Opens bottom sheet showing ONLY platforms already linked in user profile
+3. User selects one or more (checkbox)
+4. Inserts compact inline card
+
+**Mock user profile social links:**
+```ts
+const userSocialLinks = [
+  { platform: "instagram", handle: "@ahmadrazak" },
+  { platform: "youtube", handle: "@ahmadtravels" },
+];
+```
+
+**Inserted card appearance:**
+```
+┌─────────────────────────┐
+│ 📷 @ahmadrazak          │
+│ 📺 @ahmadtravels        │
+└─────────────────────────┘
+```
+
+**No manual typing required** - pulls from profile.
+
+---
+
+### 6. Improved Draft Banner
+
+**Before (current):**
+> "You have an unfinished story"
+> Last saved 2 hours ago
+> [Continue Editing] [Start Fresh]
+
+**After:**
+> "You were writing a story recently. Want to continue?"
+> Last saved 2 hours ago
+> [Continue writing] [Start fresh]
+
+**Styling changes:**
+- Softer background (muted/warm)
+- Friendly icon (Pencil or edit icon instead of FileText)
+- Primary action: "Continue writing"
+- Secondary action: "Start fresh"
+
+---
+
+## Files to Modify/Create
+
+| File | Action |
+|------|--------|
+| `src/components/story-builder/StoryBuilder.tsx` | Complete rewrite |
+| `src/components/story-builder/AddBlockSheet.tsx` | **Delete** |
+| `src/components/story-builder/blocks/TextBlock.tsx` | **Delete** |
+| `src/components/story-builder/blocks/LocationBlock.tsx` | **Delete** |
+| `src/components/story-builder/blocks/SocialLinkBlock.tsx` | **Delete** |
+| `src/components/story-builder/DraftBanner.tsx` | Update copy/styling |
+| `src/components/story-builder/FloatingToolbar.tsx` | **Create** |
+| `src/components/story-builder/BottomActionBar.tsx` | **Create** |
+| `src/components/story-builder/SocialLinkSheet.tsx` | **Create** |
+| `src/components/story-builder/InlineImage.tsx` | **Create** |
+| `src/components/story-builder/InlineGallery.tsx` | **Create** |
+| `src/hooks/useStoryDraft.ts` | Add `content` field, migrate from blocks |
+| `src/data/communityMockData.ts` | Keep BlockType for legacy support |
 
 ---
 
 ## Technical Details
 
-### New State Variables in StorySetupStep
-```ts
-// Custom entries
-const [customStoryTypes, setCustomStoryTypes] = useState<string[]>([]);
-const [customTravelStyles, setCustomTravelStyles] = useState<string[]>([]);
-const [showCustomStoryInput, setShowCustomStoryInput] = useState(false);
-const [showCustomStyleInput, setShowCustomStyleInput] = useState(false);
-const [customStoryInput, setCustomStoryInput] = useState("");
-const [customStyleInput, setCustomStyleInput] = useState("");
+### Updated StoryDraft Interface
 
-// Trip linking
-const [wantToLinkTrip, setWantToLinkTrip] = useState<boolean | null>(null);
-```
-
-### Updated Draft Interface
 ```ts
 export interface StoryDraft {
   // ... existing fields
-  customStoryTypes: string[];   // NEW
-  customTravelStyles: string[]; // NEW
+  content: string;              // NEW: rich text body
+  inlineMedia: InlineMedia[];   // NEW: positioned images/galleries
+  // blocks: StoryBlock[];      // Keep for migration only
+}
+
+interface InlineMedia {
+  id: string;
+  type: "image" | "gallery";
+  images: { url: string; caption?: string }[];
+  insertPosition: number; // character index in content
 }
 ```
 
-### Validation Logic
+### Validation Logic Update
+
 ```ts
-// Before: const isValid = normalizedTitle && country;
+// Before: draft.coverImage && draft.blocks.length > 0
 // After:
-const isValid = Boolean(normalizedTitle);
+const isValid = draft.coverImage && draft.content.trim().length > 0;
+```
+
+### New Components Structure
+
+```
+src/components/story-builder/
+├── StoryBuilder.tsx          # Main editor container
+├── RichTextEditor.tsx        # The actual textarea with formatting
+├── FloatingToolbar.tsx       # Selection-based formatting
+├── BottomActionBar.tsx       # Photo/Gallery/Social actions
+├── SocialLinkSheet.tsx       # Profile-aware social picker
+├── InlineImage.tsx           # Single image with caption
+├── InlineGallery.tsx         # Swipeable gallery carousel
+├── DraftBanner.tsx           # Updated encouraging copy
+├── PublishStep.tsx           # Unchanged
+└── StorySetupStep.tsx        # Unchanged
 ```
 
 ---
 
-## UX Principles Maintained
+## Migration Strategy
 
-- All inputs optional except title
-- No hard stops before "Continue to Story Builder"
-- Progressive disclosure for trip linking
-- Inline interactions only (no modals)
-- Custom entries visually match system pills
-- Screen feels lighter and more creator-friendly
+1. Keep `blocks` array in `StoryDraft` for backwards compatibility
+2. On load, if `blocks` exist but `content` is empty, migrate:
+   - Concatenate text block content into `content`
+   - Convert image blocks to `inlineMedia`
+3. New stories only use `content` + `inlineMedia`
+
+---
+
+## UX Principles Applied
+
+- Writing-first, formatting-second
+- Progressive disclosure (tools appear when needed)
+- All enhancements optional
+- No forced structure
+- Mobile-first typing comfort
+- Minimal visual noise
+
