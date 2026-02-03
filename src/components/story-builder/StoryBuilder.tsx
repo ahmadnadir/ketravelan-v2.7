@@ -200,7 +200,7 @@ export function StoryBuilder({
             ref={textareaRef}
             value={draft.content}
             onChange={handleContentChange}
-            placeholder="Start writing…"
+            placeholder="Write your experience here"
             className="w-full min-h-[300px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40"
             style={{ overflow: "hidden", lineHeight: "1.8" }}
           />
@@ -238,18 +238,18 @@ export function StoryBuilder({
 
       {/* Bottom CTA - positioned above bottom nav */}
       <div className="fixed bottom-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl z-40">
-        <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4">
+        <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4 flex flex-col items-center gap-2">
           <Button
             onClick={onComplete}
             disabled={!isValid}
-            className="w-full gap-2"
+            className="px-8 gap-2"
             size="lg"
           >
             Review & Publish
             <ChevronRight className="h-4 w-4" />
           </Button>
           {!isValid && (
-            <p className="text-xs text-muted-foreground text-center mt-2">
+            <p className="text-xs text-muted-foreground text-center">
               Add a cover image and start writing
             </p>
           )}
