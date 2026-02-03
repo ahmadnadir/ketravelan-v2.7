@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { CommunityProvider, useCommunity } from "@/contexts/CommunityContext";
+import { useCommunity } from "@/contexts/CommunityContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { storyTypeLabels, blockTypeConfig } from "@/data/communityMockData";
 import { SEOHead } from "@/components/seo/SEOHead";
@@ -336,10 +336,8 @@ function StoryDetailContent() {
 
 export default function StoryDetail() {
   return (
-    <CommunityProvider>
-      <AppLayout>
-        <StoryDetailContent />
-      </AppLayout>
-    </CommunityProvider>
+    <AppLayout>
+      <StoryDetailContent />
+    </AppLayout>
   );
 }

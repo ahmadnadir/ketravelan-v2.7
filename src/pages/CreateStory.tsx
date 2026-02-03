@@ -7,7 +7,7 @@ import { StoryBuilder } from "@/components/story-builder/StoryBuilder";
 import { PublishStep } from "@/components/story-builder/PublishStep";
 import { DraftBanner } from "@/components/story-builder/DraftBanner";
 import { useStoryDraft, StoryDraft } from "@/hooks/useStoryDraft";
-import { CommunityProvider, useCommunity } from "@/contexts/CommunityContext";
+import { useCommunity } from "@/contexts/CommunityContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { toast } from "sonner";
@@ -247,10 +247,4 @@ function CreateStoryContent() {
   );
 }
 
-export default function CreateStory() {
-  return (
-    <CommunityProvider>
-      <CreateStoryContent />
-    </CommunityProvider>
-  );
-}
+export default CreateStoryContent;
