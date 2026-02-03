@@ -135,6 +135,12 @@ export interface StoryInlineMedia {
   insertPosition: number;
 }
 
+// User social profile for inline social links
+export interface UserSocialProfile {
+  platform: SocialPlatform;
+  handle: string;
+}
+
 export interface Story {
   id: string;
   slug: string;
@@ -142,8 +148,10 @@ export interface Story {
   coverImage: string;
   excerpt: string;
   content: string;
+  contentAfterMedia?: string;
   blocks?: StoryBlock[];
   inlineMedia?: StoryInlineMedia[];
+  selectedSocialLinks?: UserSocialProfile[];
   author: StoryAuthor;
   location: Location;
   readingTime: number;
