@@ -335,6 +335,33 @@ function StoryDetailContent() {
               ))}
             </div>
           )}
+          
+          {/* Content after media */}
+          {story.contentAfterMedia && (
+            <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap mt-6">
+              {story.contentAfterMedia}
+            </p>
+          )}
+          
+          {/* Selected Social Links (inline handles like @username) */}
+          {story.selectedSocialLinks && story.selectedSocialLinks.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-6 pt-4 border-t border-border/50">
+              {story.selectedSocialLinks.map((link) => (
+                <span 
+                  key={`${link.platform}-${link.handle}`} 
+                  className="text-sm text-muted-foreground"
+                >
+                  {link.platform === "instagram" && "📸 Instagram"}
+                  {link.platform === "youtube" && "🎬 YouTube"}
+                  {link.platform === "tiktok" && "🎵 TikTok"}
+                  {link.platform === "facebook" && "👤 Facebook"}
+                  {link.platform === "twitter" && "🐦 Twitter"}
+                  {" · "}
+                  <span className="text-primary">{link.handle}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </article>
 
         {/* Tags */}
