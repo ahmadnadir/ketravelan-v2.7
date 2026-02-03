@@ -317,21 +317,22 @@ export function StoryBuilder({
 
       {/* Bottom CTA - positioned above bottom nav */}
       <div className="fixed bottom-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl z-40">
-        <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4 flex flex-col items-center gap-2">
-          <Button
-            onClick={handleContinueClick}
-            className="w-full gap-2"
-            size="lg"
-          >
-            Continue to Review
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4 flex gap-3">
           <Button
             onClick={onSaveAsDraft}
-            variant="ghost"
-            className="w-full"
+            variant="outline"
+            className="flex-1"
+            size="lg"
           >
             Save as Draft
+          </Button>
+          <Button
+            onClick={handleContinueClick}
+            className="flex-1 gap-2"
+            size="lg"
+          >
+            Review & Publish
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
