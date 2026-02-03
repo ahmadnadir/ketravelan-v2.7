@@ -108,6 +108,19 @@ export function StoryBuilder({
     }, 0);
   };
 
+  const handleAddGallery = (files: File[]) => {
+    const images = files.map((file) => ({
+      url: URL.createObjectURL(file),
+    }));
+    const newMedia: InlineMedia = {
+      id: `media-${Date.now()}`,
+      type: files.length === 1 ? "image" : "gallery",
+      images,
+      insertPosition: draft.content.length,
+    };
+    addInlineMedia(newMedia);
+  };
+
   const handleUpdateMediaCaption = (mediaId: string, imageIndex: number, caption: string) => {
     const media = draft.inlineMedia.find((m) => m.id === mediaId);
     if (!media) return;
@@ -177,6 +190,7 @@ export function StoryBuilder({
         <EditingToolbar
           textareaRef={textareaRef}
           onFormat={handleFormat}
+          onAddGallery={handleAddGallery}
           onOpenSocialSheet={() => setShowSocialSheet(true)}
         />
 
