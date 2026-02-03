@@ -1,102 +1,141 @@
 
-# Sticky Editing Toolbar for Long Stories
+# Always Visible Caption Input for Images
 
 ## Overview
-Make the editing toolbar remain fixed at the top of the content area when users scroll through long stories. This ensures formatting tools are always accessible without scrolling back up.
+Make the "Add a caption..." input always visible below images so users immediately know they can add captions without needing to click the image first.
 
 ---
 
-## Current Issue
-
-When writing a long story, the editing toolbar scrolls away with the content, requiring users to scroll back up to access formatting tools.
+## Current Behavior
+- Caption input is hidden by default
+- Users must click/tap on the image to reveal the caption field
+- This makes the caption feature less discoverable
 
 ---
 
 ## Solution
-
-Make the `EditingToolbar` sticky so it stays visible at the top of the scrollable content area while the user writes.
+Remove the conditional rendering and `showCaption` state, making the caption input always visible below every image.
 
 ---
 
 ## Implementation
 
-### StoryBuilder.tsx Changes
+### InlineImage.tsx Changes
 
-**Current structure (lines 189-195):**
+**Remove:**
+- The `showCaption` state variable
+- The `onClick` handler on the image
+- The conditional `{showCaption && ...}` wrapper around the input
+
+**Result:**
 ```tsx
-{/* Persistent Editing Toolbar */}
-<EditingToolbar
-  textareaRef={textareaRef}
-  onFormat={handleFormat}
-  onAddGallery={handleAddGallery}
-  onOpenSocialSheet={() => setShowSocialSheet(true)}
-/>
+export function InlineImage({ media, onUpdateCaption, onRemove }: InlineImageProps) {
+  const image = media.images[0];
+
+  if (!image) return null;
+
+  return (
+    <div className="relative my-8 group">
+      {/* Image */}
+      <div className="relative">
+        <img
+          src={image.url}
+          alt={image.caption || "Story image"}
+          className="w-full h-auto object-cover"
+        />
+        {/* Remove button */}
+        ...
+      </div>
+
+      {/* Caption - always visible */}
+      <input
+        type="text"
+        value={image.caption || ""}
+        onChange={(e) => onUpdateCaption(e.target.value)}
+        placeholder="Add a caption..."
+        className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
+      />
+    </div>
+  );
+}
 ```
 
-**Updated structure:**
+---
+
+### InlineGallery.tsx Changes
+
+**Remove:**
+- The `showCaption` state variable
+- The `onClick` handler on the image
+- The `setShowCaption` calls in `goToPrev`, `goToNext`, and dot navigation
+- The conditional `{showCaption && ...}` wrapper around the input
+
+**Result:**
 ```tsx
-{/* Sticky Editing Toolbar - stays at top when scrolling */}
-<div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-background/95 backdrop-blur-sm">
-  <EditingToolbar
-    textareaRef={textareaRef}
-    onFormat={handleFormat}
-    onAddGallery={handleAddGallery}
-    onOpenSocialSheet={() => setShowSocialSheet(true)}
-  />
-</div>
+export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const images = media.images;
+  const currentImage = images[currentIndex];
+
+  if (!currentImage) return null;
+
+  const goToPrev = () => {
+    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : images.length - 1);
+  };
+
+  const goToNext = () => {
+    setCurrentIndex(currentIndex < images.length - 1 ? currentIndex + 1 : 0);
+  };
+
+  return (
+    <div className="relative my-8 group">
+      {/* Gallery container */}
+      ...
+      
+      {/* Caption - always visible */}
+      <input
+        type="text"
+        value={currentImage.caption || ""}
+        onChange={(e) => onUpdateImage(currentIndex, { caption: e.target.value })}
+        placeholder="Add a caption..."
+        className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
+      />
+      ...
+    </div>
+  );
+}
 ```
 
-**Key changes:**
-- Wrap toolbar in a `sticky top-0` container
-- Use `z-20` to ensure it stays above content
-- Apply negative margins (`-mx-4 sm:-mx-6`) to extend full width
-- Add matching padding (`px-4 sm:px-6`) for content alignment
-- Use `bg-background/95 backdrop-blur-sm` for a subtle frosted glass effect when content scrolls behind
+---
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/story-builder/InlineImage.tsx` | Remove `showCaption` state, make caption always visible |
+| `src/components/story-builder/InlineGallery.tsx` | Remove `showCaption` state, make caption always visible |
 
 ---
 
 ## Visual Result
 
+Before (caption hidden):
 ```text
-┌─────────────────────────────────────┐
-│ ← Story Builder              ✕      │  ← Page header (already sticky)
-├─────────────────────────────────────┤
-│  [B] [U] [•] [1.] [📷] [@]         │  ← Toolbar (NOW STICKY)
-│  ─────────────────────────────────  │
-├─────────────────────────────────────┤
-│                                     │
-│  Long story content scrolls here... │  ← Content scrolls
-│  ...                                │
-│  ...                                │
-│  ...                                │
-│                                     │
-│  ┌───────────────────────────────┐  │
-│  │   [ Review & Publish → ]      │  │  ← Fixed CTA
-│  └───────────────────────────────┘  │
-├─────────────────────────────────────┤
-│  🧭  💬  ➕  👥  👤                  │
-└─────────────────────────────────────┘
+┌─────────────────────────────────┐
+│                                 │
+│         [Image]                 │
+│                                 │
+└─────────────────────────────────┘
+                                    ← No caption visible
 ```
 
-When user scrolls down:
-- Cover image scrolls away
-- Title/location scrolls away
-- Toolbar stays pinned at top
-- Writing area scrolls underneath the toolbar
-
----
-
-## File to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/story-builder/StoryBuilder.tsx` | Wrap EditingToolbar in sticky container |
-
----
-
-## Technical Notes
-
-- The `sticky top-0` works because the content area inside AppLayout is scrollable
-- `z-20` ensures toolbar stays above the textarea and other content
-- The backdrop blur creates a subtle visual separation when content scrolls behind
-- This matches the sticky header pattern already used in the CreateStory page header
+After (caption always visible):
+```text
+┌─────────────────────────────────┐
+│                                 │
+│         [Image]                 │
+│                                 │
+└─────────────────────────────────┘
+        Add a caption...            ← Always visible placeholder
+```
