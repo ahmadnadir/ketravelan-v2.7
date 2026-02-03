@@ -99,61 +99,68 @@ function StoryDetailContent() {
 
   // Render story blocks for user-created stories
   const renderBlocks = () => {
-    if (!story.blocks || story.blocks.length === 0) {
+    // If we have blocks, render them
+    if (story.blocks && story.blocks.length > 0) {
+      return story.blocks.map((block) => {
+        switch (block.type) {
+          case "text":
+          case "moment":
+          case "lesson":
+          case "tip":
+            return (
+              <div key={block.id} className="mb-4">
+                {block.type !== "text" && (
+                  <span className="text-sm font-medium text-primary mb-1 block">
+                    {blockTypeConfig[block.type]?.icon} {blockTypeConfig[block.type]?.label}
+                  </span>
+                )}
+                <p className="text-foreground whitespace-pre-wrap">{block.content}</p>
+              </div>
+            );
+          case "image":
+            return (
+              <figure key={block.id} className="my-6">
+                <img
+                  src={block.imageUrl}
+                  alt={block.caption || "Story image"}
+                  className="w-full rounded-lg"
+                />
+                {block.caption && (
+                  <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                    {block.caption}
+                  </figcaption>
+                )}
+              </figure>
+            );
+          case "location":
+            return (
+              <div key={block.id} className="my-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span className="font-medium">{block.locationName}</span>
+                </div>
+                {block.content && (
+                  <p className="text-muted-foreground text-sm">{block.content}</p>
+                )}
+              </div>
+            );
+          default:
+            return null;
+        }
+      });
+    }
+    
+    // No blocks - show content if it's different from excerpt (avoid duplication)
+    if (story.content && story.content !== story.excerpt) {
       return (
-        <p className="text-muted-foreground">
-          {story.content || "Full story content would appear here. This is placeholder text for the demo."}
+        <p className="text-muted-foreground whitespace-pre-wrap">
+          {story.content}
         </p>
       );
     }
-
-    return story.blocks.map((block) => {
-      switch (block.type) {
-        case "text":
-        case "moment":
-        case "lesson":
-        case "tip":
-          return (
-            <div key={block.id} className="mb-4">
-              {block.type !== "text" && (
-                <span className="text-sm font-medium text-primary mb-1 block">
-                  {blockTypeConfig[block.type]?.icon} {blockTypeConfig[block.type]?.label}
-                </span>
-              )}
-              <p className="text-foreground whitespace-pre-wrap">{block.content}</p>
-            </div>
-          );
-        case "image":
-          return (
-            <figure key={block.id} className="my-6">
-              <img
-                src={block.imageUrl}
-                alt={block.caption || "Story image"}
-                className="w-full rounded-lg"
-              />
-              {block.caption && (
-                <figcaption className="text-sm text-muted-foreground mt-2 text-center">
-                  {block.caption}
-                </figcaption>
-              )}
-            </figure>
-          );
-        case "location":
-          return (
-            <div key={block.id} className="my-4 p-4 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="font-medium">{block.locationName}</span>
-              </div>
-              {block.content && (
-                <p className="text-muted-foreground text-sm">{block.content}</p>
-              )}
-            </div>
-          );
-        default:
-          return null;
-      }
-    });
+    
+    // No additional content to show
+    return null;
   };
 
   return (
@@ -244,8 +251,18 @@ function StoryDetailContent() {
 
         {/* Story content */}
         <article className="prose prose-sm sm:prose max-w-none mb-8">
-          <p className="text-lg text-foreground leading-relaxed">{story.excerpt}</p>
-          {renderBlocks()}
+          {/* For stories with blocks, show excerpt as intro then blocks */}
+          {story.blocks && story.blocks.length > 0 ? (
+            <>
+              <p className="text-lg text-foreground leading-relaxed">{story.excerpt}</p>
+              {renderBlocks()}
+            </>
+          ) : (
+            /* For content-based stories, show full content (not excerpt) */
+            <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">
+              {story.content || story.excerpt}
+            </p>
+          )}
         </article>
 
         {/* Tags */}
