@@ -122,6 +122,19 @@ export interface Location {
   flag: string;
 }
 
+// Inline media for stories (images/galleries inserted in content)
+export interface InlineMediaImage {
+  url: string;
+  caption?: string;
+}
+
+export interface StoryInlineMedia {
+  id: string;
+  type: "image" | "gallery";
+  images: InlineMediaImage[];
+  insertPosition: number;
+}
+
 export interface Story {
   id: string;
   slug: string;
@@ -130,6 +143,7 @@ export interface Story {
   excerpt: string;
   content: string;
   blocks?: StoryBlock[];
+  inlineMedia?: StoryInlineMedia[];
   author: StoryAuthor;
   location: Location;
   readingTime: number;
