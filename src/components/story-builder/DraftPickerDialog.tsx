@@ -44,13 +44,13 @@ export function DraftPickerDialog({
           <button
             onClick={onStartFresh}
             className={cn(
-              "w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed",
-              "border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5",
+              "w-full flex items-center gap-4 p-4 rounded-xl border-2 border-dashed",
+              "border-muted-foreground/40 hover:border-primary/50 hover:bg-primary/5",
               "transition-colors text-left group"
             )}
           >
-            <div className="p-2.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-              <Plus className="h-5 w-5" />
+            <div className="h-12 w-12 rounded-full bg-foreground text-background flex items-center justify-center shrink-0">
+              <Plus className="h-6 w-6" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground">Start a new story</p>
