@@ -10,7 +10,6 @@ interface InlineGalleryProps {
 
 export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showCaption, setShowCaption] = useState(false);
   
   const images = media.images;
   const currentImage = images[currentIndex];
@@ -18,15 +17,11 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
   if (!currentImage) return null;
 
   const goToPrev = () => {
-    const newIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
-    setCurrentIndex(newIndex);
-    setShowCaption(!!images[newIndex]?.caption);
+    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : images.length - 1);
   };
 
   const goToNext = () => {
-    const newIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
-    setCurrentIndex(newIndex);
-    setShowCaption(!!images[newIndex]?.caption);
+    setCurrentIndex(currentIndex < images.length - 1 ? currentIndex + 1 : 0);
   };
 
   return (
@@ -37,7 +32,6 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
           src={currentImage.url}
           alt={currentImage.caption || `Gallery image ${currentIndex + 1}`}
           className="w-full h-auto object-cover"
-          onClick={() => setShowCaption(true)}
         />
         
         {/* Remove button */}
@@ -72,10 +66,7 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
             {images.map((_, index) => (
               <button
                 key={index}
-                onClick={() => {
-                  setCurrentIndex(index);
-                  setShowCaption(!!images[index]?.caption);
-                }}
+                onClick={() => setCurrentIndex(index)}
                 className={`h-1.5 rounded-full transition-all ${
                   index === currentIndex
                     ? "w-5 bg-white"
@@ -87,17 +78,14 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
         )}
       </div>
 
-      {/* Caption - editorial style, appears on tap */}
-      {showCaption && (
-        <input
-          type="text"
-          value={currentImage.caption || ""}
-          onChange={(e) => onUpdateImage(currentIndex, { caption: e.target.value })}
-          placeholder="Add a caption..."
-          className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
-          autoFocus
-        />
-      )}
+      {/* Caption - always visible */}
+      <input
+        type="text"
+        value={currentImage.caption || ""}
+        onChange={(e) => onUpdateImage(currentIndex, { caption: e.target.value })}
+        placeholder="Add a caption..."
+        className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
+      />
 
       {/* Image count - subtle */}
       <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/50 rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">

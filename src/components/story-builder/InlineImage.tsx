@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { X } from "lucide-react";
 import { InlineMedia } from "@/hooks/useStoryDraft";
 
@@ -9,7 +8,6 @@ interface InlineImageProps {
 }
 
 export function InlineImage({ media, onUpdateCaption, onRemove }: InlineImageProps) {
-  const [showCaption, setShowCaption] = useState(!!media.images[0]?.caption);
   const image = media.images[0];
 
   if (!image) return null;
@@ -22,7 +20,6 @@ export function InlineImage({ media, onUpdateCaption, onRemove }: InlineImagePro
           src={image.url}
           alt={image.caption || "Story image"}
           className="w-full h-auto object-cover"
-          onClick={() => setShowCaption(true)}
         />
         
         {/* Remove button */}
@@ -34,17 +31,14 @@ export function InlineImage({ media, onUpdateCaption, onRemove }: InlineImagePro
         </button>
       </div>
 
-      {/* Caption - editorial style, appears on tap */}
-      {showCaption && (
-        <input
-          type="text"
-          value={image.caption || ""}
-          onChange={(e) => onUpdateCaption(e.target.value)}
-          placeholder="Add a caption..."
-          className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
-          autoFocus
-        />
-      )}
+      {/* Caption - always visible */}
+      <input
+        type="text"
+        value={image.caption || ""}
+        onChange={(e) => onUpdateCaption(e.target.value)}
+        placeholder="Add a caption..."
+        className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
+      />
     </div>
   );
 }
