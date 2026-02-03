@@ -1,135 +1,143 @@
 
-# Standardize Story Builder CTA Button
 
-## Overview
-Update the Story Builder's primary action button to match the Story Setup CTA style, ensuring visual and behavioral consistency across the Create flow.
+## Plan: Add Save as Draft Button and Improve Draft Recovery Experience
 
----
-
-## Current Issues
-
-| Issue | Story Setup | Story Builder |
-|-------|-------------|---------------|
-| Button Label | "Continue to Story Builder" | "Review & Publish" (incorrect) |
-| Disabled State | Grayed out when invalid | Grayed out when invalid |
-| Helper Text | None | "Add a cover image and start writing" |
-| User Perception | Progressive step | Final action |
+This plan adds a "Save as Draft" button during the writing phase and improves the draft detection/recovery flow when users start a new story.
 
 ---
 
-## Required Changes
+### Overview
 
-### 1. Update Button Label
-Change from "Review & Publish" to "Continue to Review" to indicate this is a progressive step, not a final action.
-
-### 2. Remove Disabled State
-Remove the `disabled={!isValid}` prop so the button always appears actionable. Handle validation on click instead.
-
-### 3. Add Click Validation with Toast
-When button is clicked without required fields:
-- Show a toast notification: "Please add a cover image and start writing to continue"
-- Optionally scroll to the missing field (cover image area)
-
-### 4. Update Helper Text
-Replace "Add a cover image and start writing" with "You can edit and publish later" to reduce commitment anxiety.
+Currently, the "Save as Draft" button only appears at the final publish step. Users writing stories should be able to explicitly save and exit at any point. Additionally, when a user has an existing draft and navigates to create a new story, they should be clearly prompted to either continue or start fresh.
 
 ---
 
-## Implementation Details
+### Changes
 
-### File: `src/components/story-builder/StoryBuilder.tsx`
+#### 1. Add "Save as Draft" Button to Story Builder Step
 
-**Changes to the Button:**
+**File: `src/components/story-builder/StoryBuilder.tsx`**
 
+Update the bottom CTA area to include a secondary "Save as Draft" button alongside the "Continue to Review" button:
+
+- Add `onSaveAsDraft` prop to the component
+- Show the "Save as Draft" button as a secondary action (ghost/outline variant)
+- Position it below the primary CTA or as a text link
+
+```text
+Current Layout:
++----------------------------+
+| [Continue to Review]       |
+| "You can edit later"       |
++----------------------------+
+
+New Layout:
++----------------------------+
+| [Continue to Review]       |
+| [Save as Draft]           |
++----------------------------+
+```
+
+#### 2. Pass Save Handler from CreateStory Page
+
+**File: `src/pages/CreateStory.tsx`**
+
+- Pass the existing `handleSaveAsDraft` function to the `StoryBuilder` component via a new prop
+
+#### 3. Improve Draft Detection Logic
+
+**File: `src/pages/CreateStory.tsx`**
+
+Current logic only shows the banner if `hasDraft && draft.title`. Update to also detect:
+- Any content in the story
+- Any cover image
+- Any inline media
+
+This ensures users see the recovery prompt even if they started writing but didn't add a title yet.
+
+#### 4. Enhance Draft Banner UX
+
+**File: `src/components/story-builder/DraftBanner.tsx`**
+
+- Add a preview of what's in the draft (e.g., title if available, or "Untitled story with X words")
+- Make the banner more visually prominent with better spacing
+
+---
+
+### Technical Details
+
+**StoryBuilder.tsx Changes:**
 ```tsx
-// Before:
-<Button
-  onClick={onComplete}
-  disabled={!isValid}
-  className="w-full gap-2"
-  size="lg"
->
-  Review & Publish
-  <ChevronRight className="h-4 w-4" />
-</Button>
+interface StoryBuilderProps {
+  // ... existing props
+  onSaveAsDraft: () => void;  // NEW
+}
 
-// After:
-<Button
-  onClick={handleContinueClick}
-  className="w-full gap-2"
-  size="lg"
->
+// In the bottom CTA area:
+<Button onClick={handleContinueClick} className="w-full" size="lg">
   Continue to Review
-  <ChevronRight className="h-4 w-4" />
+</Button>
+<Button onClick={onSaveAsDraft} variant="ghost" className="w-full">
+  Save as Draft
 </Button>
 ```
 
-**Add validation handler:**
-
+**CreateStory.tsx Changes:**
 ```tsx
-import { toast } from "sonner";
+// Enhanced draft detection
+useEffect(() => {
+  const hasMeaningfulDraft = hasDraft && (
+    draft.title || 
+    draft.content.trim().length > 0 || 
+    draft.coverImage || 
+    draft.inlineMedia.length > 0
+  );
+  if (hasMeaningfulDraft && !editingStoryId) {
+    setShowDraftBanner(true);
+  }
+}, [hasDraft, draft, editingStoryId]);
 
-const handleContinueClick = () => {
-  if (!draft.coverImage) {
-    toast.error("Please add a cover image to continue");
-    coverInputRef.current?.click();
-    return;
-  }
-  if (!draft.content.trim()) {
-    toast.error("Please write something about your experience");
-    textareaRef.current?.focus();
-    return;
-  }
-  onComplete();
-};
+// Pass handler to StoryBuilder
+<StoryBuilder
+  // ... existing props
+  onSaveAsDraft={handleSaveAsDraft}
+/>
 ```
 
-**Update helper text:**
-
+**DraftBanner.tsx Changes:**
 ```tsx
-// Before:
-{!isValid && (
-  <p className="text-xs text-muted-foreground text-center">
-    Add a cover image and start writing
-  </p>
-)}
-
-// After:
-<p className="text-xs text-muted-foreground text-center">
-  You can edit and publish later
-</p>
+interface DraftBannerProps {
+  lastSaved: Date;
+  draftPreview?: string;  // NEW: e.g., "My Trip to Bali" or "Untitled (150 words)"
+  onResume: () => void;
+  onStartFresh: () => void;
+}
 ```
 
 ---
 
-## Visual Result
+### User Flow After Changes
 
-Before:
-- Grey, disabled-looking button saying "Review & Publish"
-- Helper text implies blocking requirement
+1. **User opens Create Story with existing draft:**
+   - Banner appears: "You were writing a story recently. Want to continue?"
+   - Shows draft title or "Untitled story" with word count
+   - Options: "Continue writing" or "Start fresh"
 
-After:
-- Dark, actionable button saying "Continue to Review"
-- Encouraging helper text that reduces anxiety
-- Validation happens on click with friendly toast messages
+2. **User writing a story wants to save and exit:**
+   - In Story Builder step: "Save as Draft" button visible below "Continue to Review"
+   - Clicking saves the draft and navigates back to Community
+   - Toast confirms: "Story saved as draft"
+
+3. **User tries to close/back with unsaved changes:**
+   - Existing exit dialog appears offering "Save Draft" or "Discard"
 
 ---
 
-## Files to Modify
+### Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/story-builder/StoryBuilder.tsx` | Update button label, remove disabled state, add click validation with toast, update helper text |
+| `src/components/story-builder/StoryBuilder.tsx` | Add `onSaveAsDraft` prop, add "Save as Draft" button in CTA area |
+| `src/pages/CreateStory.tsx` | Pass `handleSaveAsDraft` to StoryBuilder, improve draft detection logic |
+| `src/components/story-builder/DraftBanner.tsx` | Add optional draft preview text prop for better context |
 
----
-
-## UX Flow After Changes
-
-```text
-Setup                  Write                  Review & Publish
-[Continue to ──────>  [Continue to ──────>   [Publish Story]
- Story Builder]        Review]
-   (dark)                (dark)                  (dark)
-```
-
-All CTAs now use consistent dark styling with progressive language.
