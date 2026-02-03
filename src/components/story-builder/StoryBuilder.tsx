@@ -56,6 +56,54 @@ export function StoryBuilder({
     saveDraft({ content: e.target.value });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== "Enter") return;
+
+    const textarea = e.currentTarget;
+    const { selectionStart, value } = textarea;
+    
+    // Get the current line
+    const beforeCursor = value.substring(0, selectionStart);
+    const lines = beforeCursor.split("\n");
+    const currentLine = lines[lines.length - 1];
+
+    // Check for bullet point
+    if (currentLine.match(/^• .+/)) {
+      e.preventDefault();
+      const newContent = value.substring(0, selectionStart) + "\n• " + value.substring(selectionStart);
+      saveDraft({ content: newContent });
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = selectionStart + 3;
+      }, 0);
+      return;
+    }
+
+    // Check for numbered list
+    const numberMatch = currentLine.match(/^(\d+)\. .+/);
+    if (numberMatch) {
+      e.preventDefault();
+      const nextNumber = parseInt(numberMatch[1]) + 1;
+      const newContent = value.substring(0, selectionStart) + `\n${nextNumber}. ` + value.substring(selectionStart);
+      saveDraft({ content: newContent });
+      const insertLength = `\n${nextNumber}. `.length;
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = selectionStart + insertLength;
+      }, 0);
+      return;
+    }
+
+    // Check for empty bullet/number line to break out
+    if (currentLine === "• " || currentLine.match(/^\d+\. $/)) {
+      e.preventDefault();
+      const lineStart = beforeCursor.lastIndexOf("\n") + 1;
+      const newContent = value.substring(0, lineStart) + value.substring(selectionStart);
+      saveDraft({ content: newContent });
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = lineStart;
+      }, 0);
+    }
+  };
+
   const handleCoverImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -202,6 +250,7 @@ export function StoryBuilder({
             ref={textareaRef}
             value={draft.content}
             onChange={handleContentChange}
+            onKeyDown={handleKeyDown}
             placeholder="Write your experience here"
             className="w-full min-h-[60px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40"
             style={{ overflow: "hidden", lineHeight: "1.8" }}
