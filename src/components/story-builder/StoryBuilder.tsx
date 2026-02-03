@@ -186,13 +186,15 @@ export function StoryBuilder({
           )}
         </header>
 
-        {/* Persistent Editing Toolbar */}
-        <EditingToolbar
-          textareaRef={textareaRef}
-          onFormat={handleFormat}
-          onAddGallery={handleAddGallery}
-          onOpenSocialSheet={() => setShowSocialSheet(true)}
-        />
+        {/* Sticky Editing Toolbar - stays at top when scrolling */}
+        <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-background/95 backdrop-blur-sm">
+          <EditingToolbar
+            textareaRef={textareaRef}
+            onFormat={handleFormat}
+            onAddGallery={handleAddGallery}
+            onOpenSocialSheet={() => setShowSocialSheet(true)}
+          />
+        </div>
 
         {/* Main Writing Canvas - borderless, editorial */}
         <div className="relative">
