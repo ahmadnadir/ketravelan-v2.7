@@ -36,7 +36,7 @@ export function EditingToolbar({
   };
 
   return (
-    <div className="flex items-center gap-1 py-3 border-b border-border/50 mb-6">
+    <div className="flex items-center gap-1 py-3 border-b border-border/50 mb-4">
       <input
         ref={galleryInputRef}
         type="file"
