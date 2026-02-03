@@ -7,9 +7,10 @@ interface DraftBannerProps {
   draftPreview?: string;
   onResume: () => void;
   onStartFresh: () => void;
+  onDismiss: () => void;
 }
 
-export function DraftBanner({ lastSaved, draftPreview, onResume, onStartFresh }: DraftBannerProps) {
+export function DraftBanner({ lastSaved, draftPreview, onResume, onStartFresh, onDismiss }: DraftBannerProps) {
   const timeAgo = formatDistanceToNow(lastSaved, { addSuffix: true });
 
   return (
@@ -38,7 +39,7 @@ export function DraftBanner({ lastSaved, draftPreview, onResume, onStartFresh }:
           </div>
         </div>
         <button
-          onClick={onStartFresh}
+          onClick={onDismiss}
           className="p-1 text-muted-foreground hover:text-foreground"
         >
           <X className="h-4 w-4" />
