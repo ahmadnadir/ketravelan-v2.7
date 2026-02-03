@@ -1,111 +1,117 @@
 
-# Always Visible Caption Input for Images
+# Standardize Story Builder CTA Button
 
 ## Overview
-Make the "Add a caption..." input always visible below images so users immediately know they can add captions without needing to click the image first.
+Update the Story Builder's primary action button to match the Story Setup CTA style, ensuring visual and behavioral consistency across the Create flow.
 
 ---
 
-## Current Behavior
-- Caption input is hidden by default
-- Users must click/tap on the image to reveal the caption field
-- This makes the caption feature less discoverable
+## Current Issues
+
+| Issue | Story Setup | Story Builder |
+|-------|-------------|---------------|
+| Button Label | "Continue to Story Builder" | "Review & Publish" (incorrect) |
+| Disabled State | Grayed out when invalid | Grayed out when invalid |
+| Helper Text | None | "Add a cover image and start writing" |
+| User Perception | Progressive step | Final action |
 
 ---
 
-## Solution
-Remove the conditional rendering and `showCaption` state, making the caption input always visible below every image.
+## Required Changes
+
+### 1. Update Button Label
+Change from "Review & Publish" to "Continue to Review" to indicate this is a progressive step, not a final action.
+
+### 2. Remove Disabled State
+Remove the `disabled={!isValid}` prop so the button always appears actionable. Handle validation on click instead.
+
+### 3. Add Click Validation with Toast
+When button is clicked without required fields:
+- Show a toast notification: "Please add a cover image and start writing to continue"
+- Optionally scroll to the missing field (cover image area)
+
+### 4. Update Helper Text
+Replace "Add a cover image and start writing" with "You can edit and publish later" to reduce commitment anxiety.
 
 ---
 
-## Implementation
+## Implementation Details
 
-### InlineImage.tsx Changes
+### File: `src/components/story-builder/StoryBuilder.tsx`
 
-**Remove:**
-- The `showCaption` state variable
-- The `onClick` handler on the image
-- The conditional `{showCaption && ...}` wrapper around the input
+**Changes to the Button:**
 
-**Result:**
 ```tsx
-export function InlineImage({ media, onUpdateCaption, onRemove }: InlineImageProps) {
-  const image = media.images[0];
+// Before:
+<Button
+  onClick={onComplete}
+  disabled={!isValid}
+  className="w-full gap-2"
+  size="lg"
+>
+  Review & Publish
+  <ChevronRight className="h-4 w-4" />
+</Button>
 
-  if (!image) return null;
+// After:
+<Button
+  onClick={handleContinueClick}
+  className="w-full gap-2"
+  size="lg"
+>
+  Continue to Review
+  <ChevronRight className="h-4 w-4" />
+</Button>
+```
 
-  return (
-    <div className="relative my-8 group">
-      {/* Image */}
-      <div className="relative">
-        <img
-          src={image.url}
-          alt={image.caption || "Story image"}
-          className="w-full h-auto object-cover"
-        />
-        {/* Remove button */}
-        ...
-      </div>
+**Add validation handler:**
 
-      {/* Caption - always visible */}
-      <input
-        type="text"
-        value={image.caption || ""}
-        onChange={(e) => onUpdateCaption(e.target.value)}
-        placeholder="Add a caption..."
-        className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
-      />
-    </div>
-  );
-}
+```tsx
+import { toast } from "sonner";
+
+const handleContinueClick = () => {
+  if (!draft.coverImage) {
+    toast.error("Please add a cover image to continue");
+    coverInputRef.current?.click();
+    return;
+  }
+  if (!draft.content.trim()) {
+    toast.error("Please write something about your experience");
+    textareaRef.current?.focus();
+    return;
+  }
+  onComplete();
+};
+```
+
+**Update helper text:**
+
+```tsx
+// Before:
+{!isValid && (
+  <p className="text-xs text-muted-foreground text-center">
+    Add a cover image and start writing
+  </p>
+)}
+
+// After:
+<p className="text-xs text-muted-foreground text-center">
+  You can edit and publish later
+</p>
 ```
 
 ---
 
-### InlineGallery.tsx Changes
+## Visual Result
 
-**Remove:**
-- The `showCaption` state variable
-- The `onClick` handler on the image
-- The `setShowCaption` calls in `goToPrev`, `goToNext`, and dot navigation
-- The conditional `{showCaption && ...}` wrapper around the input
+Before:
+- Grey, disabled-looking button saying "Review & Publish"
+- Helper text implies blocking requirement
 
-**Result:**
-```tsx
-export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  
-  const images = media.images;
-  const currentImage = images[currentIndex];
-
-  if (!currentImage) return null;
-
-  const goToPrev = () => {
-    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : images.length - 1);
-  };
-
-  const goToNext = () => {
-    setCurrentIndex(currentIndex < images.length - 1 ? currentIndex + 1 : 0);
-  };
-
-  return (
-    <div className="relative my-8 group">
-      {/* Gallery container */}
-      ...
-      
-      {/* Caption - always visible */}
-      <input
-        type="text"
-        value={currentImage.caption || ""}
-        onChange={(e) => onUpdateImage(currentIndex, { caption: e.target.value })}
-        placeholder="Add a caption..."
-        className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
-      />
-      ...
-    </div>
-  );
-}
-```
+After:
+- Dark, actionable button saying "Continue to Review"
+- Encouraging helper text that reduces anxiety
+- Validation happens on click with friendly toast messages
 
 ---
 
@@ -113,29 +119,17 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
 
 | File | Changes |
 |------|---------|
-| `src/components/story-builder/InlineImage.tsx` | Remove `showCaption` state, make caption always visible |
-| `src/components/story-builder/InlineGallery.tsx` | Remove `showCaption` state, make caption always visible |
+| `src/components/story-builder/StoryBuilder.tsx` | Update button label, remove disabled state, add click validation with toast, update helper text |
 
 ---
 
-## Visual Result
+## UX Flow After Changes
 
-Before (caption hidden):
 ```text
-┌─────────────────────────────────┐
-│                                 │
-│         [Image]                 │
-│                                 │
-└─────────────────────────────────┘
-                                    ← No caption visible
+Setup                  Write                  Review & Publish
+[Continue to ──────>  [Continue to ──────>   [Publish Story]
+ Story Builder]        Review]
+   (dark)                (dark)                  (dark)
 ```
 
-After (caption always visible):
-```text
-┌─────────────────────────────────┐
-│                                 │
-│         [Image]                 │
-│                                 │
-└─────────────────────────────────┘
-        Add a caption...            ← Always visible placeholder
-```
+All CTAs now use consistent dark styling with progressive language.
