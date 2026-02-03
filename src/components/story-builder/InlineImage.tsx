@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { X, MessageSquare } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
 import { InlineMedia } from "@/hooks/useStoryDraft";
 
 interface InlineImageProps {
@@ -16,42 +15,35 @@ export function InlineImage({ media, onUpdateCaption, onRemove }: InlineImagePro
   if (!image) return null;
 
   return (
-    <div className="relative my-4 group">
-      {/* Image */}
-      <div className="relative rounded-xl overflow-hidden">
+    <div className="relative my-8 group">
+      {/* Image - borderless, editorial style */}
+      <div className="relative">
         <img
           src={image.url}
           alt={image.caption || "Story image"}
-          className="w-full h-auto object-cover max-h-80"
+          className="w-full h-auto object-cover"
+          onClick={() => setShowCaption(true)}
         />
         
         {/* Remove button */}
         <button
           onClick={onRemove}
-          className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-3 right-3 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Caption area */}
-      {showCaption ? (
-        <div className="mt-2">
-          <Input
-            value={image.caption || ""}
-            onChange={(e) => onUpdateCaption(e.target.value)}
-            placeholder="Add a caption..."
-            className="text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 bg-transparent"
-          />
-        </div>
-      ) : (
-        <button
-          onClick={() => setShowCaption(true)}
-          className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
-          <span>Add caption</span>
-        </button>
+      {/* Caption - editorial style, appears on tap */}
+      {showCaption && (
+        <input
+          type="text"
+          value={image.caption || ""}
+          onChange={(e) => onUpdateCaption(e.target.value)}
+          placeholder="Add a caption..."
+          className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
+          autoFocus
+        />
       )}
     </div>
   );

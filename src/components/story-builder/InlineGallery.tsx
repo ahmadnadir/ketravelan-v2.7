@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { X, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { InlineMedia, InlineMediaImage } from "@/hooks/useStoryDraft";
 
 interface InlineGalleryProps {
@@ -20,66 +18,68 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
   if (!currentImage) return null;
 
   const goToPrev = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-    setShowCaption(!!images[currentIndex > 0 ? currentIndex - 1 : images.length - 1]?.caption);
+    const newIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+    setCurrentIndex(newIndex);
+    setShowCaption(!!images[newIndex]?.caption);
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-    setShowCaption(!!images[currentIndex < images.length - 1 ? currentIndex + 1 : 0]?.caption);
+    const newIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+    setCurrentIndex(newIndex);
+    setShowCaption(!!images[newIndex]?.caption);
   };
 
   return (
-    <div className="relative my-4 group">
-      {/* Gallery container */}
-      <div className="relative rounded-xl overflow-hidden">
+    <div className="relative my-8 group">
+      {/* Gallery container - borderless, editorial */}
+      <div className="relative">
         <img
           src={currentImage.url}
           alt={currentImage.caption || `Gallery image ${currentIndex + 1}`}
-          className="w-full h-auto object-cover max-h-80"
+          className="w-full h-auto object-cover"
+          onClick={() => setShowCaption(true)}
         />
         
         {/* Remove button */}
         <button
           onClick={onRemove}
-          className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-3 right-3 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <X className="h-4 w-4" />
         </button>
 
-        {/* Navigation arrows */}
+        {/* Navigation arrows - minimal style */}
         {images.length > 1 && (
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 h-8 w-8 bg-black/40 hover:bg-black/60 text-white rounded-full"
+            <button
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={goToPrev}
             >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 h-8 w-8 bg-black/40 hover:bg-black/60 text-white rounded-full"
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={goToNext}
             >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </>
         )}
 
-        {/* Dots indicator */}
+        {/* Dots indicator - minimal */}
         {images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
             {images.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentIndex(index)}
+                onClick={() => {
+                  setCurrentIndex(index);
+                  setShowCaption(!!images[index]?.caption);
+                }}
                 className={`h-1.5 rounded-full transition-all ${
                   index === currentIndex
-                    ? "w-4 bg-white"
-                    : "w-1.5 bg-white/50"
+                    ? "w-5 bg-white"
+                    : "w-1.5 bg-white/60"
                 }`}
               />
             ))}
@@ -87,28 +87,20 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
         )}
       </div>
 
-      {/* Caption area */}
-      {showCaption ? (
-        <div className="mt-2">
-          <Input
-            value={currentImage.caption || ""}
-            onChange={(e) => onUpdateImage(currentIndex, { caption: e.target.value })}
-            placeholder={`Caption for image ${currentIndex + 1}...`}
-            className="text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 bg-transparent"
-          />
-        </div>
-      ) : (
-        <button
-          onClick={() => setShowCaption(true)}
-          className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
-          <span>Add caption</span>
-        </button>
+      {/* Caption - editorial style, appears on tap */}
+      {showCaption && (
+        <input
+          type="text"
+          value={currentImage.caption || ""}
+          onChange={(e) => onUpdateImage(currentIndex, { caption: e.target.value })}
+          placeholder="Add a caption..."
+          className="w-full mt-2 text-sm text-muted-foreground text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/50 italic"
+          autoFocus
+        />
       )}
 
-      {/* Image count badge */}
-      <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 rounded-full text-white text-xs">
+      {/* Image count - subtle */}
+      <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/50 rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
         {currentIndex + 1} / {images.length}
       </div>
     </div>
