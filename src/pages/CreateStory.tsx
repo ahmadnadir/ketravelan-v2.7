@@ -45,10 +45,10 @@ function CreateStoryContent() {
     hasDraft,
     saveDraft,
     clearDraft,
-    updateBlock,
-    addBlock,
-    removeBlock,
-    reorderBlocks,
+    addInlineMedia,
+    updateInlineMedia,
+    removeInlineMedia,
+    toggleSocialLink,
   } = useStoryDraft();
 
   // Check for linked trip from URL
@@ -76,7 +76,7 @@ function CreateStoryContent() {
   const handleBack = () => {
     if (currentStep === "setup") {
       // Check if there's unsaved content
-      if (draft.title || draft.blocks.length > 0) {
+      if (draft.title || draft.content.trim().length > 0) {
         setShowExitDialog(true);
       } else {
         navigate(-1);
@@ -89,7 +89,7 @@ function CreateStoryContent() {
   };
 
   const handleClose = () => {
-    if (draft.title || draft.blocks.length > 0) {
+    if (draft.title || draft.content.trim().length > 0) {
       setShowExitDialog(true);
     } else {
       navigate(-1);
@@ -123,9 +123,9 @@ function CreateStoryContent() {
   const handleResumeDraft = () => {
     setShowDraftBanner(false);
     // Determine which step to resume from
-    if (draft.blocks.length > 0) {
+    if (draft.content.trim().length > 0) {
       setCurrentStep("builder");
-    } else if (draft.title && draft.country) {
+    } else if (draft.title) {
       setCurrentStep("builder");
     }
   };
@@ -202,10 +202,10 @@ function CreateStoryContent() {
           <StoryBuilder
             draft={draft}
             saveDraft={saveDraft}
-            addBlock={addBlock}
-            updateBlock={updateBlock}
-            removeBlock={removeBlock}
-            reorderBlocks={reorderBlocks}
+            addInlineMedia={addInlineMedia}
+            updateInlineMedia={updateInlineMedia}
+            removeInlineMedia={removeInlineMedia}
+            toggleSocialLink={toggleSocialLink}
             onComplete={handleBuilderComplete}
           />
         )}
