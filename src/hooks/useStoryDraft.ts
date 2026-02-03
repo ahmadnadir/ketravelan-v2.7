@@ -6,6 +6,8 @@ export interface StoryDraft {
   storyType: StoryType | null;
   storyFocuses: StoryFocus[];
   travelStyles: string[];
+  customStoryTypes: string[];
+  customTravelStyles: string[];
   country: string;
   city: string;
   linkedTripId: string | null;
@@ -13,7 +15,6 @@ export interface StoryDraft {
   blocks: StoryBlock[];
   visibility: StoryVisibility;
   socialLinks: SocialLink[];
-  tags: string[];
   lastSaved: Date;
 }
 
@@ -24,6 +25,8 @@ const defaultDraft: StoryDraft = {
   storyType: null,
   storyFocuses: [],
   travelStyles: [],
+  customStoryTypes: [],
+  customTravelStyles: [],
   country: "",
   city: "",
   linkedTripId: null,
@@ -31,7 +34,6 @@ const defaultDraft: StoryDraft = {
   blocks: [],
   visibility: "public",
   socialLinks: [],
-  tags: [],
   lastSaved: new Date(),
 };
 
@@ -52,6 +54,8 @@ export function useStoryDraft() {
           ...parsed,
           storyFocuses: Array.isArray(parsed.storyFocuses) ? parsed.storyFocuses : [],
           travelStyles: Array.isArray(parsed.travelStyles) ? parsed.travelStyles : [],
+          customStoryTypes: Array.isArray(parsed.customStoryTypes) ? parsed.customStoryTypes : [],
+          customTravelStyles: Array.isArray(parsed.customTravelStyles) ? parsed.customTravelStyles : [],
           blocks: Array.isArray(parsed.blocks) ? parsed.blocks : [],
           lastSaved: parsed.lastSaved ? new Date(parsed.lastSaved) : new Date(),
         };

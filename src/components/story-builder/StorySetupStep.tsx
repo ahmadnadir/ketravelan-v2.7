@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
-import { MapPin, Link2, ChevronRight, Check } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { MapPin, Link2, ChevronRight, Check, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -27,23 +26,39 @@ interface StorySetupStepProps {
   onComplete: (data: Partial<StoryDraft>) => void;
 }
 
-// Mock past trips - in a real app, this would come from user data
+// Mock trips data
+const mockUpcomingTrips = [
+  { id: "trip-upcoming-1", title: "Bali Getaway", destination: "Indonesia", startsIn: "3 days" },
+];
+
 const mockPastTrips = [
   { id: "trip-1", title: "Vietnam Adventure", destination: "Vietnam" },
   { id: "trip-2", title: "Japan Solo Trip", destination: "Japan" },
-  { id: "trip-3", title: "Bali Getaway", destination: "Indonesia" },
 ];
 
 export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
   const [title, setTitle] = useState(draft.title);
   const [storyFocuses, setStoryFocuses] = useState<StoryFocus[]>(draft.storyFocuses || []);
   const [travelStyles, setTravelStyles] = useState<TravelStyleId[]>((draft.travelStyles || []) as TravelStyleId[]);
+  const [customStoryTypes, setCustomStoryTypes] = useState<string[]>(draft.customStoryTypes || []);
+  const [customTravelStyles, setCustomTravelStyles] = useState<string[]>(draft.customTravelStyles || []);
   const [country, setCountry] = useState(draft.country);
   const [city, setCity] = useState(draft.city);
   const [linkedTripId, setLinkedTripId] = useState<string | null>(draft.linkedTripId);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [tags, setTags] = useState<string[]>(draft.tags || []);
-  const [tagInput, setTagInput] = useState("");
+
+  // Custom input states
+  const [showCustomStoryInput, setShowCustomStoryInput] = useState(false);
+  const [showCustomStyleInput, setShowCustomStyleInput] = useState(false);
+  const [customStoryInput, setCustomStoryInput] = useState("");
+  const [customStyleInput, setCustomStyleInput] = useState("");
+  const customStoryInputRef = useRef<HTMLInputElement>(null);
+  const customStyleInputRef = useRef<HTMLInputElement>(null);
+
+  // Trip linking state
+  const [wantToLinkTrip, setWantToLinkTrip] = useState<boolean | null>(
+    draft.linkedTripId ? true : null
+  );
 
   // Rotate placeholder examples
   useEffect(() => {
@@ -53,15 +68,28 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // Focus custom inputs when shown
+  useEffect(() => {
+    if (showCustomStoryInput && customStoryInputRef.current) {
+      customStoryInputRef.current.focus();
+    }
+  }, [showCustomStoryInput]);
+
+  useEffect(() => {
+    if (showCustomStyleInput && customStyleInputRef.current) {
+      customStyleInputRef.current.focus();
+    }
+  }, [showCustomStyleInput]);
+
   const handleLinkTrip = (tripId: string) => {
     if (tripId === linkedTripId) {
       setLinkedTripId(null);
     } else {
       setLinkedTripId(tripId);
       // Auto-fill destination from trip
-      const trip = mockPastTrips.find((t) => t.id === tripId);
+      const trip = [...mockUpcomingTrips, ...mockPastTrips].find((t) => t.id === tripId);
       if (trip) {
-        const matchingCountry = countries.find((c) => 
+        const matchingCountry = countries.find((c) =>
           trip.destination.toLowerCase().includes(c.name.toLowerCase()) ||
           c.name.toLowerCase().includes(trip.destination.toLowerCase())
         );
@@ -72,8 +100,15 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
     }
   };
 
+  const handleWantToLinkTrip = (value: boolean) => {
+    setWantToLinkTrip(value);
+    if (!value) {
+      setLinkedTripId(null);
+    }
+  };
+
   const normalizedTitle = title.trim();
-  const isValid = normalizedTitle && country;
+  const isValid = Boolean(normalizedTitle);
 
   const toggleFocus = (focus: StoryFocus) => {
     setStoryFocuses((prev) =>
@@ -87,25 +122,54 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
     );
   };
 
-  const normalizeTag = (value: string) =>
-    value
-      .trim()
-      .toLowerCase()
-      .replace(/^#/, "")
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-
-  const addTag = (raw: string) => {
-    const next = normalizeTag(raw);
-    if (!next) return;
-    setTags((prev) => (prev.includes(next) ? prev : [...prev, next]));
-    setTagInput("");
+  // Custom story type handlers
+  const handleAddCustomStoryType = () => {
+    const trimmed = customStoryInput.trim();
+    if (trimmed && !customStoryTypes.includes(trimmed)) {
+      setCustomStoryTypes((prev) => [...prev, trimmed]);
+      // Auto-select the custom type (store as string in storyFocuses for now)
+      setStoryFocuses((prev) => [...prev, trimmed as StoryFocus]);
+    }
+    setCustomStoryInput("");
+    setShowCustomStoryInput(false);
   };
 
-  const removeTag = (tag: string) => {
-    setTags((prev) => prev.filter((t) => t !== tag));
+  const handleRemoveCustomStoryType = (type: string) => {
+    setCustomStoryTypes((prev) => prev.filter((t) => t !== type));
+    setStoryFocuses((prev) => prev.filter((f) => f !== type));
+  };
+
+  const toggleCustomStoryType = (type: string) => {
+    setStoryFocuses((prev) =>
+      prev.includes(type as StoryFocus)
+        ? prev.filter((f) => f !== type)
+        : [...prev, type as StoryFocus]
+    );
+  };
+
+  // Custom travel style handlers
+  const handleAddCustomTravelStyle = () => {
+    const trimmed = customStyleInput.trim();
+    if (trimmed && !customTravelStyles.includes(trimmed)) {
+      setCustomTravelStyles((prev) => [...prev, trimmed]);
+      // Auto-select the custom style
+      setTravelStyles((prev) => [...prev, trimmed as TravelStyleId]);
+    }
+    setCustomStyleInput("");
+    setShowCustomStyleInput(false);
+  };
+
+  const handleRemoveCustomTravelStyle = (style: string) => {
+    setCustomTravelStyles((prev) => prev.filter((s) => s !== style));
+    setTravelStyles((prev) => prev.filter((s) => s !== style));
+  };
+
+  const toggleCustomTravelStyle = (style: string) => {
+    setTravelStyles((prev) =>
+      prev.includes(style as TravelStyleId)
+        ? prev.filter((s) => s !== style)
+        : [...prev, style as TravelStyleId]
+    );
   };
 
   const handleContinue = () => {
@@ -114,10 +178,11 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
         title: normalizedTitle,
         storyFocuses,
         travelStyles,
+        customStoryTypes,
+        customTravelStyles,
         country,
         city,
         linkedTripId,
-        tags,
       });
     }
   };
@@ -150,11 +215,11 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
         </p>
       </div>
 
-      {/* Story Type (formerly Story Focus) */}
+      {/* Story Type */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">Story Type</Label>
         <p className="text-sm text-muted-foreground">
-          Choose one (optional). Helps readers know what to expect.
+          Choose one or add your own (optional)
         </p>
         <div className="flex flex-wrap gap-2">
           {storyFocusOptions.map((option) => {
@@ -176,6 +241,83 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
               </button>
             );
           })}
+
+          {/* Custom story types */}
+          {customStoryTypes.map((type) => {
+            const selected = storyFocuses.includes(type as StoryFocus);
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => toggleCustomStoryType(type)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
+                  selected
+                    ? "bg-foreground text-background border border-foreground"
+                    : "bg-secondary text-foreground border border-transparent hover:bg-secondary/80"
+                }`}
+              >
+                {selected && <Check className="h-3.5 w-3.5" />}
+                {type}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveCustomStoryType(type);
+                  }}
+                  className="ml-0.5 -mr-1 p-0.5 rounded-full hover:bg-background/20"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </button>
+            );
+          })}
+
+          {/* Add custom input or button */}
+          {showCustomStoryInput ? (
+            <div className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5">
+              <Input
+                ref={customStoryInputRef}
+                value={customStoryInput}
+                onChange={(e) => setCustomStoryInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddCustomStoryType();
+                  } else if (e.key === "Escape") {
+                    setShowCustomStoryInput(false);
+                    setCustomStoryInput("");
+                  }
+                }}
+                onBlur={() => {
+                  if (customStoryInput.trim()) {
+                    handleAddCustomStoryType();
+                  } else {
+                    setShowCustomStoryInput(false);
+                  }
+                }}
+                placeholder="Type here..."
+                className="h-6 w-24 border-0 p-0 text-sm focus-visible:ring-0"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={handleAddCustomStoryType}
+              >
+                Add
+              </Button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowCustomStoryInput(true)}
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-medium border border-dashed border-muted-foreground/50 text-muted-foreground hover:border-foreground hover:text-foreground transition-all"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add custom
+            </button>
+          )}
         </div>
       </div>
 
@@ -183,7 +325,7 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
       <div className="space-y-3">
         <Label className="text-sm font-medium">Travel Style</Label>
         <p className="text-sm text-muted-foreground">
-          Pick the travel styles that match this story.
+          Pick the styles that match this story or add your own
         </p>
         <div className="flex flex-wrap gap-2">
           {travelStyleOptions.map((style) => {
@@ -205,55 +347,91 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
               </button>
             );
           })}
-        </div>
-      </div>
 
-      {/* Add a Tag (optional) */}
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Add a Tag (optional)</Label>
-        <p className="text-sm text-muted-foreground">
-          For extra keywords like destinations, experiences, etc.
-        </p>
-
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <Badge key={tag} variant="outline" className="gap-1 pr-1">
-              #{tag}
+          {/* Custom travel styles */}
+          {customTravelStyles.map((style) => {
+            const selected = travelStyles.includes(style as TravelStyleId);
+            return (
               <button
+                key={style}
                 type="button"
-                onClick={() => removeTag(tag)}
-                className="ml-1 rounded px-1 hover:bg-muted"
+                onClick={() => toggleCustomTravelStyle(style)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
+                  selected
+                    ? "bg-foreground text-background border border-foreground"
+                    : "bg-secondary text-foreground border border-transparent hover:bg-secondary/80"
+                }`}
               >
-                ×
+                {selected && <Check className="h-3.5 w-3.5" />}
+                {style}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveCustomTravelStyle(style);
+                  }}
+                  className="ml-0.5 -mr-1 p-0.5 rounded-full hover:bg-background/20"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </button>
-            </Badge>
-          ))}
-        </div>
+            );
+          })}
 
-        <div className="flex gap-2">
-          <Input
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addTag(tagInput);
-              }
-            }}
-            placeholder="Add a tag (e.g., vietnam, itinerary)"
-            className="flex-1"
-          />
-          <Button type="button" variant="outline" onClick={() => addTag(tagInput)}>
-            Add
-          </Button>
+          {/* Add custom input or button */}
+          {showCustomStyleInput ? (
+            <div className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5">
+              <Input
+                ref={customStyleInputRef}
+                value={customStyleInput}
+                onChange={(e) => setCustomStyleInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddCustomTravelStyle();
+                  } else if (e.key === "Escape") {
+                    setShowCustomStyleInput(false);
+                    setCustomStyleInput("");
+                  }
+                }}
+                onBlur={() => {
+                  if (customStyleInput.trim()) {
+                    handleAddCustomTravelStyle();
+                  } else {
+                    setShowCustomStyleInput(false);
+                  }
+                }}
+                placeholder="Type here..."
+                className="h-6 w-24 border-0 p-0 text-sm focus-visible:ring-0"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={handleAddCustomTravelStyle}
+              >
+                Add
+              </Button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowCustomStyleInput(true)}
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-medium border border-dashed border-muted-foreground/50 text-muted-foreground hover:border-foreground hover:text-foreground transition-all"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add custom
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Destination */}
+      {/* Destination (Optional) */}
       <div className="space-y-3">
         <Label className="text-sm font-medium flex items-center gap-2">
           <MapPin className="h-4 w-4" />
-          Where did this happen? <span className="text-destructive">*</span>
+          Where did this happen?
         </Label>
         <div className="grid grid-cols-2 gap-3">
           <Select value={country} onValueChange={setCountry}>
@@ -276,52 +454,117 @@ export function StorySetupStep({ draft, onComplete }: StorySetupStepProps) {
         </div>
       </div>
 
-      {/* Link to Trip */}
+      {/* Trip Linking - Conditional */}
       <div className="space-y-3">
         <Label className="text-sm font-medium flex items-center gap-2">
           <Link2 className="h-4 w-4" />
-          Link to a Ketravelan trip (optional)
+          Do you want to link this story to a trip?
         </Label>
-        <p className="text-sm text-muted-foreground">
-          Connect this story to one of your past trips
-        </p>
-        <div className="space-y-2">
-          {mockPastTrips.map((trip) => (
-            <Card
-              key={trip.id}
-              onClick={() => handleLinkTrip(trip.id)}
-              className={`p-3 cursor-pointer transition-all ${
-                linkedTripId === trip.id
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-sm text-foreground">{trip.title}</p>
-                  <p className="text-xs text-muted-foreground">{trip.destination}</p>
-                </div>
-                <div
-                  className={`w-4 h-4 rounded border ${
-                    linkedTripId === trip.id
-                      ? "border-primary bg-primary text-white flex items-center justify-center"
-                      : "border-muted-foreground/30"
-                  }`}
-                >
-                  {linkedTripId === trip.id && (
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
+
+        {/* Yes/No buttons */}
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={wantToLinkTrip === true ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleWantToLinkTrip(true)}
+            className="flex-1"
+          >
+            Yes
+          </Button>
+          <Button
+            type="button"
+            variant={wantToLinkTrip === false ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleWantToLinkTrip(false)}
+            className="flex-1"
+          >
+            No
+          </Button>
         </div>
+
+        {/* Trip cards - only show if Yes */}
+        {wantToLinkTrip === true && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Upcoming Trips */}
+            {mockUpcomingTrips.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Upcoming Trips
+                </p>
+                {mockUpcomingTrips.map((trip) => (
+                  <Card
+                    key={trip.id}
+                    onClick={() => handleLinkTrip(trip.id)}
+                    className={`p-3 cursor-pointer transition-all ${
+                      linkedTripId === trip.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-sm text-foreground">{trip.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {trip.destination} • Starts in {trip.startsIn}
+                        </p>
+                      </div>
+                      <div
+                        className={`w-4 h-4 rounded border ${
+                          linkedTripId === trip.id
+                            ? "border-primary bg-primary text-white flex items-center justify-center"
+                            : "border-muted-foreground/30"
+                        }`}
+                      >
+                        {linkedTripId === trip.id && (
+                          <Check className="w-3 h-3" />
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Past Trips */}
+            {mockPastTrips.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Past Trips
+                </p>
+                {mockPastTrips.map((trip) => (
+                  <Card
+                    key={trip.id}
+                    onClick={() => handleLinkTrip(trip.id)}
+                    className={`p-3 cursor-pointer transition-all ${
+                      linkedTripId === trip.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-sm text-foreground">{trip.title}</p>
+                        <p className="text-xs text-muted-foreground">{trip.destination}</p>
+                      </div>
+                      <div
+                        className={`w-4 h-4 rounded border ${
+                          linkedTripId === trip.id
+                            ? "border-primary bg-primary text-white flex items-center justify-center"
+                            : "border-muted-foreground/30"
+                        }`}
+                      >
+                        {linkedTripId === trip.id && (
+                          <Check className="w-3 h-3" />
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Continue Button - Fixed at bottom */}

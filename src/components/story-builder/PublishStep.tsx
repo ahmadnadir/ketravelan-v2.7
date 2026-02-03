@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Eye, Globe, Users, User, Instagram, Youtube, Link2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -54,41 +54,6 @@ export function PublishStep({
   const [isPublishing, setIsPublishing] = useState(false);
   const [newSocialPlatform, setNewSocialPlatform] = useState<SocialPlatform | null>(null);
   const [newSocialUrl, setNewSocialUrl] = useState("");
-
-  const [tagInput, setTagInput] = useState("");
-
-  const normalizeTag = (value: string) =>
-    value
-      .trim()
-      .toLowerCase()
-      .replace(/^#/, "")
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-
-  const tags = draft.tags || [];
-
-  const suggestedTags = useMemo(() => {
-    const s = new Set<string>();
-    if (draft.country) s.add(normalizeTag(draft.country));
-    if (draft.city) s.add(normalizeTag(draft.city));
-    (draft.storyFocuses || []).forEach((f) => s.add(normalizeTag(f)));
-    tags.forEach((t) => s.delete(t));
-    return Array.from(s).filter(Boolean).slice(0, 10);
-  }, [draft.country, draft.city, draft.storyFocuses, tags]);
-
-  const handleRemoveTag = (tag: string) => {
-    saveDraft({ tags: tags.filter((t) => t !== tag) });
-  };
-
-  const handleAddTag = (raw: string) => {
-    const next = normalizeTag(raw);
-    if (!next) return;
-    if (tags.includes(next)) return;
-    saveDraft({ tags: [...tags, next] });
-    setTagInput("");
-  };
 
   const handleVisibilityChange = (visibility: StoryVisibility) => {
     saveDraft({ visibility });
@@ -160,65 +125,6 @@ export function PublishStep({
             </p>
           </div>
         </Card>
-      </div>
-
-      {/* Tags */}
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Tags</Label>
-        <p className="text-xs text-muted-foreground">Tags help others discover your story.</p>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="outline"
-              className="gap-1 pr-1"
-            >
-              #{tag}
-              <button
-                onClick={() => handleRemoveTag(tag)}
-                className="ml-1 p-0.5 hover:bg-muted rounded"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-
-        <div className="flex gap-2">
-          <Input
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddTag(tagInput);
-              }
-            }}
-            placeholder="Add a tag"
-            className="flex-1"
-          />
-          <Button type="button" variant="outline" onClick={() => handleAddTag(tagInput)}>
-            Add
-          </Button>
-        </div>
-
-        {tags.length === 0 && suggestedTags.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Suggestions</p>
-            <div className="flex flex-wrap gap-2">
-              {suggestedTags.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => handleAddTag(t)}
-                  className="rounded-full px-3 py-1.5 text-sm border border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
-                >
-                  + {t}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Social Links */}
