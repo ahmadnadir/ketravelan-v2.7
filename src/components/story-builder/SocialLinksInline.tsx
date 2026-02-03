@@ -19,7 +19,7 @@ export function SocialLinksInline({ links, onRemoveLink }: SocialLinksInlineProp
   if (links.length === 0) return null;
 
   return (
-    <div className="my-8 group/social">
+    <div className="mt-4 mb-8 group/social">
       <p className="text-muted-foreground text-lg mb-2">You can find me on:</p>
       <div className="space-y-0.5">
         {links.map((link) => (
