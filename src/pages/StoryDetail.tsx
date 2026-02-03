@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Heart, Bookmark, Share2, MapPin, Clock, Send } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Heart, Bookmark, Share2, MapPin, Clock, Send, Pencil } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,11 +33,15 @@ const defaultMockComments = [
 
 function StoryDetailContent() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { stories, toggleStoryLike, toggleStorySave, addComment, getCommentsForStory } = useCommunity();
   const { isAuthenticated } = useAuth();
   const [commentText, setCommentText] = useState("");
 
   const story = stories.find((s) => s.slug === slug);
+  
+  // Check if current user is the author (for demo, author.id === "current-user")
+  const isAuthor = story?.author.id === "current-user";
 
   // Get real comments for this story + add mock comments for older stories
   const storyComments = useMemo(() => {
@@ -179,13 +183,23 @@ function StoryDetailContent() {
           <ArrowLeft className="h-5 w-5" />
         </Link>
 
-        {/* Share button */}
-        <button 
-          onClick={handleShare}
-          className="absolute top-4 right-4 p-2 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition-colors"
-        >
-          <Share2 className="h-5 w-5" />
-        </button>
+        {/* Action buttons */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {isAuthor && (
+            <button 
+              onClick={() => navigate(`/create-story?edit=${story.id}`)}
+              className="p-2 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition-colors"
+            >
+              <Pencil className="h-5 w-5" />
+            </button>
+          )}
+          <button 
+            onClick={handleShare}
+            className="p-2 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition-colors"
+          >
+            <Share2 className="h-5 w-5" />
+          </button>
+        </div>
 
         {/* Title overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">

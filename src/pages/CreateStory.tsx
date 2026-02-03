@@ -34,11 +34,12 @@ function CreateStoryContent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
-  const { publishStory } = useCommunity();
+  const { publishStory, updateStory, getStoryById } = useCommunity();
   
   const [currentStep, setCurrentStep] = useState<Step>("setup");
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
   
   const {
     draft,
@@ -51,20 +52,47 @@ function CreateStoryContent() {
     toggleSocialLink,
   } = useStoryDraft();
 
+  // Check for edit mode from URL
+  useEffect(() => {
+    const storyId = searchParams.get("edit");
+    if (storyId) {
+      const existingStory = getStoryById(storyId);
+      if (existingStory && existingStory.author.id === "current-user") {
+        setEditingStoryId(storyId);
+        // Load story data into draft
+        saveDraft({
+          title: existingStory.title,
+          storyType: existingStory.storyType,
+          country: existingStory.location.country,
+          city: existingStory.location.city || "",
+          coverImage: existingStory.coverImage,
+          content: existingStory.content || "",
+          blocks: existingStory.blocks || [],
+          visibility: existingStory.visibility,
+          socialLinks: existingStory.socialLinks || [],
+          linkedTripId: existingStory.linkedTripId || null,
+        });
+        // Skip setup step and go directly to builder
+        setCurrentStep("builder");
+        setShowDraftBanner(false);
+      }
+    }
+  }, [searchParams, getStoryById, saveDraft]);
+
   // Check for linked trip from URL
   useEffect(() => {
     const tripId = searchParams.get("tripId");
-    if (tripId) {
+    if (tripId && !editingStoryId) {
       saveDraft({ linkedTripId: tripId });
     }
-  }, [searchParams, saveDraft]);
+  }, [searchParams, saveDraft, editingStoryId]);
 
-  // Show draft banner if there's an existing draft
+  // Show draft banner if there's an existing draft (only when not editing)
   useEffect(() => {
-    if (hasDraft && draft.title) {
+    if (hasDraft && draft.title && !editingStoryId) {
       setShowDraftBanner(true);
     }
-  }, [hasDraft, draft.title]);
+  }, [hasDraft, draft.title, editingStoryId]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -106,12 +134,21 @@ function CreateStoryContent() {
   };
 
   const handlePublish = () => {
-    // Actually publish the story via CommunityContext
-    const newStory = publishStory(draft);
-    clearDraft();
-    toast.success("Story published successfully!");
-    // Navigate to the newly created story
-    navigate(`/community/stories/${newStory.slug}`);
+    if (editingStoryId) {
+      // Update existing story
+      const updatedStory = updateStory(editingStoryId, draft);
+      if (updatedStory) {
+        clearDraft();
+        toast.success("Story updated successfully!");
+        navigate(`/community/stories/${updatedStory.slug}`);
+      }
+    } else {
+      // Create new story
+      const newStory = publishStory(draft);
+      clearDraft();
+      toast.success("Story published successfully!");
+      navigate(`/community/stories/${newStory.slug}`);
+    }
   };
 
   const handleSaveAsDraft = () => {
@@ -140,10 +177,22 @@ function CreateStoryContent() {
     navigate(-1);
   };
 
+  // Get step label based on edit mode
+  const getStepLabel = (step: Step) => {
+    if (editingStoryId) {
+      return {
+        setup: "Edit Story",
+        builder: "Edit Story",
+        publish: "Review & Update",
+      }[step];
+    }
+    return stepLabels[step];
+  };
+
   return (
     <>
       <SEOHead
-        title="Share Your Story | Ketravelan"
+        title={editingStoryId ? "Edit Your Story | Ketravelan" : "Share Your Story | Ketravelan"}
         description="Share your travel experiences with the Ketravelan community. Write about your adventures, lessons learned, and tips for fellow travelers."
       />
       
@@ -157,7 +206,7 @@ function CreateStoryContent() {
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <h1 className="font-semibold text-foreground">{stepLabels[currentStep]}</h1>
+            <h1 className="font-semibold text-foreground">{getStepLabel(currentStep)}</h1>
             <button
               onClick={handleClose}
               className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -217,6 +266,7 @@ function CreateStoryContent() {
             onPublish={handlePublish}
             onSaveAsDraft={handleSaveAsDraft}
             onBack={() => setCurrentStep("builder")}
+            isEditing={!!editingStoryId}
           />
         )}
       </AppLayout>

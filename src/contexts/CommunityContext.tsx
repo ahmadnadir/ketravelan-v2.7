@@ -46,6 +46,8 @@ interface CommunityContextType {
   filteredStories: Story[];
   filteredDiscussions: Discussion[];
   publishStory: (draft: StoryDraft) => Story;
+  updateStory: (storyId: string, draft: StoryDraft) => Story | null;
+  getStoryById: (storyId: string) => Story | undefined;
   comments: StoryComment[];
   addComment: (storyId: string, content: string) => void;
   getCommentsForStory: (storyId: string) => StoryComment[];
@@ -228,6 +230,42 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
     return newStory;
   }, []);
 
+  const updateStory = useCallback((storyId: string, draft: StoryDraft): Story | null => {
+    let updatedStory: Story | null = null;
+    
+    setStories((prev) => {
+      return prev.map((story) => {
+        if (story.id === storyId) {
+          updatedStory = {
+            ...story,
+            title: draft.title,
+            coverImage: draft.coverImage || story.coverImage,
+            excerpt: draft.blocks.find((b) => b.type === "text")?.content?.slice(0, 150) || draft.content.slice(0, 150) || draft.title,
+            content: draft.content || draft.blocks.map((b) => b.content).join("\n\n"),
+            blocks: draft.blocks,
+            location: {
+              country: draft.country || story.location.country,
+              city: draft.city || story.location.city,
+              flag: getCountryFlag(draft.country || story.location.country),
+            },
+            readingTime: estimateReadingTime(draft.blocks),
+            storyType: draft.storyType || story.storyType,
+            visibility: draft.visibility,
+            socialLinks: draft.socialLinks,
+          };
+          return updatedStory;
+        }
+        return story;
+      });
+    });
+    
+    return updatedStory;
+  }, []);
+
+  const getStoryById = useCallback((storyId: string): Story | undefined => {
+    return stories.find((s) => s.id === storyId);
+  }, [stories]);
+
   const addComment = useCallback((storyId: string, content: string) => {
     const newComment: StoryComment = {
       id: `comment-${Date.now()}`,
@@ -303,6 +341,8 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
         filteredStories,
         filteredDiscussions,
         publishStory,
+        updateStory,
+        getStoryById,
         comments,
         addComment,
         getCommentsForStory,

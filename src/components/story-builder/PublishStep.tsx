@@ -15,6 +15,7 @@ interface PublishStepProps {
   onPublish: () => void;
   onSaveAsDraft: () => void;
   onBack: () => void;
+  isEditing?: boolean;
 }
 
 const visibilityOptions: { value: StoryVisibility; label: string; description: string; icon: typeof Globe }[] = [
@@ -50,6 +51,7 @@ export function PublishStep({
   onPublish,
   onSaveAsDraft,
   onBack,
+  isEditing = false,
 }: PublishStepProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [newSocialPlatform, setNewSocialPlatform] = useState<SocialPlatform | null>(null);
@@ -237,7 +239,9 @@ export function PublishStep({
             className="w-full"
             size="lg"
           >
-            {isPublishing ? "Publishing..." : "Publish Story"}
+            {isPublishing 
+              ? (isEditing ? "Updating..." : "Publishing...") 
+              : (isEditing ? "Update Story" : "Publish Story")}
           </Button>
           <Button
             onClick={handleSaveDraft}
