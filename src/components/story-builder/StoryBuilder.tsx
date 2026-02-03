@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronRight, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { StoryDraft, InlineMedia, UserSocialProfile } from "@/hooks/useStoryDraft";
+import { StoryDraft, InlineMedia, UserSocialProfile } from "@/hooks/useStoryDrafts";
 import { EditingToolbar, FormatType } from "./EditingToolbar";
 import { SocialLinkSheet } from "./SocialLinkSheet";
 import { InlineImage } from "./InlineImage";

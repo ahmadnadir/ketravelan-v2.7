@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { UserSocialProfile, mockUserSocialProfiles } from "@/hooks/useStoryDraft";
+import { UserSocialProfile, mockUserSocialProfiles } from "@/hooks/useStoryDrafts";
 import { SocialPlatform } from "@/data/communityMockData";
 
 interface SocialLinkSheetProps {

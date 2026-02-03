@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StoryDraft } from "@/hooks/useStoryDraft";
+import { StoryDraft } from "@/hooks/useStoryDrafts";
 import {
   countries,
   storyTitleExamples,
