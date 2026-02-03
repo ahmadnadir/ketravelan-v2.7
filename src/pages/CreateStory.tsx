@@ -27,7 +27,7 @@ type Step = "setup" | "builder" | "publish";
 const stepLabels: Record<Step, string> = {
   setup: "Story Setup",
   builder: "Story Builder",
-  publish: "Review & Publish",
+  publish: "Story Preview",
 };
 
 function CreateStoryContent() {
@@ -38,7 +38,6 @@ function CreateStoryContent() {
   
   const [currentStep, setCurrentStep] = useState<Step>("setup");
   const [showExitDialog, setShowExitDialog] = useState(false);
-  const [showDraftBanner, setShowDraftBanner] = useState(false);
   const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
   
   const {
@@ -84,7 +83,6 @@ function CreateStoryContent() {
         });
         // Skip setup step and go directly to builder
         setCurrentStep("builder");
-        setShowDraftBanner(false);
       }
     }
   }, [searchParams, getStoryById, saveDraft]);
@@ -97,18 +95,6 @@ function CreateStoryContent() {
     }
   }, [searchParams, saveDraft, editingStoryId]);
 
-  // Show draft banner if there's an existing draft (only when not editing)
-  useEffect(() => {
-    const hasMeaningfulDraft = hasDraft && (
-      draft.title || 
-      draft.content.trim().length > 0 || 
-      draft.coverImage || 
-      draft.inlineMedia.length > 0
-    );
-    if (hasMeaningfulDraft && !editingStoryId) {
-      setShowDraftBanner(true);
-    }
-  }, [hasDraft, draft.title, draft.content, draft.coverImage, draft.inlineMedia, editingStoryId]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -174,7 +160,6 @@ function CreateStoryContent() {
   };
 
   const handleResumeDraft = () => {
-    setShowDraftBanner(false);
     // Determine which step to resume from
     if (draft.content.trim().length > 0) {
       setCurrentStep("builder");
@@ -185,7 +170,6 @@ function CreateStoryContent() {
 
   const handleStartFresh = () => {
     clearDraft();
-    setShowDraftBanner(false);
   };
 
   const handleExitConfirm = () => {
@@ -246,16 +230,6 @@ function CreateStoryContent() {
           </div>
         </div>
 
-        {/* Draft Banner */}
-        {showDraftBanner && (
-          <DraftBanner
-            lastSaved={draft.lastSaved}
-            draftPreview={draft.title || (draft.content.trim().length > 0 ? `Untitled (${draft.content.split(/\s+/).filter(Boolean).length} words)` : undefined)}
-            onResume={handleResumeDraft}
-            onStartFresh={handleStartFresh}
-            onDismiss={() => setShowDraftBanner(false)}
-          />
-        )}
         
         {/* Step Content */}
         {currentStep === "setup" && (
