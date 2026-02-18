@@ -1,4 +1,4 @@
-import { MessageCircle, CheckCircle2, MapPin } from "lucide-react";
+import { MessageCircle, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Discussion, discussionTopicLabels } from "@/data/communityMockData";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,13 +37,6 @@ export function DiscussionCard({ discussion }: DiscussionCardProps) {
             <h3 className="font-medium text-foreground line-clamp-2 flex-1 text-sm sm:text-base">
               {discussion.title}
             </h3>
-            {discussion.isAnswered && (
-              <Badge variant="outline" className="flex-shrink-0 text-[hsl(var(--success))] border-[hsl(var(--success))] gap-1 text-[10px] sm:text-xs">
-                <CheckCircle2 className="h-3 w-3" />
-                <span className="hidden sm:inline">Answered</span>
-                <span className="sm:hidden">✓</span>
-              </Badge>
-            )}
           </div>
 
           {/* Preview text */}
