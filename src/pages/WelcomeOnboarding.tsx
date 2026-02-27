@@ -106,20 +106,22 @@ export default function WelcomeOnboarding() {
                 >
                   Explore Features
                 </Button>
-                <Button 
-                  variant="secondary"
-                  onClick={handleLogin}
-                  className="w-full h-12 text-base font-medium rounded-xl"
-                >
-                  Log In
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={handleSignUp}
-                  className="w-full h-12 text-base font-medium rounded-xl"
-                >
-                  Sign Up
-                </Button>
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline"
+                    onClick={handleLogin}
+                    className="flex-1 h-12 text-base font-medium rounded-xl"
+                  >
+                    Log In
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={handleSignUp}
+                    className="flex-1 h-12 text-base font-medium rounded-xl"
+                  >
+                    Sign Up
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
