@@ -189,6 +189,18 @@ export function StoryBuilder({
           )
         ))}
 
+        {/* Tap area to continue writing after media */}
+        <div
+          className="min-h-[120px] cursor-text"
+          onClick={() => editor?.commands.focus('end')}
+        >
+          {draft.inlineMedia.length > 0 && (
+            <p className="text-muted-foreground/40 text-lg pt-4 italic">
+              Tap here to continue writing...
+            </p>
+          )}
+        </div>
+
         {/* Social Links - plain text, editorial style */}
         <SocialLinksInline
           links={draft.selectedSocialLinks}
