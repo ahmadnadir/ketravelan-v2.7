@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -44,8 +44,12 @@ import { TripDetailsSkeleton } from "@/components/skeletons/TripDetailsSkeleton"
 import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { TripSchema } from "@/components/seo/TripSchema";
-import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { generateTripSlug, generateTripMeta } from "@/lib/seo";
+import { BreadcrumbNav } from "@/components/seo/BreadcrumbSchema";
+import { OrganizationSchema } from "@/components/seo/OrganizationSchema";
+import { FAQSchema, FAQItem } from "@/components/seo/FAQSchema";
+import { generateTripSlug, generateTripMeta, parseSlugToId } from "@/lib/seo";
+
+const SITE_URL = "https://ketravelan.com";
 
 const iconMap: Record<string, any> = {
   car: Car,
@@ -97,34 +101,29 @@ const getUrgencyText = (joined: number, total: number): string => {
 
 // Parse description into bullet points
 const parseDescriptionToBullets = (description: string): string[] => {
-  // Try to extract key phrases from the description
   const sentences = description.split(/[.!]/).filter(s => s.trim().length > 10);
   const bullets: string[] = [];
-  
   sentences.forEach(sentence => {
     const trimmed = sentence.trim();
     if (trimmed.length > 0 && bullets.length < 4) {
-      // Clean up and shorten if needed
       let bullet = trimmed;
-      if (bullet.length > 80) {
-        bullet = bullet.substring(0, 77) + '...';
-      }
+      if (bullet.length > 80) bullet = bullet.substring(0, 77) + '...';
       bullets.push(bullet);
     }
   });
-  
   return bullets.length > 0 ? bullets : [description];
 };
 
 export default function TripDetails() {
-  const { id } = useParams();
+  const params = useParams<{ id?: string; slug?: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
   const isLoading = useSimulatedLoading(700);
   const [currentImage, setCurrentImage] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
   const [isFavourited, setIsFavourited] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // Join confirmation modal state
   const [showJoinConfirmModal, setShowJoinConfirmModal] = useState(false);
@@ -132,17 +131,20 @@ export default function TripDetails() {
   const [initialMessage, setInitialMessage] = useState("");
   const [joinNote, setJoinNote] = useState("");
 
-  // Try to load from published trips first, then fall back to mock data
-  const publishedTrip = useMemo(() => id ? getPublishedTripById(id) : null, [id]);
-  const mockTrip = mockTrips.find((t) => t.id === id) || mockTrips[0];
+  // Resolve trip ID from either route pattern
+  const isSlugRoute = location.pathname.startsWith("/trips/");
+  const rawParam = params.slug || params.id;
+  const resolvedId = isSlugRoute && rawParam ? parseSlugToId(rawParam) : rawParam;
 
-  // Determine if we're showing a published trip or mock trip
+  // Try to load from published trips first, then fall back to mock data
+  const publishedTrip = useMemo(() => resolvedId ? getPublishedTripById(resolvedId) : null, [resolvedId]);
+  const mockTrip = mockTrips.find((t) => t.id === resolvedId) || mockTrips[0];
+
   const isPublishedTrip = !!publishedTrip;
 
   // Normalize data for display
   const tripData = useMemo(() => {
     if (publishedTrip) {
-      // Calculate total budget
       let totalBudget = 0;
       let budgetBreakdown: { category: string; amount: number; icon: string }[] = [];
       
@@ -203,18 +205,31 @@ export default function TripDetails() {
     }
   }, [publishedTrip, mockTrip]);
 
-  // Find organizer from members
   const organizer = mockMembers.find(m => m.role === 'Organizer') || mockMembers[0];
   const joined = tripData.totalSlots - tripData.slotsLeft;
   const valueProposition = generateValueProposition(tripData);
   const urgencyText = getUrgencyText(joined, tripData.totalSlots);
   const descriptionBullets = parseDescriptionToBullets(tripData.description);
 
-  // Use gallery images, with fallbacks
   const images = tripData.galleryImages.length > 0 
     ? tripData.galleryImages 
     : ["https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800"];
-  
+
+  const tripSlug = useMemo(() => generateTripSlug({
+    id: tripData.id,
+    title: tripData.title,
+    destination: tripData.destination,
+    tags: tripData.tags,
+    startDate: tripData.startDate,
+  }), [tripData]);
+
+  // --- Route canonicalization: redirect /trip/:id → /trips/:slug ---
+  useEffect(() => {
+    if (!isSlugRoute && tripSlug) {
+      navigate(`/trips/${tripSlug}`, { replace: true });
+    }
+  }, [isSlugRoute, tripSlug, navigate]);
+
   // Share modal state
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -222,25 +237,18 @@ export default function TripDetails() {
   const nextImage = () => setCurrentImage((prev) => (prev + 1) % images.length);
   const prevImage = () => setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
 
-  const tripUrl = `${window.location.origin}/trip/${id}`;
+  const canonicalUrl = `${SITE_URL}/trips/${tripSlug}`;
+  const tripUrl = canonicalUrl;
   const shareText = `Check out this trip: ${tripData.title} to ${tripData.destination}`;
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: tripData.title,
-          text: shareText,
-          url: tripUrl,
-        });
+        await navigator.share({ title: tripData.title, text: shareText, url: tripUrl });
       } catch (err) {
-        // User cancelled or share failed - fall back to modal
-        if ((err as Error).name !== 'AbortError') {
-          setShareModalOpen(true);
-        }
+        if ((err as Error).name !== 'AbortError') setShareModalOpen(true);
       }
     } else {
-      // Fallback to custom modal
       setShareModalOpen(true);
     }
   };
@@ -249,17 +257,10 @@ export default function TripDetails() {
     try {
       await navigator.clipboard.writeText(tripUrl);
       setCopied(true);
-      toast({
-        title: "Link copied!",
-        description: "Trip link has been copied to clipboard.",
-      });
+      toast({ title: "Link copied!", description: "Trip link has been copied to clipboard." });
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast({
-        title: "Failed to copy",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+    } catch {
+      toast({ title: "Failed to copy", description: "Please try again.", variant: "destructive" });
     }
   };
 
@@ -302,7 +303,7 @@ export default function TripDetails() {
     },
   ];
 
-  // Generate SEO meta data - must be before any early returns
+  // SEO meta data
   const seoMeta = useMemo(() => generateTripMeta({
     id: tripData.id,
     title: tripData.title,
@@ -314,13 +315,47 @@ export default function TripDetails() {
     visibility: tripData.visibility,
   }), [tripData]);
 
-  const tripSlug = useMemo(() => generateTripSlug({
-    id: tripData.id,
-    title: tripData.title,
-    destination: tripData.destination,
-    tags: tripData.tags,
-    startDate: tripData.startDate,
-  }), [tripData]);
+  // --- FAQ items ---
+  const faqItems: FAQItem[] = useMemo(() => {
+    const items: FAQItem[] = [
+      {
+        question: `How do I join the ${tripData.title} trip?`,
+        answer: `You can request to join by clicking "Request to Join" on the trip page. The organizer will review your request and respond within a few hours. Once accepted, you'll be added to the trip group.`,
+      },
+      {
+        question: `What's included in the RM ${tripData.price} budget?`,
+        answer: tripData.budgetBreakdown.length > 0
+          ? `The estimated budget of RM ${tripData.price} per person covers: ${tripData.budgetBreakdown.map(b => `${b.category} (RM ${b.amount})`).join(', ')}. This is a shared expense estimate — you don't pay upfront to the organizer.`
+          : `The budget will be discussed and finalized within the group. Expenses are tracked and split transparently among all members.`,
+      },
+      {
+        question: `When does this trip to ${tripData.destination} start?`,
+        answer: tripData.startDate
+          ? `The trip is scheduled from ${tripData.startDate}${tripData.endDate ? ` to ${tripData.endDate}` : ''}. Dates may be adjusted by the group.`
+          : `Dates are flexible and will be decided by the group after members join.`,
+      },
+      {
+        question: 'Who organizes this trip?',
+        answer: `This trip is organized by ${organizer.name} through Ketravelan, a community platform that helps travelers find group trips and travel buddies.`,
+      },
+    ];
+    return items;
+  }, [tripData, organizer]);
+
+  // --- Related trips ---
+  const relatedByDestination = useMemo(() => {
+    const dest = tripData.destination.split(',')[0]?.trim().toLowerCase();
+    return mockTrips
+      .filter(t => t.id !== tripData.id && t.destination.toLowerCase().includes(dest))
+      .slice(0, 4);
+  }, [tripData]);
+
+  const relatedByTags = useMemo(() => {
+    const tags = new Set(tripData.tags.map(t => t.toLowerCase()));
+    return mockTrips
+      .filter(t => t.id !== tripData.id && !relatedByDestination.find(r => r.id === t.id) && t.tags.some(tag => tags.has(tag.toLowerCase())))
+      .slice(0, 4);
+  }, [tripData, relatedByDestination]);
 
   const handleFavourite = () => {
     setIsFavourited(!isFavourited);
@@ -338,8 +373,8 @@ export default function TripDetails() {
     return <TripDetailsSkeleton />;
   }
 
-  const canonicalUrl = `${window.location.origin}/trips/${tripSlug}`;
   const isIndexable = tripData.visibility === 'public';
+  const destSlug = tripData.destination.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
 
   return (
     <>
@@ -362,70 +397,40 @@ export default function TripDetails() {
         currency="MYR"
         image={images[0]}
         url={canonicalUrl}
-        organizer={{ name: organizer.name }}
+        organizer={{ name: 'Ketravelan', url: SITE_URL }}
         touristTypes={tripData.tags}
+        visibility={tripData.visibility}
         itinerary={tripData.dayByDayPlan?.map((day: any, index: number) => ({
           day: index + 1,
           activities: day.activities || [day.notes || ''],
         })) || []}
       />
-      <BreadcrumbSchema
-        items={[
-          { name: 'Home', url: `${window.location.origin}/` },
-          { name: 'Explore', url: `${window.location.origin}/explore` },
-          { name: tripData.destination, url: `${window.location.origin}/destinations/${tripData.destination.toLowerCase().replace(/\s+/g, '-')}` },
-          { name: tripData.title, url: canonicalUrl },
-        ]}
-      />
+      <OrganizationSchema />
+      <FAQSchema items={faqItems} />
 
+      {/* Share modal */}
       <Dialog open={shareModalOpen} onOpenChange={setShareModalOpen}>
         <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] max-w-sm left-1/2 -translate-x-1/2 rounded-2xl">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-center">Share Trip</DialogTitle>
           </DialogHeader>
-          
           <div className="space-y-4">
-            {/* Trip Preview */}
             <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
-              <img 
-                src={images[0]} 
-                alt={tripData.title} 
-                className="h-12 w-12 rounded-lg object-cover"
-              />
+              <img src={images[0]} alt={`Preview of ${tripData.title} trip to ${tripData.destination}`} className="h-12 w-12 rounded-lg object-cover" />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm text-foreground truncate">{tripData.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{tripData.destination}</p>
               </div>
             </div>
-
-            {/* Copy Link */}
-            <button
-              onClick={handleCopyLink}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
-            >
+            <button onClick={handleCopyLink} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors">
               <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                {copied ? (
-                  <Check className="h-5 w-5 text-green-500" />
-                ) : (
-                  <Copy className="h-5 w-5 text-muted-foreground" />
-                )}
+                {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-muted-foreground" />}
               </div>
-              <span className="text-sm font-medium text-foreground">
-                {copied ? "Copied!" : "Copy Link"}
-              </span>
+              <span className="text-sm font-medium text-foreground">{copied ? "Copied!" : "Copy Link"}</span>
             </button>
-
-            {/* Share Options */}
             <div className="grid grid-cols-4 gap-3">
               {shareOptions.map((option) => (
-                <button
-                  key={option.name}
-                  onClick={() => {
-                    option.onClick();
-                    setShareModalOpen(false);
-                  }}
-                  className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-secondary transition-colors"
-                >
+                <button key={option.name} onClick={() => { option.onClick(); setShareModalOpen(false); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-secondary transition-colors">
                   <div className={cn("h-12 w-12 rounded-full flex items-center justify-center text-white", option.color)}>
                     <option.icon />
                   </div>
@@ -438,13 +443,13 @@ export default function TripDetails() {
       </Dialog>
 
       <AppLayout hideHeader>
-        <div className="pb-36">
+        <article itemScope itemType="https://schema.org/TouristTrip" className="pb-36">
         {/* Image Gallery */}
         <div className="relative -mx-4 sm:-mx-6">
           <div className="aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
             <img
               src={images[currentImage]}
-              alt={tripData.title}
+              alt={`${tripData.title} - ${tripData.destination} photo ${currentImage + 1} of ${images.length}`}
               className="h-full w-full object-cover"
             />
           </div>
@@ -459,51 +464,27 @@ export default function TripDetails() {
 
           {/* Actions */}
           <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex gap-1.5 sm:gap-2">
-            <button 
-              onClick={handleShare}
-              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-transform active:scale-95"
-            >
+            <button onClick={handleShare} className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-transform active:scale-95">
               <Share2 className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </button>
-            <button 
-              onClick={handleFavourite}
-              className={`h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ${isAnimating ? 'scale-125' : ''}`}
-            >
-              <Heart 
-                className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300 ${
-                  isFavourited 
-                    ? 'fill-destructive text-destructive scale-110' 
-                    : 'fill-transparent text-foreground'
-                }`} 
-              />
+            <button onClick={handleFavourite} className={`h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ${isAnimating ? 'scale-125' : ''}`}>
+              <Heart className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300 ${isFavourited ? 'fill-destructive text-destructive scale-110' : 'fill-transparent text-foreground'}`} />
             </button>
           </div>
 
           {/* Navigation */}
-          <button
-            onClick={prevImage}
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center"
-          >
+          <button onClick={prevImage} className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center">
             <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
           </button>
-          <button
-            onClick={nextImage}
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center"
-          >
+          <button onClick={nextImage} className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center">
             <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
           </button>
 
           {/* Thumbnails */}
           <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 max-w-[80%] overflow-x-auto scrollbar-hide">
             {images.map((img, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImage(index)}
-                className={`h-10 w-14 sm:h-12 sm:w-16 rounded-lg overflow-hidden border-2 shrink-0 ${
-                  index === currentImage ? "border-white" : "border-transparent"
-                }`}
-              >
-                <img src={img} alt="" className="h-full w-full object-cover" />
+              <button key={index} onClick={() => setCurrentImage(index)} className={`h-10 w-14 sm:h-12 sm:w-16 rounded-lg overflow-hidden border-2 shrink-0 ${index === currentImage ? "border-white" : "border-transparent"}`}>
+                <img src={img} alt={`View photo ${index + 1} of ${tripData.title}`} className="h-full w-full object-cover" />
               </button>
             ))}
           </div>
@@ -511,18 +492,25 @@ export default function TripDetails() {
 
         {/* Content */}
         <div className="pt-4 sm:pt-6 space-y-4 sm:space-y-6">
+          {/* Visible Breadcrumb Nav */}
+          <BreadcrumbNav
+            items={[
+              { name: 'Home', url: `${SITE_URL}/` },
+              { name: 'Explore', url: `${SITE_URL}/explore` },
+              { name: tripData.destination.split(',')[0]?.trim() || tripData.destination, url: `${SITE_URL}/destinations/${destSlug}` },
+              { name: tripData.title, url: canonicalUrl },
+            ]}
+            className="px-1"
+          />
+
           {/* Title & Location */}
-          <div className="space-y-2 sm:space-y-3">
+          <header className="space-y-2 sm:space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div className="space-y-1">
                 <h1 className="text-xl sm:text-2xl font-bold text-foreground">{tripData.title}</h1>
               </div>
               {isPublishedTrip && (
-                <span className={`px-2 py-1 text-xs font-medium rounded-full shrink-0 ${
-                  tripData.visibility === 'public' 
-                    ? 'bg-primary/10 text-primary' 
-                    : 'bg-secondary text-muted-foreground'
-                }`}>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full shrink-0 ${tripData.visibility === 'public' ? 'bg-primary/10 text-primary' : 'bg-secondary text-muted-foreground'}`}>
                   {tripData.visibility === 'public' ? '🌐 Public' : '🔒 Private'}
                 </span>
               )}
@@ -533,7 +521,6 @@ export default function TripDetails() {
                 <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{tripData.destination}</span>
               </div>
-              {/* Enhanced Slots with Urgency */}
               <div className="flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">
@@ -555,40 +542,51 @@ export default function TripDetails() {
             {isPublishedTrip && tripData.additionalStops.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap text-xs">
                 <Route className="h-3.5 w-3.5 text-primary" />
-                <span className="px-2 py-1 bg-primary/10 text-primary rounded-full">
-                  {tripData.destination}
-                </span>
+                <span className="px-2 py-1 bg-primary/10 text-primary rounded-full">{tripData.destination}</span>
                 {tripData.additionalStops.map((stop, i) => (
                   <span key={i} className="flex items-center gap-1">
                     <span className="text-muted-foreground">→</span>
-                    <span className="px-2 py-1 bg-secondary text-foreground rounded-full">
-                      {stop}
-                    </span>
+                    <span className="px-2 py-1 bg-secondary text-foreground rounded-full">{stop}</span>
                   </span>
                 ))}
               </div>
             )}
 
-            {/* Members Preview */}
             <AvatarRow avatars={mockMembers} max={4} />
 
             {/* Tags */}
             <div className="flex flex-wrap gap-2">
               {tripData.tags.map((tag) => {
                 const category = tripCategories.find(c => c.label === tag);
+                const styleId = category?.id;
                 return (
-                  <span
+                  <Link
                     key={tag}
-                    className="px-3 py-2 text-sm rounded-full border bg-white border-border text-muted-foreground flex items-center gap-2"
+                    to={styleId ? `/style/${styleId}` : '#'}
+                    className="px-3 py-2 text-sm rounded-full border bg-white border-border text-muted-foreground flex items-center gap-2 hover:border-primary/50 transition-colors"
                   >
                     {category?.icon && <span>{category.icon}</span>}
                     {tag}
-                  </span>
+                  </Link>
                 );
               })}
             </div>
-          </div>
+          </header>
 
+          {/* Trip in 30 Seconds – AI-readable summary */}
+          <section aria-label="Trip summary">
+            <Card className="p-3 sm:p-4 border-primary/20 bg-primary/5">
+              <h2 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Trip in 30 Seconds</h2>
+              <ul className="space-y-1 text-xs sm:text-sm text-muted-foreground">
+                <li>📍 <strong>Destination:</strong> {tripData.destination}{tripData.additionalStops?.length > 0 ? ` + ${tripData.additionalStops.join(', ')}` : ''}</li>
+                <li>📅 <strong>Dates:</strong> {tripData.startDate ? `${tripData.startDate}${tripData.endDate ? ` to ${tripData.endDate}` : ''}` : 'Flexible'}</li>
+                <li>👥 <strong>Group size:</strong> {tripData.totalSlots} spots ({tripData.slotsLeft} left)</li>
+                <li>💰 <strong>Budget:</strong> RM {tripData.price} per person</li>
+                <li>🎯 <strong>Travel style:</strong> {tripData.tags.join(', ') || 'General'}</li>
+                <li>🏷️ <strong>Trip type:</strong> {isPublishedTrip ? 'Community-organized' : 'DIY group trip'}</li>
+              </ul>
+            </Card>
+          </section>
 
           {/* Tabs */}
           <SegmentedControl
@@ -604,144 +602,149 @@ export default function TripDetails() {
           {/* Tab Content */}
           {activeTab === "overview" && (
             <div className="space-y-3 sm:space-y-4">
-              {/* Description - Now as bullet points */}
-              <Card className="p-3 sm:p-4 border-border/50">
-                <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">About This Trip</h3>
-                <ul className="space-y-1.5 sm:space-y-2">
-                  {descriptionBullets.map((bullet, index) => (
-                    <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
-                      {bullet}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-
-              {/* Requirements */}
-              {tripData.requirements.length > 0 && (
+              {/* About This Trip */}
+              <section aria-label="About this trip">
                 <Card className="p-3 sm:p-4 border-border/50">
-                  <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">What to Expect</h3>
+                  <h2 className="font-semibold text-foreground mb-2 text-sm sm:text-base">About This Trip</h2>
                   <ul className="space-y-1.5 sm:space-y-2">
-                    {tripData.requirements.map((req, index) => (
+                    {descriptionBullets.map((bullet, index) => (
                       <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
                         <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
-                        {req}
+                        {bullet}
                       </li>
                     ))}
                   </ul>
                 </Card>
+              </section>
+
+              {/* What to Expect */}
+              {tripData.requirements.length > 0 && (
+                <section aria-label="What to expect">
+                  <Card className="p-3 sm:p-4 border-border/50">
+                    <h2 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">What to Expect</h2>
+                    <ul className="space-y-1.5 sm:space-y-2">
+                      {tripData.requirements.map((req, index) => (
+                        <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
+                          {req}
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                </section>
               )}
 
               {/* Budget Breakdown */}
               {tripData.budgetBreakdown.length > 0 && (
-                <Card className="p-3 sm:p-4 border-border/50">
-                  <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Budget Breakdown</h3>
-                  <div className="space-y-2 sm:space-y-3">
-                    {tripData.budgetBreakdown.map((item) => {
-                      // Map budget categories to emojis
-                      const categoryEmojiMap: Record<string, string> = {
-                        'Transport': '🚗',
-                        'transport': '🚗',
-                        'Accommodation': '🏨',
-                        'accommodation': '🏨',
-                        'Food & Drinks': '🍴',
-                        'food': '🍴',
-                        'Activities': '🎫',
-                        'activities': '🎫',
-                      };
-                      const emoji = categoryEmojiMap[item.category] || categoryEmojiMap[item.icon] || '📦';
-                      return (
-                        <div key={item.category} className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                              <span className="text-base sm:text-lg">{emoji}</span>
+                <section aria-label="Budget breakdown">
+                  <Card className="p-3 sm:p-4 border-border/50">
+                    <h2 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Budget Breakdown</h2>
+                    <div className="space-y-2 sm:space-y-3">
+                      {tripData.budgetBreakdown.map((item) => {
+                        const categoryEmojiMap: Record<string, string> = {
+                          'Transport': '🚗', 'transport': '🚗',
+                          'Accommodation': '🏨', 'accommodation': '🏨',
+                          'Food & Drinks': '🍴', 'food': '🍴',
+                          'Activities': '🎫', 'activities': '🎫',
+                        };
+                        const emoji = categoryEmojiMap[item.category] || categoryEmojiMap[item.icon] || '📦';
+                        return (
+                          <div key={item.category} className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                                <span className="text-base sm:text-lg">{emoji}</span>
+                              </div>
+                              <span className="text-xs sm:text-sm text-foreground truncate">{item.category}</span>
                             </div>
-                            <span className="text-xs sm:text-sm text-foreground truncate">{item.category}</span>
+                            <span className="font-semibold text-foreground text-sm sm:text-base shrink-0">RM {item.amount}</span>
                           </div>
-                          <span className="font-semibold text-foreground text-sm sm:text-base shrink-0">
-                            RM {item.amount}
-                          </span>
+                        );
+                      })}
+                      <div className="pt-2 sm:pt-3 border-t border-border/50">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-foreground text-sm sm:text-base">Total per person</span>
+                          <span className="text-base sm:text-lg font-bold text-primary">RM {tripData.price}</span>
                         </div>
-                      );
-                    })}
-                    <div className="pt-2 sm:pt-3 border-t border-border/50">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-foreground text-sm sm:text-base">Total per person</span>
-                        <span className="text-base sm:text-lg font-bold text-primary">
-                          RM {tripData.price}
-                        </span>
-                      </div>
-                      {/* Budget Clarification */}
-                      <div className="mt-2 p-2 bg-secondary/50 rounded-lg">
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          <span className="font-medium text-foreground">Estimated shared expenses.</span> This is the amount you should be prepared to spend during the trip. You don't pay this to the organizer — expenses are tracked and split transparently in the group.
-                        </p>
+                        <div className="mt-2 p-2 bg-secondary/50 rounded-lg">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            <span className="font-medium text-foreground">Estimated shared expenses.</span> This is the amount you should be prepared to spend during the trip. You don't pay this to the organizer — expenses are tracked and split transparently in the group.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                </section>
               )}
 
-              {/* No budget set message */}
               {tripData.budgetBreakdown.length === 0 && isPublishedTrip && (
-                <Card className="p-3 sm:p-4 border-border/50">
-                  <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Budget</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Budget will be discussed in the group
-                  </p>
-                </Card>
+                <section aria-label="Budget">
+                  <Card className="p-3 sm:p-4 border-border/50">
+                    <h2 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Budget</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Budget will be discussed in the group</p>
+                  </Card>
+                </section>
               )}
+
+              {/* FAQ Section */}
+              <section aria-label="Frequently asked questions">
+                <Card className="p-3 sm:p-4 border-border/50">
+                  <h2 className="font-semibold text-foreground mb-3 text-sm sm:text-base">Frequently Asked Questions</h2>
+                  <div className="space-y-3">
+                    {faqItems.map((faq, index) => (
+                      <div key={index} className="space-y-1">
+                        <h3 className="text-xs sm:text-sm font-medium text-foreground">{faq.question}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </section>
             </div>
           )}
 
           {activeTab === "itinerary" && (
             <div className="space-y-3 sm:space-y-4">
-              {/* Notes-based itinerary */}
               {tripData.itineraryType === 'notes' && tripData.simpleNotes && (
-                <Card className="p-3 sm:p-4 border-border/50">
-                  <div className="flex items-center gap-2 mb-3">
-                    <FileText className="h-4 w-4 text-primary" />
-                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Trip Notes</h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                    {tripData.simpleNotes}
-                  </p>
-                </Card>
+                <section aria-label="Trip notes">
+                  <Card className="p-3 sm:p-4 border-border/50">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FileText className="h-4 w-4 text-primary" />
+                      <h2 className="font-semibold text-foreground text-sm sm:text-base">Trip Notes</h2>
+                    </div>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{tripData.simpleNotes}</p>
+                  </Card>
+                </section>
               )}
 
-              {/* Day-by-day itinerary */}
               {tripData.itineraryType === 'dayByDay' && tripData.dayByDayPlan.length > 0 && (
-                <div className="space-y-3">
-                  {tripData.dayByDayPlan.map((day, index) => (
-                    <Card key={index} className="p-3 sm:p-4 border-border/50">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-sm font-bold text-primary">{day.day}</span>
+                <section aria-label="Day by day itinerary">
+                  <div className="space-y-3">
+                    {tripData.dayByDayPlan.map((day, index) => (
+                      <Card key={index} className="p-3 sm:p-4 border-border/50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-sm font-bold text-primary">{day.day}</span>
+                          </div>
+                          <h2 className="font-semibold text-foreground text-sm sm:text-base">Day {day.day}</h2>
                         </div>
-                        <h3 className="font-semibold text-foreground text-sm sm:text-base">
-                          Day {day.day}
-                        </h3>
-                      </div>
-                      {day.activities.length > 0 ? (
-                        <ul className="space-y-1.5 sm:space-y-2 pl-10">
-                          {day.activities.map((activity, actIndex) => (
-                            <li key={actIndex} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
-                              <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
-                              {activity}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-xs sm:text-sm text-muted-foreground pl-10">
-                          No activities planned yet
-                        </p>
-                      )}
-                    </Card>
-                  ))}
-                </div>
+                        {day.activities.length > 0 ? (
+                          <ul className="space-y-1.5 sm:space-y-2 pl-10">
+                            {day.activities.map((activity, actIndex) => (
+                              <li key={actIndex} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                                <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
+                                {activity}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs sm:text-sm text-muted-foreground pl-10">No activities planned yet</p>
+                        )}
+                      </Card>
+                    ))}
+                  </div>
+                </section>
               )}
 
-              {/* Empty state - Improved messaging */}
               {(!isPublishedTrip || tripData.itineraryType === 'skip' || 
                 (tripData.itineraryType === 'notes' && !tripData.simpleNotes) ||
                 (tripData.itineraryType === 'dayByDay' && tripData.dayByDayPlan.length === 0)) && (
@@ -750,12 +753,8 @@ export default function TripDetails() {
                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                       <Sparkles className="h-6 w-6 text-primary/60" />
                     </div>
-                    <p className="text-sm sm:text-base font-medium text-foreground mb-1">
-                      Plans stay flexible
-                    </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground max-w-xs mx-auto">
-                      The detailed itinerary will be co-created together in the group chat after joining.
-                    </p>
+                    <p className="text-sm sm:text-base font-medium text-foreground mb-1">Plans stay flexible</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground max-w-xs mx-auto">The detailed itinerary will be co-created together in the group chat after joining.</p>
                   </div>
                 </Card>
               )}
@@ -763,65 +762,109 @@ export default function TripDetails() {
           )}
 
           {activeTab === "members" && (
-            <div className="space-y-2 sm:space-y-3">
-              {mockMembers.map((member) => (
-                <Card key={member.id} className="p-3 sm:p-4 border-border/50">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    {/* Clickable Avatar + Name area */}
-                    <Link 
-                      to={`/user/${member.id}`}
-                      className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
-                    >
-                      <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-muted overflow-hidden shrink-0">
-                        {member.imageUrl ? (
-                          <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center text-muted-foreground font-medium text-sm sm:text-base">
-                            {member.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm sm:text-base truncate">{member.name}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">{member.role}</p>
-                        {member.descriptor && (
-                          <p className="text-xs text-muted-foreground/70">{member.descriptor}</p>
-                        )}
-                      </div>
-                    </Link>
-                    {/* Message button stays separate */}
-                    <Button variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm">
-                      Message
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
+            <section aria-label="Trip members">
+              <div className="space-y-2 sm:space-y-3">
+                {mockMembers.map((member) => (
+                  <Card key={member.id} className="p-3 sm:p-4 border-border/50">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Link to={`/user/${member.id}`} className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-muted overflow-hidden shrink-0">
+                          {member.imageUrl ? (
+                            <img src={member.imageUrl} alt={`${member.name} - ${member.role}`} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center text-muted-foreground font-medium text-sm sm:text-base">{member.name.charAt(0)}</div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground text-sm sm:text-base truncate">{member.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">{member.role}</p>
+                          {member.descriptor && <p className="text-xs text-muted-foreground/70">{member.descriptor}</p>}
+                        </div>
+                      </Link>
+                      <Button variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm">Message</Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </section>
           )}
 
-          {/* Safety Notice - Appears across all tabs */}
+          {/* Safety Notice */}
           <SafetyNotice />
+
+          {/* Internal Links: Related Trips */}
+          {(relatedByDestination.length > 0 || relatedByTags.length > 0) && (
+            <section aria-label="Related trips" className="space-y-4">
+              {relatedByDestination.length > 0 && (
+                <div>
+                  <h2 className="font-semibold text-foreground mb-3 text-sm sm:text-base">
+                    More Trips in {tripData.destination.split(',')[0]?.trim()}
+                  </h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    {relatedByDestination.map((trip) => {
+                      const slug = generateTripSlug(trip);
+                      return (
+                        <Link key={trip.id} to={`/trips/${slug}`} className="group block">
+                          <div className="rounded-xl overflow-hidden border border-border/50 hover:border-primary/30 transition-colors">
+                            <div className="aspect-[4/3] overflow-hidden">
+                              <img src={trip.imageUrl} alt={`${trip.title} - group trip to ${trip.destination}`} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            </div>
+                            <div className="p-2.5">
+                              <p className="font-medium text-foreground text-xs sm:text-sm truncate">{trip.title}</p>
+                              <p className="text-xs text-muted-foreground">RM {trip.price} · {trip.slotsLeft} spots left</p>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {relatedByTags.length > 0 && (
+                <div>
+                  <h2 className="font-semibold text-foreground mb-3 text-sm sm:text-base">Similar Trips You May Like</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    {relatedByTags.map((trip) => {
+                      const slug = generateTripSlug(trip);
+                      return (
+                        <Link key={trip.id} to={`/trips/${slug}`} className="group block">
+                          <div className="rounded-xl overflow-hidden border border-border/50 hover:border-primary/30 transition-colors">
+                            <div className="aspect-[4/3] overflow-hidden">
+                              <img src={trip.imageUrl} alt={`${trip.title} - group trip to ${trip.destination}`} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            </div>
+                            <div className="p-2.5">
+                              <p className="font-medium text-foreground text-xs sm:text-sm truncate">{trip.title}</p>
+                              <p className="text-xs text-muted-foreground">RM {trip.price} · {trip.slotsLeft} spots left</p>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Destination page link */}
+              <div className="text-center">
+                <Link to={`/destinations/${destSlug}`} className="text-sm text-primary hover:underline">
+                  See all trips to {tripData.destination.split(',')[0]?.trim()} →
+                </Link>
+              </div>
+            </section>
+          )}
         </div>
-      </div>
+      </article>
 
       {/* Sticky CTA Bar */}
       <div className="fixed bottom-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50 safe-bottom">
         <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto px-4 py-3">
           <div className="grid grid-cols-2 gap-3">
-            <Button 
-              size="lg" 
-              className="w-full rounded-xl text-sm sm:text-base gap-2"
-              onClick={() => setShowJoinConfirmModal(true)}
-            >
+            <Button size="lg" className="w-full rounded-xl text-sm sm:text-base gap-2" onClick={() => setShowJoinConfirmModal(true)}>
               <UserPlus className="h-4 w-4" />
               Request to Join
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="w-full rounded-xl text-sm sm:text-base gap-2"
-              onClick={() => setShowMessageModal(true)}
-            >
+            <Button size="lg" variant="outline" className="w-full rounded-xl text-sm sm:text-base gap-2" onClick={() => setShowMessageModal(true)}>
               <MessageCircle className="h-4 w-4" />
               Message
             </Button>
@@ -835,20 +878,13 @@ export default function TripDetails() {
           <DialogHeader className="p-4 pb-3 border-b border-border/50">
             <div className="flex items-center justify-between">
               <DialogTitle>Request to Join Trip</DialogTitle>
-              <button 
-                onClick={() => setShowJoinConfirmModal(false)}
-                className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-              >
+              <button onClick={() => setShowJoinConfirmModal(false)} className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <DialogDescription>
-              Here's what happens when you request to join
-            </DialogDescription>
+            <DialogDescription>Here's what happens when you request to join</DialogDescription>
           </DialogHeader>
-          
           <div className="p-4 space-y-4">
-            {/* What happens next steps */}
             <div className="bg-secondary/50 rounded-xl p-3 space-y-2">
               <div className="flex items-start gap-3">
                 <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">1</div>
@@ -863,49 +899,14 @@ export default function TripDetails() {
                 <p className="text-sm text-muted-foreground">You'll be notified when they respond</p>
               </div>
             </div>
-
-            {/* Message input */}
             <div className="space-y-2">
-              <label htmlFor="join-note" className="text-sm font-medium">
-                Introduce yourself <span className="text-muted-foreground font-normal">(optional)</span>
-              </label>
-              <textarea
-                id="join-note"
-                value={joinNote}
-                onChange={(e) => setJoinNote(e.target.value.slice(0, 300))}
-                onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
-                placeholder={`Hi! I'd love to join your ${tripData.destination} trip. A bit about me...`}
-                className="w-full min-h-[80px] p-3 rounded-xl border border-border/50 bg-background text-base resize-none focus-visible:outline-none focus-visible:border-primary/50"
-                maxLength={300}
-              />
-              <p className="text-xs text-muted-foreground text-right">
-                {joinNote.length}/300
-              </p>
+              <label htmlFor="join-note" className="text-sm font-medium">Introduce yourself <span className="text-muted-foreground font-normal">(optional)</span></label>
+              <textarea id="join-note" value={joinNote} onChange={(e) => setJoinNote(e.target.value.slice(0, 300))} onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder={`Hi! I'd love to join your ${tripData.destination} trip. A bit about me...`} className="w-full min-h-[80px] p-3 rounded-xl border border-border/50 bg-background text-base resize-none focus-visible:outline-none focus-visible:border-primary/50" maxLength={300} />
+              <p className="text-xs text-muted-foreground text-right">{joinNote.length}/300</p>
             </div>
-            
-            {/* Action buttons */}
             <div className="grid grid-cols-2 gap-3 pt-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowJoinConfirmModal(false);
-                  setJoinNote("");
-                }}
-                className="rounded-xl"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={() => {
-                  setShowJoinConfirmModal(false);
-                  const noteParam = joinNote.trim() 
-                    ? `?note=${encodeURIComponent(joinNote.trim())}` 
-                    : "";
-                  navigate(`/trip/${id}/hub${noteParam}`);
-                  setJoinNote("");
-                }}
-                className="rounded-xl gap-2"
-              >
+              <Button variant="outline" onClick={() => { setShowJoinConfirmModal(false); setJoinNote(""); }} className="rounded-xl">Cancel</Button>
+              <Button onClick={() => { setShowJoinConfirmModal(false); const noteParam = joinNote.trim() ? `?note=${encodeURIComponent(joinNote.trim())}` : ""; navigate(`/trip/${resolvedId}/hub${noteParam}`); setJoinNote(""); }} className="rounded-xl gap-2">
                 <UserPlus className="h-4 w-4" />
                 Send Request
               </Button>
@@ -920,82 +921,31 @@ export default function TripDetails() {
           <DialogHeader className="p-4 pb-3 border-b border-border/50">
             <div className="flex items-center justify-between">
               <DialogTitle>Message Trip Organizer</DialogTitle>
-              <button 
-                onClick={() => setShowMessageModal(false)}
-                className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-              >
+              <button onClick={() => setShowMessageModal(false)} className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <DialogDescription>
-              Start a conversation with {organizer.name}
-            </DialogDescription>
+            <DialogDescription>Start a conversation with {organizer.name}</DialogDescription>
           </DialogHeader>
-          
           <div className="p-4 space-y-4">
-            {/* Organizer preview */}
             <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
-              <img 
-                src={organizer.imageUrl} 
-                alt={organizer.name} 
-                className="h-12 w-12 rounded-full object-cover"
-              />
+              <img src={organizer.imageUrl} alt={`${organizer.name} - Trip Organizer`} className="h-12 w-12 rounded-full object-cover" />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm text-foreground">{organizer.name}</p>
                 <p className="text-xs text-muted-foreground">Trip Organizer</p>
               </div>
             </div>
-
-            {/* Message input */}
             <div className="space-y-2">
-              <label htmlFor="initial-message" className="text-sm font-medium">
-                Your message
-              </label>
-              <textarea
-                id="initial-message"
-                value={initialMessage}
-                onChange={(e) => setInitialMessage(e.target.value.slice(0, 500))}
-                onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
-                placeholder={`Hi ${organizer.name}, I'm interested in joining your ${tripData.destination} trip...`}
-                className="w-full min-h-[100px] p-3 rounded-xl border border-border/50 bg-background text-base resize-none focus-visible:outline-none focus-visible:border-primary/50"
-                maxLength={500}
-              />
-              <p className="text-xs text-muted-foreground text-right">
-                {initialMessage.length}/500
-              </p>
+              <label htmlFor="initial-message" className="text-sm font-medium">Your message</label>
+              <textarea id="initial-message" value={initialMessage} onChange={(e) => setInitialMessage(e.target.value.slice(0, 500))} onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder={`Hi ${organizer.name}, I'm interested in joining your ${tripData.destination} trip...`} className="w-full min-h-[100px] p-3 rounded-xl border border-border/50 bg-background text-base resize-none focus-visible:outline-none focus-visible:border-primary/50" maxLength={500} />
+              <p className="text-xs text-muted-foreground text-right">{initialMessage.length}/500</p>
             </div>
-            
-            {/* Info note */}
             <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground">
-                Messages are private between you and the organizer. They typically respond within a few hours.
-              </p>
+              <p className="text-xs text-muted-foreground">Messages are private between you and the organizer. They typically respond within a few hours.</p>
             </div>
-            
-            {/* Action buttons */}
             <div className="grid grid-cols-2 gap-3 pt-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowMessageModal(false);
-                  setInitialMessage("");
-                }}
-                className="rounded-xl"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={() => {
-                  setShowMessageModal(false);
-                  const messageParam = initialMessage.trim() 
-                    ? `?message=${encodeURIComponent(initialMessage.trim())}` 
-                    : "";
-                  navigate(`/chat/${organizer.id}${messageParam}`);
-                  setInitialMessage("");
-                }}
-                disabled={!initialMessage.trim()}
-                className="rounded-xl gap-2"
-              >
+              <Button variant="outline" onClick={() => { setShowMessageModal(false); setInitialMessage(""); }} className="rounded-xl">Cancel</Button>
+              <Button onClick={() => { setShowMessageModal(false); const messageParam = initialMessage.trim() ? `?message=${encodeURIComponent(initialMessage.trim())}` : ""; navigate(`/chat/${organizer.id}${messageParam}`); setInitialMessage(""); }} disabled={!initialMessage.trim()} className="rounded-xl gap-2">
                 <MessageCircle className="h-4 w-4" />
                 Send Message
               </Button>
