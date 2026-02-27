@@ -31,28 +31,28 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
         <img
           src={currentImage.url}
           alt={currentImage.caption || `Gallery image ${currentIndex + 1}`}
-          className="w-full h-auto object-cover"
+          className="w-full h-auto max-w-full object-cover rounded-lg"
         />
         
         {/* Remove button */}
         <button
           onClick={onRemove}
-          className="absolute top-3 right-3 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-3 right-3 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
         >
           <X className="h-4 w-4" />
         </button>
 
-        {/* Navigation arrows - minimal style */}
+        {/* Navigation arrows */}
         {images.length > 1 && (
           <>
             <button
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               onClick={goToPrev}
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               onClick={goToNext}
             >
               <ChevronRight className="h-5 w-5" />
@@ -60,7 +60,7 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
           </>
         )}
 
-        {/* Dots indicator - minimal */}
+        {/* Dots indicator */}
         {images.length > 1 && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
             {images.map((_, index) => (
@@ -88,7 +88,7 @@ export function InlineGallery({ media, onUpdateImage, onRemove }: InlineGalleryP
       />
 
       {/* Image count - subtle */}
-      <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/50 rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/50 rounded-full text-white text-xs opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
         {currentIndex + 1} / {images.length}
       </div>
     </div>
