@@ -312,3 +312,58 @@
     }
   }
 }
+
+/* === TipTap Rich Text Editor Styles === */
+
+.tiptap-wrapper .tiptap {
+  @apply min-h-[60px] focus:outline-none text-lg text-foreground;
+  line-height: 1.8;
+}
+
+.tiptap-wrapper .tiptap p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground/40 pointer-events-none float-left h-0;
+  content: attr(data-placeholder);
+}
+
+.tiptap-wrapper .tiptap strong {
+  @apply font-bold;
+}
+
+.tiptap-wrapper .tiptap u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tiptap-wrapper .tiptap .tiptap-bullet-list {
+  @apply list-disc pl-6 space-y-1;
+}
+
+.tiptap-wrapper .tiptap .tiptap-ordered-list {
+  @apply list-decimal pl-6 space-y-1;
+}
+
+.tiptap-wrapper .tiptap li p {
+  @apply inline;
+}
+
+/* Content rendering in read views */
+.tiptap-content strong {
+  @apply font-bold;
+}
+
+.tiptap-content u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tiptap-content ul {
+  @apply list-disc pl-6 space-y-1;
+}
+
+.tiptap-content ol {
+  @apply list-decimal pl-6 space-y-1;
+}
+
+.tiptap-content li p {
+  @apply inline;
+}

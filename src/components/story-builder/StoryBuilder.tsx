@@ -1,13 +1,15 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { ChevronRight, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { StoryDraft, InlineMedia, UserSocialProfile } from "@/hooks/useStoryDrafts";
-import { EditingToolbar, FormatType } from "./EditingToolbar";
+import { EditingToolbar } from "./EditingToolbar";
+import { RichTextEditor } from "./RichTextEditor";
 import { SocialLinkSheet } from "./SocialLinkSheet";
 import { InlineImage } from "./InlineImage";
 import { InlineGallery } from "./InlineGallery";
 import { SocialLinksInline } from "./SocialLinksInline";
+import type { Editor } from "@tiptap/react";
 
 interface StoryBuilderProps {
   draft: StoryDraft;
@@ -31,81 +33,19 @@ export function StoryBuilder({
   onSaveAsDraft,
 }: StoryBuilderProps) {
   const [showSocialSheet, setShowSocialSheet] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [editor, setEditor] = useState<Editor | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 100);
-    return () => clearTimeout(timer);
+  const handleEditorReady = useCallback((ed: Editor) => {
+    setEditor(ed);
   }, []);
 
-  // Auto-grow textarea - no max height for editorial feel
-  const adjustTextareaHeight = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, []);
-
-  useEffect(() => {
-    adjustTextareaHeight();
-  }, [draft.content, adjustTextareaHeight]);
-
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    saveDraft({ content: e.target.value });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key !== "Enter") return;
-
-    const textarea = e.currentTarget;
-    const { selectionStart, value } = textarea;
-    
-    // Get the current line
-    const beforeCursor = value.substring(0, selectionStart);
-    const lines = beforeCursor.split("\n");
-    const currentLine = lines[lines.length - 1];
-
-    // Check for bullet point
-    if (currentLine.match(/^• .+/)) {
-      e.preventDefault();
-      const newContent = value.substring(0, selectionStart) + "\n• " + value.substring(selectionStart);
-      saveDraft({ content: newContent });
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = selectionStart + 3;
-      }, 0);
-      return;
-    }
-
-    // Check for numbered list
-    const numberMatch = currentLine.match(/^(\d+)\. .+/);
-    if (numberMatch) {
-      e.preventDefault();
-      const nextNumber = parseInt(numberMatch[1]) + 1;
-      const newContent = value.substring(0, selectionStart) + `\n${nextNumber}. ` + value.substring(selectionStart);
-      saveDraft({ content: newContent });
-      const insertLength = `\n${nextNumber}. `.length;
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = selectionStart + insertLength;
-      }, 0);
-      return;
-    }
-
-    // Check for empty bullet/number line to break out
-    if (currentLine === "• " || currentLine.match(/^\d+\. $/)) {
-      e.preventDefault();
-      const lineStart = beforeCursor.lastIndexOf("\n") + 1;
-      const newContent = value.substring(0, lineStart) + value.substring(selectionStart);
-      saveDraft({ content: newContent });
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = lineStart;
-      }, 0);
-    }
-  };
+  const handleContentUpdate = useCallback(
+    (html: string) => {
+      saveDraft({ content: html });
+    },
+    [saveDraft]
+  );
 
   const handleCoverImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,50 +53,6 @@ export function StoryBuilder({
       const url = URL.createObjectURL(file);
       saveDraft({ coverImage: url });
     }
-  };
-
-  const handleFormat = (type: FormatType) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-    const beforeText = textarea.value.substring(0, start);
-    const afterText = textarea.value.substring(end);
-
-    let newText = "";
-    let newCursorPos = start;
-
-    switch (type) {
-      case "bold":
-        newText = `${beforeText}**${selectedText}**${afterText}`;
-        newCursorPos = end + 4;
-        break;
-      case "underline":
-        newText = `${beforeText}__${selectedText}__${afterText}`;
-        newCursorPos = end + 4;
-        break;
-      case "bullet": {
-        const lines = selectedText.split("\n").map((line) => `• ${line}`);
-        newText = `${beforeText}${lines.join("\n")}${afterText}`;
-        newCursorPos = start + lines.join("\n").length;
-        break;
-      }
-      case "numbered": {
-        const lines = selectedText.split("\n").map((line, i) => `${i + 1}. ${line}`);
-        newText = `${beforeText}${lines.join("\n")}${afterText}`;
-        newCursorPos = start + lines.join("\n").length;
-        break;
-      }
-    }
-
-    saveDraft({ content: newText });
-    
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
   };
 
   const handleAddGallery = (files: File[]) => {
@@ -187,9 +83,11 @@ export function StoryBuilder({
       coverInputRef.current?.click();
       return;
     }
-    if (!draft.content.trim()) {
+    // Strip HTML to check if there's actual text content
+    const textContent = draft.content.replace(/<[^>]*>/g, "").trim();
+    if (!textContent) {
       toast.error("Please write something about your experience");
-      textareaRef.current?.focus();
+      editor?.commands.focus();
       return;
     }
     onComplete();
@@ -249,26 +147,21 @@ export function StoryBuilder({
           )}
         </header>
 
-        {/* Sticky Editing Toolbar - stays at top when scrolling */}
+        {/* Sticky Editing Toolbar */}
         <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-background">
           <EditingToolbar
-            textareaRef={textareaRef}
-            onFormat={handleFormat}
+            editor={editor}
             onAddGallery={handleAddGallery}
             onOpenSocialSheet={() => setShowSocialSheet(true)}
           />
         </div>
 
-        {/* Main Writing Canvas - borderless, editorial */}
-        <div className="relative">
-          <textarea
-            ref={textareaRef}
-            value={draft.content}
-            onChange={handleContentChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Write your experience here"
-            className="w-full min-h-[60px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40"
-            style={{ overflow: "hidden", lineHeight: "1.8" }}
+        {/* Main Writing Canvas - TipTap WYSIWYG Editor */}
+        <div className="relative tiptap-wrapper mt-2">
+          <RichTextEditor
+            content={draft.content}
+            onUpdate={handleContentUpdate}
+            onEditorReady={handleEditorReady}
           />
         </div>
 
@@ -294,19 +187,6 @@ export function StoryBuilder({
             />
           )
         ))}
-
-        {/* Continuation writing area - appears after images */}
-        {draft.inlineMedia.length > 0 && (
-          <div className="relative mt-6">
-            <textarea
-              value={draft.contentAfterMedia || ""}
-              onChange={(e) => saveDraft({ contentAfterMedia: e.target.value })}
-              placeholder="Continue writing..."
-              className="w-full min-h-[150px] bg-transparent border-none resize-none focus:outline-none text-lg text-foreground placeholder:text-muted-foreground/40"
-              style={{ overflow: "hidden", lineHeight: "1.8" }}
-            />
-          </div>
-        )}
 
         {/* Social Links - plain text, editorial style */}
         <SocialLinksInline
