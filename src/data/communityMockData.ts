@@ -152,6 +152,7 @@ export interface Story {
   blocks?: StoryBlock[];
   inlineMedia?: StoryInlineMedia[];
   selectedSocialLinks?: UserSocialProfile[];
+  editorBlocks?: import("@/lib/storyEditorBlocks").EditorBlock[];
   author: StoryAuthor;
   location: Location;
   readingTime: number;

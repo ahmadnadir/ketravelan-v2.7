@@ -3,6 +3,7 @@ import { ChevronRight, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { StoryDraft, InlineMedia, UserSocialProfile } from "@/hooks/useStoryDrafts";
+import { EditorBlock, createImageBlock, createGalleryBlock, insertMediaBlock, createTextBlock } from "@/lib/storyEditorBlocks";
 import { EditingToolbar } from "./EditingToolbar";
 import { RichTextEditor } from "./RichTextEditor";
 import { SocialLinkSheet } from "./SocialLinkSheet";
@@ -33,18 +34,31 @@ export function StoryBuilder({
   onSaveAsDraft,
 }: StoryBuilderProps) {
   const [showSocialSheet, setShowSocialSheet] = useState(false);
-  const [editor, setEditor] = useState<Editor | null>(null);
+  // Track which block the user last interacted with for insertion
+  const [activeBlockId, setActiveBlockId] = useState<string | null>(
+    draft.editorBlocks[0]?.id ?? null
+  );
+  // Map of block id -> TipTap Editor instances
+  const editorsRef = useRef<Map<string, Editor>>(new Map());
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  const handleEditorReady = useCallback((ed: Editor) => {
-    setEditor(ed);
+  const blocks = draft.editorBlocks;
+
+  // Get the editor instance for the active text block (for toolbar)
+  const activeEditor = activeBlockId ? editorsRef.current.get(activeBlockId) ?? null : null;
+
+  const handleEditorReady = useCallback((blockId: string, ed: Editor) => {
+    editorsRef.current.set(blockId, ed);
   }, []);
 
-  const handleContentUpdate = useCallback(
-    (html: string) => {
-      saveDraft({ content: html });
+  const handleBlockContentUpdate = useCallback(
+    (blockId: string, html: string) => {
+      const newBlocks = blocks.map((b) =>
+        b.id === blockId && b.type === "text" ? { ...b, content: html } : b
+      );
+      saveDraft({ editorBlocks: newBlocks });
     },
-    [saveDraft]
+    [blocks, saveDraft]
   );
 
   const handleCoverImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,22 +73,43 @@ export function StoryBuilder({
     const images = files.map((file) => ({
       url: URL.createObjectURL(file),
     }));
-    const newMedia: InlineMedia = {
-      id: `media-${Date.now()}`,
-      type: files.length === 1 ? "image" : "gallery",
-      images,
-      insertPosition: draft.content.length,
-    };
-    addInlineMedia(newMedia);
+    const mediaBlock =
+      files.length === 1
+        ? createImageBlock(images)
+        : createGalleryBlock(images);
+
+    const newBlocks = insertMediaBlock(blocks, activeBlockId, mediaBlock);
+    saveDraft({ editorBlocks: newBlocks });
   };
 
-  const handleUpdateMediaCaption = (mediaId: string, imageIndex: number, caption: string) => {
-    const media = draft.inlineMedia.find((m) => m.id === mediaId);
-    if (!media) return;
+  const handleUpdateMediaCaption = (blockId: string, imageIndex: number, caption: string) => {
+    const newBlocks = blocks.map((b) => {
+      if (b.id !== blockId || b.type === "text") return b;
+      const updatedImages = [...b.images];
+      updatedImages[imageIndex] = { ...updatedImages[imageIndex], caption };
+      return { ...b, images: updatedImages };
+    });
+    saveDraft({ editorBlocks: newBlocks });
+  };
 
-    const updatedImages = [...media.images];
-    updatedImages[imageIndex] = { ...updatedImages[imageIndex], caption };
-    updateInlineMedia(mediaId, { images: updatedImages });
+  const handleRemoveBlock = (blockId: string) => {
+    // Remove the media block. If the next block is an empty text block and the previous
+    // is also a text block, merge them (remove the trailing empty text block).
+    let newBlocks = blocks.filter((b) => b.id !== blockId);
+    // Clean up consecutive text blocks
+    const cleaned: EditorBlock[] = [];
+    for (const b of newBlocks) {
+      const prev = cleaned[cleaned.length - 1];
+      if (prev && prev.type === "text" && b.type === "text" && !b.content.trim()) {
+        // Skip empty trailing text block
+        continue;
+      }
+      cleaned.push(b);
+    }
+    if (cleaned.length === 0) {
+      cleaned.push(createTextBlock());
+    }
+    saveDraft({ editorBlocks: cleaned });
   };
 
   const handleContinueClick = () => {
@@ -83,11 +118,17 @@ export function StoryBuilder({
       document.getElementById("cover-input")?.click();
       return;
     }
-    // Strip HTML to check if there's actual text content
-    const textContent = draft.content.replace(/<[^>]*>/g, "").trim();
-    if (!textContent) {
+    // Check if there's actual text content in any text block
+    const hasText = blocks.some(
+      (b) => b.type === "text" && b.content.replace(/<[^>]*>/g, "").trim()
+    );
+    if (!hasText) {
       toast.error("Please write something about your experience");
-      editor?.commands.focus();
+      // Focus the first text block
+      const firstTextBlock = blocks.find((b) => b.type === "text");
+      if (firstTextBlock) {
+        editorsRef.current.get(firstTextBlock.id)?.commands.focus();
+      }
       return;
     }
     onComplete();
@@ -151,49 +192,74 @@ export function StoryBuilder({
         {/* Sticky Editing Toolbar */}
         <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-background">
           <EditingToolbar
-            editor={editor}
+            editor={activeEditor}
             onAddGallery={handleAddGallery}
             onOpenSocialSheet={() => setShowSocialSheet(true)}
           />
         </div>
 
-        {/* Main Writing Canvas - TipTap WYSIWYG Editor */}
-        <div className="relative tiptap-wrapper mt-2">
-          <RichTextEditor
-            content={draft.content}
-            onUpdate={handleContentUpdate}
-            onEditorReady={handleEditorReady}
-          />
-        </div>
+        {/* Block-based content */}
+        <div className="mt-2">
+          {blocks.map((block) => {
+            if (block.type === "text") {
+              return (
+                <div
+                  key={block.id}
+                  onFocus={() => setActiveBlockId(block.id)}
+                  onClick={() => setActiveBlockId(block.id)}
+                >
+                  <RichTextEditor
+                    content={block.content}
+                    onUpdate={(html) => handleBlockContentUpdate(block.id, html)}
+                    onEditorReady={(ed) => handleEditorReady(block.id, ed)}
+                  />
+                </div>
+              );
+            }
 
-        {/* Inline Media with per-item text areas */}
-        {draft.inlineMedia.map((media, idx) => (
-          <div key={media.id}>
-            {media.type === "image" ? (
-              <InlineImage
-                media={media}
-                onUpdateCaption={(caption) => handleUpdateMediaCaption(media.id, 0, caption)}
-                onRemove={() => removeInlineMedia(media.id)}
-              />
-            ) : (
-              <InlineGallery
-                media={media}
-                onUpdateImage={(index, updates) => {
-                  const updatedImages = [...media.images];
-                  updatedImages[index] = { ...updatedImages[index], ...updates };
-                  updateInlineMedia(media.id, { images: updatedImages });
-                }}
-                onRemove={() => removeInlineMedia(media.id)}
-              />
-            )}
-            <textarea
-              className="w-full min-h-[80px] text-lg leading-[1.8] text-foreground bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/40 placeholder:italic"
-              placeholder={idx === draft.inlineMedia.length - 1 ? "Continue writing..." : ""}
-              value={media.contentAfter || ""}
-              onChange={(e) => updateInlineMedia(media.id, { contentAfter: e.target.value })}
-            />
-          </div>
-        ))}
+            if (block.type === "image") {
+              return (
+                <div
+                  key={block.id}
+                  onFocus={() => setActiveBlockId(block.id)}
+                  onClick={() => setActiveBlockId(block.id)}
+                >
+                  <InlineImage
+                    media={{ id: block.id, type: "image", images: block.images, insertPosition: 0 }}
+                    onUpdateCaption={(caption) => handleUpdateMediaCaption(block.id, 0, caption)}
+                    onRemove={() => handleRemoveBlock(block.id)}
+                  />
+                </div>
+              );
+            }
+
+            if (block.type === "gallery") {
+              return (
+                <div
+                  key={block.id}
+                  onFocus={() => setActiveBlockId(block.id)}
+                  onClick={() => setActiveBlockId(block.id)}
+                >
+                  <InlineGallery
+                    media={{ id: block.id, type: "gallery", images: block.images, insertPosition: 0 }}
+                    onUpdateImage={(index, updates) => {
+                      const newBlocks = blocks.map((b) => {
+                        if (b.id !== block.id || b.type === "text") return b;
+                        const updatedImages = [...b.images];
+                        updatedImages[index] = { ...updatedImages[index], ...updates };
+                        return { ...b, images: updatedImages };
+                      });
+                      saveDraft({ editorBlocks: newBlocks });
+                    }}
+                    onRemove={() => handleRemoveBlock(block.id)}
+                  />
+                </div>
+              );
+            }
+
+            return null;
+          })}
+        </div>
 
         {/* Social Links - plain text, editorial style */}
         <SocialLinksInline

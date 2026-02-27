@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { StoryBlock, StoryType, StoryVisibility, SocialLink, StoryFocus, SocialPlatform } from "@/data/communityMockData";
+import { EditorBlock, createTextBlock, migrateLegacyToBlocks } from "@/lib/storyEditorBlocks";
 
 // Inline media for the rich text editor
 export interface InlineMediaImage {
@@ -33,7 +34,9 @@ export interface StoryDraft {
   city: string;
   linkedTripId: string | null;
   coverImage: string | null;
-  // Rich text editor content
+  // Block-based editor content (source of truth)
+  editorBlocks: EditorBlock[];
+  // Legacy fields kept for backward compat
   content: string;
   contentAfterMedia: string;
   inlineMedia: InlineMedia[];
@@ -68,6 +71,7 @@ const createEmptyDraft = (): StoryDraft => ({
   city: "",
   linkedTripId: null,
   coverImage: null,
+  editorBlocks: [createTextBlock()],
   content: "",
   contentAfterMedia: "",
   inlineMedia: [],
@@ -134,7 +138,7 @@ export function useStoryDrafts() {
   // Helper to migrate draft format
   const migrateDraft = (parsed: any): StoryDraft => {
     const base = createEmptyDraft();
-    return {
+    const draft: StoryDraft = {
       ...base,
       ...parsed,
       id: parsed.id || base.id,
@@ -150,6 +154,19 @@ export function useStoryDrafts() {
       lastSaved: parsed.lastSaved ? new Date(parsed.lastSaved) : new Date(),
       createdAt: parsed.createdAt ? new Date(parsed.createdAt) : new Date(),
     };
+
+    // Migrate to editorBlocks if not present
+    if (!Array.isArray(parsed.editorBlocks) || parsed.editorBlocks.length === 0) {
+      draft.editorBlocks = migrateLegacyToBlocks(
+        draft.content,
+        draft.inlineMedia,
+        draft.contentAfterMedia
+      );
+    } else {
+      draft.editorBlocks = parsed.editorBlocks;
+    }
+
+    return draft;
   };
 
   // Save drafts to localStorage

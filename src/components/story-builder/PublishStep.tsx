@@ -133,38 +133,41 @@ export function PublishStep({
               {draft.country}{draft.city && `, ${draft.city}`}
             </p>
             
-            {/* Story Content Preview */}
-            {draft.content && (
-              <div
-                className="text-sm text-foreground line-clamp-3 tiptap-content"
-                dangerouslySetInnerHTML={{ __html: draft.content }}
-              />
-            )}
-            
-            {/* Inline Media Preview */}
-            {draft.inlineMedia && draft.inlineMedia.length > 0 && (
-              <div className="space-y-3 pt-2">
-                {draft.inlineMedia.map((media) => (
-                  <div key={media.id} className="space-y-3">
-                    {media.type === "image" && media.images[0] && (
-                      <div className="rounded-lg overflow-hidden">
+            {/* Story Content Preview - from editorBlocks */}
+            {draft.editorBlocks && draft.editorBlocks.length > 0 ? (
+              <div className="space-y-3">
+                {draft.editorBlocks.map((block) => {
+                  if (block.type === "text" && block.content.replace(/<[^>]*>/g, "").trim()) {
+                    return (
+                      <div
+                        key={block.id}
+                        className="text-sm text-foreground line-clamp-3 tiptap-content"
+                        dangerouslySetInnerHTML={{ __html: block.content }}
+                      />
+                    );
+                  }
+                  if (block.type === "image" && block.images[0]) {
+                    return (
+                      <div key={block.id} className="rounded-lg overflow-hidden">
                         <img
-                          src={media.images[0].url}
-                          alt={media.images[0].caption || "Story image"}
+                          src={block.images[0].url}
+                          alt={block.images[0].caption || "Story image"}
                           className="w-full h-32 object-cover"
                         />
-                        {media.images[0].caption && (
+                        {block.images[0].caption && (
                           <p className="text-xs text-muted-foreground mt-1 text-center">
-                            {media.images[0].caption}
+                            {block.images[0].caption}
                           </p>
                         )}
                       </div>
-                    )}
-                    {media.type === "gallery" && media.images.length > 0 && (
-                      <div>
+                    );
+                  }
+                  if (block.type === "gallery" && block.images.length > 0) {
+                    return (
+                      <div key={block.id}>
                         <Carousel className="w-full">
                           <CarouselContent>
-                            {media.images.map((img, index) => (
+                            {block.images.map((img, index) => (
                               <CarouselItem key={index} className="basis-2/3">
                                 <div className="space-y-1">
                                   <div className="rounded-lg overflow-hidden">
@@ -185,21 +188,24 @@ export function PublishStep({
                           </CarouselContent>
                         </Carousel>
                         <p className="text-xs text-muted-foreground mt-2 text-center">
-                          {media.images.length} photos in gallery
+                          {block.images.length} photos in gallery
                         </p>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    );
+                  }
+                  return null;
+                })}
               </div>
-            )}
-            
-            {/* Content After Media (legacy) */}
-            {draft.contentAfterMedia && (
-              <div
-                className="text-sm text-foreground tiptap-content"
-                dangerouslySetInnerHTML={{ __html: draft.contentAfterMedia }}
-              />
+            ) : (
+              /* Legacy fallback */
+              <>
+                {draft.content && (
+                  <div
+                    className="text-sm text-foreground line-clamp-3 tiptap-content"
+                    dangerouslySetInnerHTML={{ __html: draft.content }}
+                  />
+                )}
+              </>
             )}
             
             {/* Social Links Preview */}
