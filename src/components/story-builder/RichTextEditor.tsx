@@ -2,6 +2,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
+import { ScrollIntoView } from "@/lib/tiptapScrollIntoView";
 import { useEffect } from "react";
 import type { Editor } from "@tiptap/react";
 
@@ -29,6 +30,7 @@ export function RichTextEditor({
         },
       }),
       Underline,
+      ScrollIntoView,
       Placeholder.configure({
         placeholder,
       }),
