@@ -32,6 +32,7 @@ export function EditingToolbar({
   return (
     <div className="flex items-center justify-center gap-1 py-2 border-b border-border/50">
       <input
+        id="gallery-input"
         ref={galleryInputRef}
         type="file"
         accept="image/*"
@@ -76,15 +77,13 @@ export function EditingToolbar({
       >
         <ListOrdered className="h-4 w-4" />
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
-        onClick={() => galleryInputRef.current?.click()}
+      <label
+        htmlFor="gallery-input"
+        className="inline-flex items-center justify-center h-9 w-9 p-0 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent cursor-pointer"
         title="Add Gallery"
       >
         <Images className="h-4 w-4" />
-      </Button>
+      </label>
       <Button
         variant="ghost"
         size="sm"

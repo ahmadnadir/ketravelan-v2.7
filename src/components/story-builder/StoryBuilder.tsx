@@ -80,7 +80,7 @@ export function StoryBuilder({
   const handleContinueClick = () => {
     if (!draft.coverImage) {
       toast.error("Please add a cover image to continue");
-      coverInputRef.current?.click();
+      document.getElementById("cover-input")?.click();
       return;
     }
     // Strip HTML to check if there's actual text content
@@ -100,6 +100,7 @@ export function StoryBuilder({
         {/* Cover Image - full bleed, editorial style */}
         <div className="-mx-4 sm:-mx-6 mb-4">
           <input
+            id="cover-input"
             ref={coverInputRef}
             type="file"
             accept="image/*"
@@ -115,23 +116,23 @@ export function StoryBuilder({
                   className="w-full h-full object-cover"
                 />
               </div>
-              <button
-                onClick={() => coverInputRef.current?.click()}
-                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+              <label
+                htmlFor="cover-input"
+                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-pointer"
               >
                 <span className="text-white font-medium text-lg">Change Cover</span>
-              </button>
+              </label>
             </div>
           ) : (
-            <button
-              onClick={() => coverInputRef.current?.click()}
-              className="w-full aspect-[16/9] sm:aspect-[21/9] bg-muted/30 flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
+            <label
+              htmlFor="cover-input"
+              className="w-full aspect-[16/9] sm:aspect-[21/9] bg-muted/30 flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <ImageIcon className="h-10 w-10 text-muted-foreground/50" />
               <span className="text-muted-foreground">
                 Add cover image
               </span>
-            </button>
+            </label>
           )}
         </div>
 

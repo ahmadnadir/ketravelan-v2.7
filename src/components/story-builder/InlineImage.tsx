@@ -19,13 +19,13 @@ export function InlineImage({ media, onUpdateCaption, onRemove }: InlineImagePro
         <img
           src={image.url}
           alt={image.caption || "Story image"}
-          className="w-full h-auto object-cover"
+          className="w-full h-auto max-w-full object-cover rounded-lg"
         />
         
         {/* Remove button */}
         <button
           onClick={onRemove}
-          className="absolute top-3 right-3 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-3 right-3 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
         >
           <X className="h-4 w-4" />
         </button>
