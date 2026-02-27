@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { createTextBlock, migrateLegacyToBlocks } from "@/lib/storyEditorBlocks";
 import { ArrowLeft, X } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StorySetupStep } from "@/components/story-builder/StorySetupStep";
@@ -79,6 +80,15 @@ function CreateStoryContent() {
           images: media.images,
           insertPosition: media.insertPosition,
         }));
+
+        // Build editorBlocks: use saved blocks if available, otherwise migrate
+        const editorBlocks = existingStory.editorBlocks && existingStory.editorBlocks.length > 0
+          ? existingStory.editorBlocks
+          : migrateLegacyToBlocks(
+              existingStory.content || "",
+              draftInlineMedia,
+              existingStory.contentAfterMedia || ""
+            );
         
         // Load story data into draft
         updateActiveDraft({
@@ -91,6 +101,7 @@ function CreateStoryContent() {
           contentAfterMedia: existingStory.contentAfterMedia || "",
           blocks: existingStory.blocks || [],
           inlineMedia: draftInlineMedia,
+          editorBlocks,
           selectedSocialLinks: existingStory.selectedSocialLinks || [],
           visibility: existingStory.visibility,
           socialLinks: existingStory.socialLinks || [],
@@ -276,6 +287,7 @@ function CreateStoryContent() {
     city: "",
     linkedTripId: null,
     coverImage: null,
+    editorBlocks: [createTextBlock()],
     content: "",
     contentAfterMedia: "",
     inlineMedia: [],

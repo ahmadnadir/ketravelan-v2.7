@@ -267,97 +267,153 @@ function StoryDetailContent() {
 
         {/* Story content */}
         <article className="prose prose-sm sm:prose max-w-none mb-8">
-          {/* For stories with blocks, show excerpt as intro then blocks */}
-          {story.blocks && story.blocks.length > 0 ? (
-            <>
-              <p className="text-lg text-foreground leading-relaxed">{story.excerpt}</p>
-              {renderBlocks()}
-            </>
-          ) : (
-            /* For content-based stories, render HTML or plain text */
-            /<[a-z][\s\S]*>/i.test(story.content || "") ? (
-              <div
-                className="text-lg text-foreground leading-relaxed tiptap-content"
-                dangerouslySetInnerHTML={{ __html: story.content || "" }}
-              />
-            ) : (
-              <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">
-                {story.content || story.excerpt}
-              </p>
-            )
-          )}
-          
-          {/* Inline Media (images/galleries) */}
-          {story.inlineMedia && story.inlineMedia.length > 0 && (
-            <div className="space-y-6 mt-6">
-              {story.inlineMedia.map((media) => (
-                <div key={media.id}>
-                  {media.type === "image" && media.images[0] && (
-                    <figure className="my-6">
-                      <img
-                        src={media.images[0].url}
-                        alt={media.images[0].caption || "Story image"}
-                        className="w-full rounded-lg"
-                      />
-                      {media.images[0].caption && (
-                        <figcaption className="text-sm text-muted-foreground mt-2 text-center">
-                          {media.images[0].caption}
-                        </figcaption>
+          {/* Block-based rendering (new stories) */}
+          {story.editorBlocks && story.editorBlocks.length > 0 ? (
+            story.editorBlocks.map((block) => {
+              if (block.type === "text" && block.content.replace(/<[^>]*>/g, "").trim()) {
+                return (
+                  <div
+                    key={block.id}
+                    className="text-lg text-foreground leading-relaxed tiptap-content"
+                    dangerouslySetInnerHTML={{ __html: block.content }}
+                  />
+                );
+              }
+              if (block.type === "image" && block.images[0]) {
+                return (
+                  <figure key={block.id} className="my-6">
+                    <img
+                      src={block.images[0].url}
+                      alt={block.images[0].caption || "Story image"}
+                      className="w-full rounded-lg"
+                    />
+                    {block.images[0].caption && (
+                      <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                        {block.images[0].caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                );
+              }
+              if (block.type === "gallery" && block.images.length > 0) {
+                return (
+                  <div key={block.id} className="my-6 -mx-4 sm:mx-0">
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {block.images.map((img, index) => (
+                          <CarouselItem key={index}>
+                            <figure className="px-4 sm:px-0">
+                              <img
+                                src={img.url}
+                                alt={img.caption || `Gallery image ${index + 1}`}
+                                className="w-full aspect-[4/3] object-cover rounded-lg"
+                              />
+                              {img.caption && (
+                                <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                                  {img.caption}
+                                </figcaption>
+                              )}
+                            </figure>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      {block.images.length > 1 && (
+                        <>
+                          <CarouselPrevious className="left-6 sm:left-2" />
+                          <CarouselNext className="right-6 sm:right-2" />
+                        </>
                       )}
-                    </figure>
-                  )}
-                  {media.type === "gallery" && media.images.length > 0 && (
-                    <div className="my-6 -mx-4 sm:mx-0">
-                      <Carousel className="w-full">
-                        <CarouselContent>
-                          {media.images.map((img, index) => (
-                            <CarouselItem key={index}>
-                              <figure className="px-4 sm:px-0">
-                                <img
-                                  src={img.url}
-                                  alt={img.caption || `Gallery image ${index + 1}`}
-                                  className="w-full aspect-[4/3] object-cover rounded-lg"
-                                />
-                                {img.caption && (
-                                  <figcaption className="text-sm text-muted-foreground mt-2 text-center">
-                                    {img.caption}
-                                  </figcaption>
-                                )}
-                              </figure>
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                        {media.images.length > 1 && (
-                          <>
-                            <CarouselPrevious className="left-6 sm:left-2" />
-                            <CarouselNext className="right-6 sm:right-2" />
-                          </>
-                        )}
-                      </Carousel>
-                      {/* Dots indicator */}
-                      {media.images.length > 1 && (
-                        <div className="flex justify-center gap-1.5 mt-3">
-                          {media.images.map((_, index) => (
-                            <div
-                              key={index}
-                              className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30"
-                            />
-                          ))}
+                    </Carousel>
+                  </div>
+                );
+              }
+              return null;
+            })
+          ) : (
+            /* Legacy rendering for old stories */
+            <>
+              {/* For stories with blocks, show excerpt as intro then blocks */}
+              {story.blocks && story.blocks.length > 0 ? (
+                <>
+                  <p className="text-lg text-foreground leading-relaxed">{story.excerpt}</p>
+                  {renderBlocks()}
+                </>
+              ) : (
+                /* For content-based stories, render HTML or plain text */
+                /<[a-z][\s\S]*>/i.test(story.content || "") ? (
+                  <div
+                    className="text-lg text-foreground leading-relaxed tiptap-content"
+                    dangerouslySetInnerHTML={{ __html: story.content || "" }}
+                  />
+                ) : (
+                  <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">
+                    {story.content || story.excerpt}
+                  </p>
+                )
+              )}
+              
+              {/* Inline Media (images/galleries) - legacy */}
+              {story.inlineMedia && story.inlineMedia.length > 0 && (
+                <div className="space-y-6 mt-6">
+                  {story.inlineMedia.map((media) => (
+                    <div key={media.id}>
+                      {media.type === "image" && media.images[0] && (
+                        <figure className="my-6">
+                          <img
+                            src={media.images[0].url}
+                            alt={media.images[0].caption || "Story image"}
+                            className="w-full rounded-lg"
+                          />
+                          {media.images[0].caption && (
+                            <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                              {media.images[0].caption}
+                            </figcaption>
+                          )}
+                        </figure>
+                      )}
+                      {media.type === "gallery" && media.images.length > 0 && (
+                        <div className="my-6 -mx-4 sm:mx-0">
+                          <Carousel className="w-full">
+                            <CarouselContent>
+                              {media.images.map((img, index) => (
+                                <CarouselItem key={index}>
+                                  <figure className="px-4 sm:px-0">
+                                    <img
+                                      src={img.url}
+                                      alt={img.caption || `Gallery image ${index + 1}`}
+                                      className="w-full aspect-[4/3] object-cover rounded-lg"
+                                    />
+                                    {img.caption && (
+                                      <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                                        {img.caption}
+                                      </figcaption>
+                                    )}
+                                  </figure>
+                                </CarouselItem>
+                              ))}
+                            </CarouselContent>
+                            {media.images.length > 1 && (
+                              <>
+                                <CarouselPrevious className="left-6 sm:left-2" />
+                                <CarouselNext className="right-6 sm:right-2" />
+                              </>
+                            )}
+                          </Carousel>
                         </div>
                       )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Content after media (legacy) */}
-          {story.contentAfterMedia && (
-            <div
-              className="text-lg text-foreground leading-relaxed tiptap-content mt-6"
-              dangerouslySetInnerHTML={{ __html: story.contentAfterMedia }}
-            />
+              )}
+              
+              {/* Content after media (legacy) */}
+              {story.contentAfterMedia && (
+                <div
+                  className="text-lg text-foreground leading-relaxed tiptap-content mt-6"
+                  dangerouslySetInnerHTML={{ __html: story.contentAfterMedia }}
+                />
+              )}
+            </>
           )}
           
           {/* Selected Social Links (inline handles like @username) */}

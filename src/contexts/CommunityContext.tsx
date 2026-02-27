@@ -11,6 +11,7 @@ import {
   SocialLink,
 } from "@/data/communityMockData";
 import { StoryDraft } from "@/hooks/useStoryDrafts";
+import { blocksToLegacy } from "@/lib/storyEditorBlocks";
 
 type CommunityMode = "stories" | "discussions";
 
@@ -194,26 +195,33 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
 
   const publishStory = useCallback((draft: StoryDraft): Story => {
     const slug = generateSlug(draft.title);
-    
-    // Convert inline media from draft format to story format
-    const storyInlineMedia = draft.inlineMedia.map((media) => ({
+
+    // Derive legacy fields from editorBlocks
+    const legacy = blocksToLegacy(draft.editorBlocks);
+
+    // Convert inline media from derived legacy for story format
+    const storyInlineMedia = legacy.inlineMedia.map((media) => ({
       id: media.id,
       type: media.type,
       images: media.images,
       insertPosition: media.insertPosition,
     }));
-    
+
+    const allText = [legacy.content, ...legacy.inlineMedia.map(m => m.contentAfter || ""), legacy.contentAfterMedia]
+      .join(" ").replace(/<[^>]*>/g, "");
+
     const newStory: Story = {
       id: `story-${Date.now()}`,
       slug,
       title: draft.title,
       coverImage: draft.coverImage || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800",
-      excerpt: (draft.content?.replace(/<[^>]*>/g, "") || "").slice(0, 150) || draft.blocks.find((b) => b.type === "text")?.content?.slice(0, 150) || draft.title,
-      content: draft.content || draft.blocks.map((b) => b.content).join("\n\n"),
-      contentAfterMedia: draft.contentAfterMedia || undefined,
+      excerpt: allText.slice(0, 150) || draft.title,
+      content: legacy.content,
+      contentAfterMedia: legacy.contentAfterMedia || undefined,
       blocks: draft.blocks,
       inlineMedia: storyInlineMedia.length > 0 ? storyInlineMedia : undefined,
       selectedSocialLinks: draft.selectedSocialLinks.length > 0 ? draft.selectedSocialLinks : undefined,
+      editorBlocks: draft.editorBlocks,
       author: {
         id: "current-user",
         name: "You",
@@ -225,7 +233,7 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
         city: draft.city || undefined,
         flag: getCountryFlag(draft.country),
       },
-      readingTime: Math.max(1, Math.ceil((((draft.content?.replace(/<[^>]*>/g, "") || "").split(/\s+/).length || 0) + ((draft.contentAfterMedia?.replace(/<[^>]*>/g, "") || "").split(/\s+/).length || 0)) / 200)),
+      readingTime: Math.max(1, Math.ceil(allText.split(/\s+/).length / 200)),
       storyType: draft.storyType || "trip-recap",
       linkedTripId: draft.linkedTripId || undefined,
       visibility: draft.visibility,
@@ -244,15 +252,18 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
 
   const updateStory = useCallback((storyId: string, draft: StoryDraft): Story | null => {
     let updatedStory: Story | null = null;
-    
-    // Convert inline media from draft format to story format
-    const storyInlineMedia = draft.inlineMedia.map((media) => ({
+
+    const legacy = blocksToLegacy(draft.editorBlocks);
+    const storyInlineMedia = legacy.inlineMedia.map((media) => ({
       id: media.id,
       type: media.type,
       images: media.images,
       insertPosition: media.insertPosition,
     }));
-    
+
+    const allText = [legacy.content, ...legacy.inlineMedia.map(m => m.contentAfter || ""), legacy.contentAfterMedia]
+      .join(" ").replace(/<[^>]*>/g, "");
+
     setStories((prev) => {
       return prev.map((story) => {
         if (story.id === storyId) {
@@ -260,18 +271,19 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
             ...story,
             title: draft.title,
             coverImage: draft.coverImage || story.coverImage,
-            excerpt: (draft.content?.replace(/<[^>]*>/g, "") || "").slice(0, 150) || draft.blocks.find((b) => b.type === "text")?.content?.slice(0, 150) || draft.title,
-            content: draft.content || draft.blocks.map((b) => b.content).join("\n\n"),
-            contentAfterMedia: draft.contentAfterMedia || undefined,
+            excerpt: allText.slice(0, 150) || draft.title,
+            content: legacy.content,
+            contentAfterMedia: legacy.contentAfterMedia || undefined,
             blocks: draft.blocks,
             inlineMedia: storyInlineMedia.length > 0 ? storyInlineMedia : undefined,
             selectedSocialLinks: draft.selectedSocialLinks.length > 0 ? draft.selectedSocialLinks : undefined,
+            editorBlocks: draft.editorBlocks,
             location: {
               country: draft.country || story.location.country,
               city: draft.city || story.location.city,
               flag: getCountryFlag(draft.country || story.location.country),
             },
-            readingTime: Math.max(1, Math.ceil((((draft.content?.replace(/<[^>]*>/g, "") || "").split(/\s+/).length || 0) + ((draft.contentAfterMedia?.replace(/<[^>]*>/g, "") || "").split(/\s+/).length || 0)) / 200)),
+            readingTime: Math.max(1, Math.ceil(allText.split(/\s+/).length / 200)),
             storyType: draft.storyType || story.storyType,
             visibility: draft.visibility,
             socialLinks: draft.socialLinks,
