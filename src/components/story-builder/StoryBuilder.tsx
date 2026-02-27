@@ -166,38 +166,34 @@ export function StoryBuilder({
           />
         </div>
 
-        {/* Inline Media */}
-        {draft.inlineMedia.map((media) => (
-          media.type === "image" ? (
-            <InlineImage
-              key={media.id}
-              media={media}
-              onUpdateCaption={(caption) => handleUpdateMediaCaption(media.id, 0, caption)}
-              onRemove={() => removeInlineMedia(media.id)}
+        {/* Inline Media with per-item text areas */}
+        {draft.inlineMedia.map((media, idx) => (
+          <div key={media.id}>
+            {media.type === "image" ? (
+              <InlineImage
+                media={media}
+                onUpdateCaption={(caption) => handleUpdateMediaCaption(media.id, 0, caption)}
+                onRemove={() => removeInlineMedia(media.id)}
+              />
+            ) : (
+              <InlineGallery
+                media={media}
+                onUpdateImage={(index, updates) => {
+                  const updatedImages = [...media.images];
+                  updatedImages[index] = { ...updatedImages[index], ...updates };
+                  updateInlineMedia(media.id, { images: updatedImages });
+                }}
+                onRemove={() => removeInlineMedia(media.id)}
+              />
+            )}
+            <textarea
+              className="w-full min-h-[80px] text-lg leading-[1.8] text-foreground bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/40 placeholder:italic"
+              placeholder={idx === draft.inlineMedia.length - 1 ? "Continue writing..." : ""}
+              value={media.contentAfter || ""}
+              onChange={(e) => updateInlineMedia(media.id, { contentAfter: e.target.value })}
             />
-          ) : (
-            <InlineGallery
-              key={media.id}
-              media={media}
-              onUpdateImage={(index, updates) => {
-                const updatedImages = [...media.images];
-                updatedImages[index] = { ...updatedImages[index], ...updates };
-                updateInlineMedia(media.id, { images: updatedImages });
-              }}
-              onRemove={() => removeInlineMedia(media.id)}
-            />
-          )
+          </div>
         ))}
-
-        {/* Continue writing area after media */}
-        {draft.inlineMedia.length > 0 && (
-          <textarea
-            className="w-full min-h-[120px] mt-4 text-lg leading-[1.8] text-foreground bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/40 placeholder:italic"
-            placeholder="Continue writing..."
-            value={draft.contentAfterMedia || ""}
-            onChange={(e) => saveDraft({ contentAfterMedia: e.target.value })}
-          />
-        )}
 
         {/* Social Links - plain text, editorial style */}
         <SocialLinksInline
