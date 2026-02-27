@@ -5,7 +5,7 @@ import { PublishedTrip } from './publishedTrips';
 import { tripCategories } from '@/data/categories';
 
 const SITE_NAME = 'Ketravelan';
-const SITE_URL = 'https://ketravelan.com'; // Update with actual domain
+export const SITE_URL = 'https://ketravelan.com';
 const DEFAULT_OG_IMAGE = 'https://lovable.dev/opengraph-image-p98pqg.png';
 
 export interface TripMeta {

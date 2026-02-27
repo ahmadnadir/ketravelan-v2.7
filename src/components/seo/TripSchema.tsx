@@ -19,6 +19,8 @@ interface TripSchemaProps {
     day: number;
     activities: string[];
   }>;
+  visibility?: 'public' | 'private';
+  geo?: { latitude: number; longitude: number };
 }
 
 export function TripSchema({
@@ -34,17 +36,11 @@ export function TripSchema({
   organizer,
   touristTypes = [],
   itinerary = [],
+  visibility = 'public',
+  geo,
 }: TripSchemaProps) {
-  const schema: Record<string, any> = {
-    '@context': 'https://schema.org',
-    '@type': 'TouristTrip',
-    name,
-    description,
-    touristType: touristTypes.length > 0 ? touristTypes : ['Traveler'],
-  };
-
-  // Add destination as Place
-  schema.itinerary = {
+  // Build destination Place object
+  const placeObject: Record<string, any> = {
     '@type': 'Place',
     name: destination,
     address: {
@@ -52,23 +48,30 @@ export function TripSchema({
       addressLocality: destination,
     },
   };
-
-  // Add dates if available
-  if (startDate) {
-    schema.startDate = startDate;
-  }
-  if (endDate) {
-    schema.endDate = endDate;
-  }
-
-  // Add image if available
-  if (image) {
-    schema.image = image;
+  if (geo) {
+    placeObject.geo = {
+      '@type': 'GeoCoordinates',
+      latitude: geo.latitude,
+      longitude: geo.longitude,
+    };
   }
 
-  // Add offer (price)
+  // TouristTrip schema
+  const tripSchema: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristTrip',
+    name,
+    description,
+    touristType: touristTypes.length > 0 ? touristTypes : ['Traveler'],
+    touristDestination: placeObject,
+  };
+
+  if (startDate) tripSchema.startDate = startDate;
+  if (endDate) tripSchema.endDate = endDate;
+  if (image) tripSchema.image = image;
+
   if (price) {
-    schema.offers = {
+    tripSchema.offers = {
       '@type': 'Offer',
       price: price.toString(),
       priceCurrency: currency,
@@ -77,29 +80,64 @@ export function TripSchema({
     };
   }
 
-  // Add organizer
   if (organizer) {
-    schema.organizer = {
+    tripSchema.organizer = {
       '@type': 'Person',
       name: organizer.name,
       ...(organizer.url && { url: organizer.url }),
     };
   }
 
-  // Add day-by-day itinerary if available
   if (itinerary.length > 0) {
-    schema.subTrip = itinerary.map((day) => ({
+    tripSchema.subTrip = itinerary.map((day) => ({
       '@type': 'TouristTrip',
       name: `Day ${day.day}`,
       description: day.activities.join(', '),
     }));
   }
 
+  // Conditional Event schema for public trips with confirmed dates
+  const showEvent = visibility === 'public' && startDate && endDate;
+
+  const eventSchema = showEvent ? {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name,
+    description,
+    startDate,
+    endDate,
+    location: placeObject,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    ...(image && { image }),
+    ...(organizer && {
+      organizer: {
+        '@type': 'Organization',
+        name: 'Ketravelan',
+        url: 'https://ketravelan.com',
+      },
+    }),
+    ...(price && {
+      offers: {
+        '@type': 'Offer',
+        price: price.toString(),
+        priceCurrency: currency,
+        availability: 'https://schema.org/InStock',
+        url,
+      },
+    }),
+  } : null;
+
   return (
     <Helmet>
       <script type="application/ld+json">
-        {JSON.stringify(schema)}
+        {JSON.stringify(tripSchema)}
       </script>
+      {eventSchema && (
+        <script type="application/ld+json">
+          {JSON.stringify(eventSchema)}
+        </script>
+      )}
     </Helmet>
   );
 }

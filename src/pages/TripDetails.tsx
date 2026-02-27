@@ -45,7 +45,9 @@ import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { TripSchema } from "@/components/seo/TripSchema";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { generateTripSlug, generateTripMeta } from "@/lib/seo";
+import { generateTripSlug, generateTripMeta, SITE_URL } from "@/lib/seo";
+import { OrganizationSchema } from "@/components/seo/OrganizationSchema";
+import { FAQSchema } from "@/components/seo/FAQSchema";
 
 const iconMap: Record<string, any> = {
   car: Car,
@@ -338,7 +340,7 @@ export default function TripDetails() {
     return <TripDetailsSkeleton />;
   }
 
-  const canonicalUrl = `${window.location.origin}/trips/${tripSlug}`;
+  const canonicalUrl = `${SITE_URL}/trips/${tripSlug}`;
   const isIndexable = tripData.visibility === 'public';
 
   return (
@@ -368,13 +370,23 @@ export default function TripDetails() {
           day: index + 1,
           activities: day.activities || [day.notes || ''],
         })) || []}
+        visibility={tripData.visibility}
       />
       <BreadcrumbSchema
         items={[
-          { name: 'Home', url: `${window.location.origin}/` },
-          { name: 'Explore', url: `${window.location.origin}/explore` },
-          { name: tripData.destination, url: `${window.location.origin}/destinations/${tripData.destination.toLowerCase().replace(/\s+/g, '-')}` },
+          { name: 'Home', url: `${SITE_URL}/` },
+          { name: 'Explore', url: `${SITE_URL}/explore` },
+          { name: tripData.destination, url: `${SITE_URL}/destinations/${tripData.destination.toLowerCase().replace(/\s+/g, '-')}` },
           { name: tripData.title, url: canonicalUrl },
+        ]}
+      />
+      <OrganizationSchema />
+      <FAQSchema
+        items={[
+          { question: `How do I join the ${tripData.title} trip?`, answer: `You can join by clicking the "I'm Interested" button on the trip page and sending a message to the organizer.` },
+          { question: `What's included in the RM ${tripData.price} budget?`, answer: `The budget covers ${tripData.budgetBreakdown?.map((b: any) => b.category.toLowerCase()).join(', ') || 'trip essentials'} for the group trip to ${tripData.destination}.` },
+          { question: `When does the ${tripData.title} trip start?`, answer: tripData.startDate ? `The trip starts on ${new Date(tripData.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.` : 'Dates are flexible and will be decided by the group.' },
+          { question: `Who organizes this trip?`, answer: `This trip is organized by ${organizer.name} through the Ketravelan travel community platform.` },
         ]}
       />
 
@@ -444,7 +456,7 @@ export default function TripDetails() {
           <div className="aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
             <img
               src={images[currentImage]}
-              alt={tripData.title}
+              alt={`${tripData.title} - ${tripData.destination} photo ${currentImage + 1} of ${images.length}`}
               className="h-full w-full object-cover"
             />
           </div>
@@ -503,7 +515,7 @@ export default function TripDetails() {
                   index === currentImage ? "border-white" : "border-transparent"
                 }`}
               >
-                <img src={img} alt="" className="h-full w-full object-cover" />
+                <img src={img} alt={`View photo ${index + 1} of ${tripData.title}`} className="h-full w-full object-cover" />
               </button>
             ))}
           </div>
