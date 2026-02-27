@@ -1,29 +1,20 @@
 import { useRef } from "react";
 import { Bold, Underline, List, ListOrdered, AtSign, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export type FormatType = "bold" | "underline" | "bullet" | "numbered";
+import type { Editor } from "@tiptap/react";
 
 interface EditingToolbarProps {
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
-  onFormat: (type: FormatType) => void;
+  editor: Editor | null;
   onAddGallery: (files: File[]) => void;
   onOpenSocialSheet: () => void;
 }
 
 export function EditingToolbar({
-  textareaRef,
-  onFormat,
+  editor,
   onAddGallery,
   onOpenSocialSheet,
 }: EditingToolbarProps) {
   const galleryInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFormat = (type: FormatType) => {
-    onFormat(type);
-    // Refocus textarea after formatting
-    setTimeout(() => textareaRef.current?.focus(), 0);
-  };
 
   const handleGallerySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -35,6 +26,9 @@ export function EditingToolbar({
     }
   };
 
+  const btnClass = (active: boolean) =>
+    `h-9 w-9 p-0 ${active ? "text-foreground bg-accent" : "text-muted-foreground hover:text-foreground"}`;
+
   return (
     <div className="flex items-center justify-center gap-1 py-2 border-b border-border/50">
       <input
@@ -45,30 +39,30 @@ export function EditingToolbar({
         className="hidden"
         onChange={handleGallerySelect}
       />
-      
+
       <Button
         variant="ghost"
         size="sm"
-        className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
-        onClick={() => handleFormat("bold")}
-        title="Bold"
+        className={btnClass(editor?.isActive("bold") ?? false)}
+        onClick={() => editor?.chain().focus().toggleBold().run()}
+        title="Bold (Ctrl+B)"
       >
         <Bold className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
-        onClick={() => handleFormat("underline")}
-        title="Underline"
+        className={btnClass(editor?.isActive("underline") ?? false)}
+        onClick={() => editor?.chain().focus().toggleUnderline().run()}
+        title="Underline (Ctrl+U)"
       >
         <Underline className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
-        onClick={() => handleFormat("bullet")}
+        className={btnClass(editor?.isActive("bulletList") ?? false)}
+        onClick={() => editor?.chain().focus().toggleBulletList().run()}
         title="Bullet List"
       >
         <List className="h-4 w-4" />
@@ -76,8 +70,8 @@ export function EditingToolbar({
       <Button
         variant="ghost"
         size="sm"
-        className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
-        onClick={() => handleFormat("numbered")}
+        className={btnClass(editor?.isActive("orderedList") ?? false)}
+        onClick={() => editor?.chain().focus().toggleOrderedList().run()}
         title="Numbered List"
       >
         <ListOrdered className="h-4 w-4" />

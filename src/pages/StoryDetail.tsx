@@ -157,8 +157,17 @@ function StoryDetailContent() {
       });
     }
     
-    // No blocks - show content if it's different from excerpt (avoid duplication)
+    // No blocks - show content (may be HTML from rich text editor)
     if (story.content && story.content !== story.excerpt) {
+      // Check if content contains HTML tags
+      if (/<[a-z][\s\S]*>/i.test(story.content)) {
+        return (
+          <div
+            className="text-foreground tiptap-content"
+            dangerouslySetInnerHTML={{ __html: story.content }}
+          />
+        );
+      }
       return (
         <p className="text-muted-foreground whitespace-pre-wrap">
           {story.content}
@@ -265,10 +274,17 @@ function StoryDetailContent() {
               {renderBlocks()}
             </>
           ) : (
-            /* For content-based stories, show full content (not excerpt) */
-            <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">
-              {story.content || story.excerpt}
-            </p>
+            /* For content-based stories, render HTML or plain text */
+            /<[a-z][\s\S]*>/i.test(story.content || "") ? (
+              <div
+                className="text-lg text-foreground leading-relaxed tiptap-content"
+                dangerouslySetInnerHTML={{ __html: story.content || "" }}
+              />
+            ) : (
+              <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">
+                {story.content || story.excerpt}
+              </p>
+            )
           )}
           
           {/* Inline Media (images/galleries) */}
@@ -336,11 +352,12 @@ function StoryDetailContent() {
             </div>
           )}
           
-          {/* Content after media */}
+          {/* Content after media (legacy) */}
           {story.contentAfterMedia && (
-            <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap mt-6">
-              {story.contentAfterMedia}
-            </p>
+            <div
+              className="text-lg text-foreground leading-relaxed tiptap-content mt-6"
+              dangerouslySetInnerHTML={{ __html: story.contentAfterMedia }}
+            />
           )}
           
           {/* Selected Social Links (inline handles like @username) */}

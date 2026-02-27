@@ -135,9 +135,10 @@ export function PublishStep({
             
             {/* Story Content Preview */}
             {draft.content && (
-              <p className="text-sm text-foreground line-clamp-3 whitespace-pre-wrap">
-                {draft.content}
-              </p>
+              <div
+                className="text-sm text-foreground line-clamp-3 tiptap-content"
+                dangerouslySetInnerHTML={{ __html: draft.content }}
+              />
             )}
             
             {/* Inline Media Preview */}
@@ -193,11 +194,12 @@ export function PublishStep({
               </div>
             )}
             
-            {/* Content After Media */}
+            {/* Content After Media (legacy) */}
             {draft.contentAfterMedia && (
-              <p className="text-sm text-foreground whitespace-pre-wrap">
-                {draft.contentAfterMedia}
-              </p>
+              <div
+                className="text-sm text-foreground tiptap-content"
+                dangerouslySetInnerHTML={{ __html: draft.contentAfterMedia }}
+              />
             )}
             
             {/* Social Links Preview */}
