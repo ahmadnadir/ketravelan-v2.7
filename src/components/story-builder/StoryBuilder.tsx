@@ -189,17 +189,15 @@ export function StoryBuilder({
           )
         ))}
 
-        {/* Tap area to continue writing after media */}
-        <div
-          className="min-h-[120px] cursor-text"
-          onClick={() => editor?.commands.focus('end')}
-        >
-          {draft.inlineMedia.length > 0 && (
-            <p className="text-muted-foreground/40 text-lg pt-4 italic">
-              Tap here to continue writing...
-            </p>
-          )}
-        </div>
+        {/* Continue writing area after media */}
+        {draft.inlineMedia.length > 0 && (
+          <textarea
+            className="w-full min-h-[120px] mt-4 text-lg leading-[1.8] text-foreground bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/40 placeholder:italic"
+            placeholder="Continue writing..."
+            value={draft.contentAfterMedia || ""}
+            onChange={(e) => saveDraft({ contentAfterMedia: e.target.value })}
+          />
+        )}
 
         {/* Social Links - plain text, editorial style */}
         <SocialLinksInline
