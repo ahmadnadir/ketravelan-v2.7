@@ -1,37 +1,44 @@
 
 
-## Fix: Allow Writing After Inline Media
+## Fix: Text Pushed After New Images
 
 ### Problem
-After adding a gallery or image, users cannot place a cursor below the media to continue writing. The TipTap editor ends before the inline media section, and there's no text input area after the media blocks.
+When you write text after image 1, then add image 2, all media renders in a single block with only one shared textarea at the very bottom. The new image gets inserted before the textarea, pushing your text below all images.
 
 ### Solution
-Add a "continue writing" area below the inline media that, when tapped, focuses the TipTap editor at the end of its content. This gives users a clear place to tap and resume writing.
+Give each inline media item its own "content after" text field. This creates an interleaved layout: Editor -> Image 1 -> Text area 1 -> Image 2 -> Text area 2, so adding a new image never displaces existing text.
 
 ### Changes
 
-**`src/components/story-builder/StoryBuilder.tsx`**
-- Add a clickable div below the inline media section that focuses the TipTap editor at the end when tapped
-- Style it as a subtle prompt: min-height tap target with a faded placeholder like "Continue writing..." that disappears when the editor is focused
-- On click, call `editor?.commands.focus('end')` to place the cursor at the end of the content
+**1. `src/hooks/useStoryDrafts.ts`**
+- Add a `contentAfter` field to the `InlineMedia` interface so each media block stores its own follow-up text
 
-The addition looks like this (inserted after the inline media map, before SocialLinksInline):
+**2. `src/components/story-builder/StoryBuilder.tsx`**
+- Replace the single shared `<textarea>` at the bottom with a per-media textarea rendered directly below each `InlineImage` / `InlineGallery`
+- Each textarea saves to its own media item's `contentAfter` field via `updateInlineMedia(media.id, { contentAfter: value })`
+- Remove the dependency on `draft.contentAfterMedia` for this purpose
+- Always show a textarea after the last media item (with placeholder "Continue writing...")
 
+### Technical Detail
+
+Current layout:
 ```text
-{/* Tap area to continue writing after media */}
-<div
-  className="min-h-[120px] cursor-text"
-  onClick={() => editor?.commands.focus('end')}
->
-  {/* Show hint only when there's media and editor isn't focused */}
-  {draft.inlineMedia.length > 0 && (
-    <p className="text-muted-foreground/40 text-lg pt-4 italic">
-      Tap here to continue writing...
-    </p>
-  )}
-</div>
+[TipTap Editor]
+[Image 1]
+[Image 2]        <-- pushes textarea down
+[Single textarea]
 ```
 
-### Files Modified: 1
-- `src/components/story-builder/StoryBuilder.tsx` -- add clickable continue-writing zone after inline media
+Fixed layout:
+```text
+[TipTap Editor]
+[Image 1]
+[Textarea for Image 1]   <-- text stays here
+[Image 2]
+[Textarea for Image 2]
+```
+
+### Files Modified: 2
+- `src/hooks/useStoryDrafts.ts` -- add `contentAfter` to `InlineMedia`
+- `src/components/story-builder/StoryBuilder.tsx` -- per-media textarea instead of single shared one
 
