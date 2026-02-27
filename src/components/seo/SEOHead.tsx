@@ -33,11 +33,7 @@ export function SEOHead({
       )}
       
       {/* Indexing Control */}
-      {noIndex ? (
-        <meta name="robots" content="noindex, nofollow" />
-      ) : (
-        <meta name="robots" content="index, follow" />
-      )}
+      {noIndex && <meta name="robots" content="noindex, nofollow" />}
       
       {/* Canonical URL */}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
