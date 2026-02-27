@@ -178,7 +178,7 @@ export function StoryBuilder({
         </div>
 
         {/* Story Title - editorial display */}
-        <header className="mb-2">
+        <header className="mb-2 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight mb-2">
             {draft.title || "Untitled Story"}
           </h1>
