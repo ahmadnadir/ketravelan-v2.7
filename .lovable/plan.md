@@ -1,94 +1,133 @@
 
 
-## Reddit-Style Discussion Detail Redesign
+## Upgrade Story Builder to WYSIWYG Rich Text Editor
 
-This plan replaces the "Answered/Accepted" system with a Reddit-style upvote/downvote interaction model, improves reply readability, and adds sorting -- all while keeping the UI clean and aligned with the Ketravelan design system.
+### Problem
+The Story Builder uses a plain `<textarea>` and inserts raw markdown syntax (`**text**`, `__text__`) when formatting buttons are clicked. Users see the raw symbols instead of visually formatted text.
 
----
+### Solution
+Replace the `<textarea>` with **TipTap** -- a headless, extensible rich text editor built on ProseMirror. It's the best fit because:
+- Lightweight and tree-shakeable (only import what you need)
+- Works seamlessly with React
+- Built-in extensions for bold, underline, bullet list, ordered list
+- Outputs HTML that can be stored and rendered safely
+- Supports keyboard shortcuts (Ctrl+B, Ctrl+U) out of the box
+- No heavy UI opinions -- we style it ourselves to match the editorial feel
 
-### What Changes
+### Changes Overview
 
-**1. Remove all green "Answered" and "Accepted" UI**
+**1. Install TipTap packages**
 
-- **DiscussionDetail.tsx**: Remove the green "Answered" badge from the discussion header and the green "Accepted" badge + green highlight styling from reply cards.
-- **DiscussionCard.tsx**: Remove the green "Answered" badge from the card in the discussions feed list.
-- All reply cards will use the same neutral `bg-secondary/50` background -- no special green borders or backgrounds.
+Add these dependencies:
+- `@tiptap/react` -- React bindings
+- `@tiptap/starter-kit` -- Bold, italic, lists, headings, etc.
+- `@tiptap/extension-underline` -- Underline support (not in starter-kit)
+- `@tiptap/extension-placeholder` -- Placeholder text support
 
-**2. Add upvote/downvote voting on each reply**
+**2. Create new `RichTextEditor` component**
 
-Each reply card gets a compact vote column on the left side:
-- `ChevronUp` icon (upvote)
-- Numeric score in the middle
-- `ChevronDown` icon (downvote)
+New file: `src/components/story-builder/RichTextEditor.tsx`
 
-Interaction logic (client-side state):
-- Clicking upvote toggles it on/off; clicking downvote toggles it on/off.
-- A user cannot have both active simultaneously (clicking one clears the other).
-- Active vote icon uses the primary/foreground color; inactive uses muted color.
-- Mock replies will get an initial `score` field (e.g., 12, 5).
+- Uses `useEditor` hook with StarterKit + Underline + Placeholder extensions
+- Renders via TipTap's `<EditorContent>` component
+- Styled to match the current borderless, editorial textarea look (transparent background, no border, 1.8 line-height, text-lg)
+- Auto-grows with content (no fixed height)
+- Exposes the editor instance to the toolbar
 
-**3. Add sort control above the replies list**
+**3. Update `EditingToolbar`**
 
-A segmented control or pill group above replies with three options:
-- **Top** (default) -- sort by score descending
-- **Newest** -- sort by createdAt descending
-- **Oldest** -- sort by createdAt ascending
+Modify: `src/components/story-builder/EditingToolbar.tsx`
 
-Uses the existing `SegmentedControl` component already in the codebase.
+- Change props: replace `textareaRef` + `onFormat` with a TipTap `Editor` instance
+- Bold button calls `editor.chain().focus().toggleBold().run()`
+- Underline button calls `editor.chain().focus().toggleUnderline().run()`
+- Bullet list calls `editor.chain().focus().toggleBulletList().run()`
+- Ordered list calls `editor.chain().focus().toggleOrderedList().run()`
+- Add active state highlighting: when cursor is inside bold text, the Bold button gets `text-foreground bg-accent` styling
+- Gallery and social link buttons stay unchanged
 
-**4. Update discussion header metadata**
+**4. Update `StoryBuilder`**
 
-Replace the "Answered" badge area with a compact stats row showing:
-- Reply count (e.g., "2 replies")
-- Views placeholder (e.g., "1.2k views")
+Modify: `src/components/story-builder/StoryBuilder.tsx`
 
-Keep the location and topic pills as neutral badges (already styled correctly).
+- Replace `<textarea>` with the new `<RichTextEditor>` component
+- Remove all markdown formatting logic (`handleFormat`, `handleKeyDown` for bullet/number continuation)
+- Store content as HTML string instead of plain text (the `content` field in `StoryDraft` remains a string -- just holds HTML now)
+- Pass editor instance to `EditingToolbar`
+- Remove the second "continuation" textarea after media -- use a single editor
+- The `contentAfterMedia` field will be deprecated (content after images lives in the same editor)
 
-**5. Add action row below each reply**
+**5. Update content rendering in read views**
 
-Below each reply's body text, add a small muted action row:
-- Reply (placeholder) · Share (placeholder) · Report (placeholder)
-- These are non-functional text buttons for now, styled as `text-xs text-muted-foreground`.
+Modify: `src/pages/StoryDetail.tsx`
 
-**6. Ensure reply composer doesn't overlap content**
+- Render `story.content` using `dangerouslySetInnerHTML` with proper sanitization styling
+- Add TipTap prose classes for consistent rendering (bold renders as bold, underline as underline, lists as lists)
 
-Add bottom padding to the replies list container so the sticky reply input doesn't cover the last reply.
+Modify: `src/components/story-builder/PublishStep.tsx`
 
----
+- Same approach for preview card -- render HTML content instead of plain text
+
+Modify: `src/contexts/CommunityContext.tsx`
+
+- Update excerpt extraction: strip HTML tags before slicing for excerpt generation
+- Update word count / reading time calculation: strip HTML before counting
+
+**6. Add editor styles**
+
+Modify: `src/index.css`
+
+Add TipTap editor styles:
+- `.tiptap` base styles matching the editorial feel
+- Placeholder styling (muted foreground, disappears on input)
+- List styles (bullet and numbered)
+- Focus outline removal for seamless look
+
+### Data Migration Note
+
+Existing drafts stored in localStorage have plain-text content. The RichTextEditor will render plain text as-is (TipTap handles plain text gracefully as paragraph content), so no explicit migration is needed. New formatting will be stored as HTML going forward.
+
+### What Stays the Same
+- Cover image upload and display
+- Inline media (images/galleries) insertion and management
+- Social links functionality
+- Save as Draft / Preview flow
+- Draft persistence in localStorage
+- Overall page layout and editorial feel
 
 ### Technical Details
 
-**Files to modify:**
-
-| File | Changes |
-|------|---------|
-| `src/pages/DiscussionDetail.tsx` | Major rewrite: remove Answered/Accepted UI, add vote state, sort state, new reply card layout with vote column and action row, sort control, stats row, bottom padding |
-| `src/components/community/discussions/DiscussionCard.tsx` | Remove the green "Answered" badge and `CheckCircle2` import |
-| `src/data/communityMockData.ts` | Remove `isAnswered` from the `Discussion` type (optional -- can also just stop using it) |
-
-**New state in DiscussionDetail.tsx:**
-- `votes`: `Record<string, "up" | "down" | null>` -- tracks user's vote per reply
-- `sortBy`: `"top" | "newest" | "oldest"` -- current sort mode
-- Mock replies updated to include a `score` field
-
-**Vote logic:**
+**TipTap editor configuration:**
 ```text
-handleVote(replyId, direction):
-  if current vote === direction -> set to null (toggle off), adjust score
-  else -> set to direction (toggle on, clear opposite), adjust score
+useEditor({
+  extensions: [
+    StarterKit.configure({
+      bulletList: { HTMLAttributes: { class: 'list-disc pl-4' } },
+      orderedList: { HTMLAttributes: { class: 'list-decimal pl-4' } },
+    }),
+    Underline,
+    Placeholder.configure({ placeholder: 'Write your experience here' }),
+  ],
+  content: draft.content,  // HTML string
+  onUpdate: ({ editor }) => saveDraft({ content: editor.getHTML() }),
+  editorProps: {
+    attributes: {
+      class: 'min-h-[60px] focus:outline-none text-lg leading-[1.8]',
+    },
+  },
+})
 ```
 
-**Reply card layout (mobile-friendly):**
-```text
-+--------------------------------------+
-| [ChevronUp]   Avatar  Name    · 1y   |
-|   12          Reply body text here... |
-| [ChevronDown]                         |
-|              Reply · Share · Report   |
-+--------------------------------------+
-```
+**Files created:** 1
+- `src/components/story-builder/RichTextEditor.tsx`
 
-The vote controls will be a narrow column on the left (~32px), keeping the layout compact on mobile.
+**Files modified:** 5
+- `src/components/story-builder/EditingToolbar.tsx`
+- `src/components/story-builder/StoryBuilder.tsx`
+- `src/components/story-builder/PublishStep.tsx`
+- `src/pages/StoryDetail.tsx`
+- `src/index.css`
 
-**Sort control** will use the existing `SegmentedControl` component placed between the reply count header and the reply list.
+**Files with minor updates:** 1
+- `src/contexts/CommunityContext.tsx` (strip HTML for excerpts/word count)
 
