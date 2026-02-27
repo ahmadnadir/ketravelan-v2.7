@@ -24,6 +24,9 @@ import {
   Coins,
 } from "lucide-react";
 import { FocusedFlowLayout } from "@/components/layout/FocusedFlowLayout";
+import { Header } from "@/components/layout/Header";
+import { MenuDrawer } from "@/components/layout/MenuDrawer";
+import { NotificationsSheet } from "@/components/notifications/NotificationsSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -100,6 +103,8 @@ export default function CreateTrip() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [showHomeCurrencySheet, setShowHomeCurrencySheet] = useState(false);
   const [showTravelCurrencySheet, setShowTravelCurrencySheet] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [localHomeCurrency, setLocalHomeCurrency] = useState<CurrencyCode>(user?.homeCurrency || "MYR");
   // Store draft snapshot for share modal (since we clear draft before showing modal)
   const draftSnapshotRef = useRef<TripDraft | null>(null);
@@ -222,7 +227,12 @@ export default function CreateTrip() {
 
   // Header content with step indicator
   const headerContent = (
-    <div className="bg-background border-b border-border/50 px-4 pt-8 pb-4 safe-top">
+    <div>
+      <Header
+        onNotificationsClick={() => setNotificationsOpen(true)}
+        onMenuClick={() => setMenuOpen(true)}
+      />
+      <div className="bg-background border-b border-border/50 px-4 pt-4 pb-4">
       <div className="container max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
         {/* Top navigation row */}
         <div className="flex items-center justify-between mb-4">
@@ -275,6 +285,7 @@ export default function CreateTrip() {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );
@@ -346,6 +357,7 @@ export default function CreateTrip() {
   );
 
   return (
+    <>
     <FocusedFlowLayout
       headerContent={headerContent}
       footerContent={footerContent}
@@ -1162,5 +1174,9 @@ export default function CreateTrip() {
         </DrawerContent>
       </Drawer>
     </FocusedFlowLayout>
+
+      <NotificationsSheet open={notificationsOpen} onOpenChange={setNotificationsOpen} />
+      <MenuDrawer open={menuOpen} onOpenChange={setMenuOpen} />
+    </>
   );
 }
