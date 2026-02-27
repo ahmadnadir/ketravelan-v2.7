@@ -246,20 +246,21 @@ export default function WelcomeOnboarding() {
               </p>
 
               {/* Buttons */}
-              <div className="w-full max-w-xs space-y-3 animate-fade-in">
-                <Button 
-                  onClick={handleGetStarted}
-                  className="w-full h-12 text-base font-medium rounded-xl"
-                >
-                  Get Started
-                </Button>
-                <Button 
-                  variant="ghost"
-                  onClick={handleGetStarted}
-                  className="w-full h-10 text-sm text-muted-foreground"
-                >
-                  Skip for Now
-                </Button>
+              <div className="w-full max-w-xs animate-fade-in">
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleLogin}
+                    className="flex-1 h-12 text-base font-medium rounded-xl"
+                  >
+                    Log In
+                  </Button>
+                  <Button 
+                    onClick={handleSignUp}
+                    className="flex-1 h-12 text-base font-medium rounded-xl"
+                  >
+                    Sign Up
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
