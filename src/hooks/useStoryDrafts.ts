@@ -12,6 +12,7 @@ export interface InlineMedia {
   type: "image" | "gallery";
   images: InlineMediaImage[];
   insertPosition: number; // character index in content
+  contentAfter?: string; // text written below this media block
 }
 
 // User social profile for profile-aware social link insertion
