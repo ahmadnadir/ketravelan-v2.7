@@ -38,10 +38,61 @@ export async function initializeCapacitor() {
       });
     }
 
+    // Initialize Push Notifications
+    await initializePushNotifications();
+
     console.log("Capacitor initialized successfully");
   } catch (error) {
     console.warn("Failed to initialize Capacitor plugins:", error);
   }
+}
+
+/**
+ * Initialize push notifications: request permission, register, and set up listeners.
+ * The device token is logged to console — in production you'd send it to your backend.
+ */
+async function initializePushNotifications() {
+  const { PushNotifications } = await import("@capacitor/push-notifications");
+
+  // Check current permission status
+  const permStatus = await PushNotifications.checkPermissions();
+
+  if (permStatus.receive === "prompt" || permStatus.receive === "prompt-with-rationale") {
+    const requested = await PushNotifications.requestPermissions();
+    if (requested.receive !== "granted") {
+      console.log("Push notification permission denied");
+      return;
+    }
+  } else if (permStatus.receive !== "granted") {
+    console.log("Push notification permission not granted");
+    return;
+  }
+
+  // Register with APNs / FCM
+  await PushNotifications.register();
+
+  // Listener: registration succeeded — receive the device token
+  PushNotifications.addListener("registration", (token) => {
+    console.log("Push registration token:", token.value);
+    // TODO: Send token.value to your backend to associate with the user
+  });
+
+  // Listener: registration failed
+  PushNotifications.addListener("registrationError", (error) => {
+    console.error("Push registration error:", error);
+  });
+
+  // Listener: notification received while app is in foreground
+  PushNotifications.addListener("pushNotificationReceived", (notification) => {
+    console.log("Push received in foreground:", notification);
+    // You can show an in-app toast/banner here
+  });
+
+  // Listener: user tapped on a notification (app was in background/killed)
+  PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+    console.log("Push notification tapped:", action);
+    // Navigate based on action.notification.data if needed
+  });
 }
 
 /**
