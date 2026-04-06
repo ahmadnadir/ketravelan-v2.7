@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import SafetyNotice from "@/components/trip-details/SafetyNotice";
 import { tripCategories } from "@/data/categories";
 import { cn } from "@/lib/utils";
+import { getExpectationEmoji } from "@/lib/expectationUtils";
 import { TripDetailsSkeleton } from "@/components/skeletons/TripDetailsSkeleton";
 import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { SEOHead } from "@/components/seo/SEOHead";
