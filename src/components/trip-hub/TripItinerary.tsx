@@ -22,7 +22,7 @@ interface TripItineraryProps {
 export function TripItinerary({ tripId }: TripItineraryProps) {
   const [itinerary, setItinerary] = useState<TripItineraryType | null>(null);
   const [newActivity, setNewActivity] = useState<Record<number, string>>({});
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Load itinerary on mount
   useEffect(() => {

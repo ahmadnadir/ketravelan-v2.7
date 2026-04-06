@@ -67,7 +67,7 @@ export function useDraftTrip() {
   const [draft, setDraft] = useState<TripDraft>(getDefaultDraft);
   const [hasDraft, setHasDraft] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Load draft on mount
   useEffect(() => {

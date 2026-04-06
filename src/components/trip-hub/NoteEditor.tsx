@@ -45,7 +45,7 @@ export function NoteEditor({
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const titleRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const isInitialMount = useRef(true);

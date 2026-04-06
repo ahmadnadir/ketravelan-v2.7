@@ -633,14 +633,16 @@ export default function TripDetails() {
               {tripData.requirements.length > 0 && (
                 <Card className="p-3 sm:p-4 border-border/50">
                   <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">What to Expect</h3>
-                  <ul className="space-y-1.5 sm:space-y-2">
+                  <div className="flex flex-wrap gap-2">
                     {tripData.requirements.map((req, index) => (
-                      <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 sm:mt-2 shrink-0" />
-                        {req}
-                      </li>
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border border-border bg-white text-muted-foreground"
+                      >
+                        {getExpectationEmoji(req)} {req}
+                      </span>
                     ))}
-                  </ul>
+                  </div>
                 </Card>
               )}
 
