@@ -1,29 +1,53 @@
 
 
-## Fix Build Errors + Standardise "What to Expect" with Emoji Pills
+## Trip Control Panel Enhancement
 
-### 1. Fix 3 `NodeJS.Timeout` build errors
+### Overview
+Transform the existing `GroupInfoModal` (bottom sheet) into a role-aware "Trip Control Panel". The current user is simulated as member ID "1" (Ahmad Razak, role: "Organizer"). Regular members see the current clean view; organizers get additional management sections.
 
-Replace `NodeJS.Timeout` with `ReturnType<typeof setTimeout>` in:
-- `src/components/trip-hub/NoteEditor.tsx` line 48
-- `src/components/trip-hub/TripItinerary.tsx` line 25
-- `src/hooks/useDraftTrip.ts` line 70
+### Architecture
 
-### 2. Standardise "What to Expect" on Trip Details page
+**Role detection**: Compare current user ID against member list. Member with `role: "Organizer"` gets elevated UI. For now, hardcode current user as ID "1" (the organizer in mock data). Add `currentUserId` prop to `GroupInfoModal`.
 
-**Current**: Plain bullet list with dots (image 2)
-**Target**: Emoji pill chips matching the creation form style (image 1)
+### Changes to `src/components/trip-hub/GroupInfoModal.tsx`
 
-**Approach**:
-- Extract the `expectationCategories` emoji lookup map from `RequirementsSection.tsx` into a shared utility (or import directly)
-- In `TripDetails.tsx` (lines 633-644), replace the `<ul>` bullet list with a `flex flex-wrap gap-2` container of styled pill chips
-- Each requirement gets matched to its emoji from the predefined map; custom/unmatched requirements get a fallback emoji (📦)
-- Pill styling: `px-3 py-1.5 text-sm rounded-full border border-border bg-white text-muted-foreground` — matching the unselected chip style from the creation form
+**1. Header changes (organizer only)**
+- Remove inline title editing (tap-to-edit). Title becomes read-only display for everyone.
+- Add a small ghost "Edit" button (Pencil icon) next to the title -- visible only for organizers. Clicking navigates to `/create-trip?edit={tripId}` (or shows a toast placeholder).
+- Camera button on trip image: visible only for organizers.
 
-### Files changed
-- **`src/components/trip-hub/NoteEditor.tsx`** — line 48: `NodeJS.Timeout` → `ReturnType<typeof setTimeout>`
-- **`src/components/trip-hub/TripItinerary.tsx`** — line 25: same fix
-- **`src/hooks/useDraftTrip.ts`** — line 70: same fix
-- **`src/lib/expectationUtils.ts`** — new file: export the emoji lookup map from expectation categories
-- **`src/pages/TripDetails.tsx`** — lines 633-644: replace bullet list with emoji pill chips
+**2. New "Manage Trip" section (organizer only)**
+- Inserted between header and members list.
+- Three list-style buttons with lucide icons:
+  - `Pencil` **Edit Details** -- navigates to edit page
+  - `Users` **Manage Members** -- scrolls to members section
+  - `Settings` **Trip Settings** -- opens toast placeholder (future settings modal)
+- Styled as a simple card with divided rows, matching existing design language.
+
+**3. Members section enhancements**
+- **Organizer view**: Each member row (except self) gets a kebab menu (`MoreVertical` icon) replacing/alongside the message button. Dropdown menu options:
+  - "Message" -- existing DM navigation
+  - "Promote to Organizer" -- toast placeholder
+  - "Remove from Trip" -- toast placeholder with destructive styling
+- **Member view**: Unchanged -- avatar, name, role, message button only.
+
+**4. "Invite Members" CTA**
+- At the bottom of the members list.
+- `UserPlus` icon + "Invite Members" text.
+- Ghost/outline button style, full width.
+- Visible to organizers only.
+- Click shows toast placeholder.
+
+### Props changes
+- Add `currentUserId?: string` prop (default: "1")
+- Derive `isOrganizer` from matching current user's role in members array
+
+### New dependencies
+- `MoreVertical`, `Pencil`, `Users`, `Settings`, `UserPlus`, `Share` from lucide-react
+- `DropdownMenu` components (already in project)
+- `toast` from sonner (already in project)
+
+### Files
+- **Edit**: `src/components/trip-hub/GroupInfoModal.tsx` -- all changes above (~120 lines rewritten)
+- **Edit**: `src/pages/TripHub.tsx` -- pass `currentUserId="1"` to `GroupInfoModal`
 
