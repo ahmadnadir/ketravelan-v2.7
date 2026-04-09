@@ -91,13 +91,13 @@ export default function EditTripDetails() {
     if (isDirty) {
       setDiscardOpen(true);
     } else {
-      navigate(-1);
+      navigate(`/trip/${id}/hub`, { state: { openGroupInfo: true } });
     }
   };
 
   const handleSave = () => {
     toast.success("Trip details saved successfully!");
-    navigate(-1);
+    navigate(`/trip/${id}/hub`, { state: { openGroupInfo: true } });
   };
 
   const handleCoverUpload = () => {
@@ -331,7 +331,7 @@ export default function EditTripDetails() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => navigate(-1)}>
+            <AlertDialogAction onClick={() => navigate(`/trip/${id}/hub`, { state: { openGroupInfo: true } })}>
               Discard
             </AlertDialogAction>
           </AlertDialogFooter>

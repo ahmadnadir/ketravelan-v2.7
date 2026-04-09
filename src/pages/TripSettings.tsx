@@ -34,7 +34,7 @@ export default function TripSettings() {
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const handleManageMembers = () => {
-    navigate(`/trip/${id}/hub`);
+    navigate(`/trip/${id}/hub`, { state: { openGroupInfo: true } });
   };
 
   const handleLeaveTrip = () => {
@@ -55,7 +55,7 @@ export default function TripSettings() {
     <FocusedFlowLayout
       headerContent={
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50">
-          <button onClick={() => navigate(-1)} className="p-1">
+          <button onClick={() => navigate(`/trip/${id}/hub`, { state: { openGroupInfo: true } })} className="p-1">
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <h1 className="text-lg font-semibold text-foreground">Trip Settings</h1>
