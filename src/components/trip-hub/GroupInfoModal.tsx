@@ -75,7 +75,7 @@ export function GroupInfoModal({
 
   const handleEditDetails = () => {
     onOpenChange(false);
-    navigate(`/create-trip?edit=${trip.id}`);
+    navigate(`/trip/${trip.id}/edit`);
   };
 
   const handleManageMembers = () => {
@@ -83,7 +83,8 @@ export function GroupInfoModal({
   };
 
   const handleTripSettings = () => {
-    toast("Trip Settings", { description: "Settings panel coming soon." });
+    onOpenChange(false);
+    navigate(`/trip/${trip.id}/settings`);
   };
 
   const handlePromote = (member: Member) => {
