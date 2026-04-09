@@ -107,6 +107,7 @@ export default function TripHub() {
         onOpenChange={setGroupInfoOpen}
         trip={trip}
         members={mockMembers}
+        currentUserId="1"
       />
     </>
   );
