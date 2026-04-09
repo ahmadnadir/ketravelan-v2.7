@@ -39,6 +39,8 @@ import StoryDetail from "./pages/StoryDetail";
 import DiscussionDetail from "./pages/DiscussionDetail";
 import CreateStory from "./pages/CreateStory";
 import MyStories from "./pages/MyStories";
+import EditTripDetails from "./pages/EditTripDetails";
+import TripSettings from "./pages/TripSettings";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +64,8 @@ const App = () => (
                   <Route path="/trips/:slug" element={<TripDetails />} />
                   <Route path="/trip/:id" element={<TripDetails />} />
                   <Route path="/trip/:id/hub" element={<TripHub />} />
+                  <Route path="/trip/:id/edit" element={<EditTripDetails />} />
+                  <Route path="/trip/:id/settings" element={<TripSettings />} />
                   {/* Destination pages for programmatic SEO */}
                   <Route path="/destinations" element={<DestinationsIndex />} />
                   <Route path="/destinations/:destination" element={<DestinationPage />} />
