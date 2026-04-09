@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useSearchParams } from "react-router-dom";
+import { useParams, Link, useSearchParams, useLocation } from "react-router-dom";
 import { ChevronLeft, MapPin, Users } from "lucide-react";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,16 @@ import { CurrencyCode } from "@/lib/currencyUtils";
 export default function TripHub() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("chat");
   const [groupInfoOpen, setGroupInfoOpen] = useState(false);
+
+  // Auto-open group info drawer when navigating back from edit/settings
+  useEffect(() => {
+    if (location.state?.openGroupInfo) {
+      setGroupInfoOpen(true);
+    }
+  }, [location.state]);
   const [travelCurrencies, setTravelCurrencies] = useState<CurrencyCode[]>([]);
 
   // Read tab from URL query param on mount
