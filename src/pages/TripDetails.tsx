@@ -151,11 +151,8 @@ export default function TripDetails() {
       
       if (publishedTrip.budgetType === 'rough') {
         totalBudget = publishedTrip.roughBudgetTotal;
-        budgetBreakdown = publishedTrip.roughBudgetCategories.map(cat => ({
-          category: cat.charAt(0).toUpperCase() + cat.slice(1),
-          amount: Math.round(publishedTrip.roughBudgetTotal / publishedTrip.roughBudgetCategories.length),
-          icon: cat.toLowerCase(),
-        }));
+        // Rough budget is a per-person total estimate; categories are coverage indicators only.
+        budgetBreakdown = [];
       } else if (publishedTrip.budgetType === 'detailed') {
         totalBudget = Object.values(publishedTrip.detailedBudget).reduce((a, b) => a + b, 0);
         budgetBreakdown = Object.entries(publishedTrip.detailedBudget).map(([cat, amount]) => ({
