@@ -151,11 +151,8 @@ export default function TripDetails() {
       
       if (publishedTrip.budgetType === 'rough') {
         totalBudget = publishedTrip.roughBudgetTotal;
-        budgetBreakdown = publishedTrip.roughBudgetCategories.map(cat => ({
-          category: cat.charAt(0).toUpperCase() + cat.slice(1),
-          amount: Math.round(publishedTrip.roughBudgetTotal / publishedTrip.roughBudgetCategories.length),
-          icon: cat.toLowerCase(),
-        }));
+        // Rough budget is a per-person total estimate; categories are coverage indicators only.
+        budgetBreakdown = [];
       } else if (publishedTrip.budgetType === 'detailed') {
         totalBudget = Object.values(publishedTrip.detailedBudget).reduce((a, b) => a + b, 0);
         budgetBreakdown = Object.entries(publishedTrip.detailedBudget).map(([cat, amount]) => ({
@@ -174,6 +171,8 @@ export default function TripDetails() {
         tags: publishedTrip.travelStyles.map(s => categoryLookup[s]?.label || s),
         requirements: publishedTrip.expectations,
         budgetBreakdown,
+        budgetType: publishedTrip.budgetType,
+        coverageCategories: publishedTrip.budgetType === 'rough' ? publishedTrip.roughBudgetCategories : [],
         price: totalBudget,
         totalSlots: publishedTrip.groupSizeType === 'set' ? publishedTrip.groupSize : 10,
         slotsLeft: publishedTrip.groupSizeType === 'set' ? publishedTrip.groupSize - 1 : 9,
@@ -202,6 +201,8 @@ export default function TripDetails() {
         visibility: 'public' as const,
         travelStyleIds: [],
         galleryImages: [mockTrip.imageUrl],
+        budgetType: 'detailed' as const,
+        coverageCategories: [] as string[],
       };
     }
   }, [publishedTrip, mockTrip]);
@@ -385,7 +386,7 @@ export default function TripDetails() {
       <FAQSchema
         items={[
           { question: `How do I join the ${tripData.title} trip?`, answer: `You can join by clicking the "I'm Interested" button on the trip page and sending a message to the organizer.` },
-          { question: `What's included in the RM ${tripData.price} budget?`, answer: `The budget covers ${tripData.budgetBreakdown?.map((b: any) => b.category.toLowerCase()).join(', ') || 'trip essentials'} for the group trip to ${tripData.destination}.` },
+          { question: `What's included in the RM ${tripData.price} budget?`, answer: `The budget covers ${(tripData.budgetBreakdown?.length ? tripData.budgetBreakdown.map((b: any) => b.category.toLowerCase()) : (tripData.coverageCategories || []).map((c: string) => c.toLowerCase())).join(', ') || 'trip essentials'} for the group trip to ${tripData.destination}.` },
           { question: `When does the ${tripData.title} trip start?`, answer: tripData.startDate ? `The trip starts on ${new Date(tripData.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.` : 'Dates are flexible and will be decided by the group.' },
           { question: `Who organizes this trip?`, answer: `This trip is organized by ${organizer.name} through the Ketravelan travel community platform.` },
         ]}
@@ -647,8 +648,59 @@ export default function TripDetails() {
                 </Card>
               )}
 
-              {/* Budget Breakdown */}
-              {tripData.budgetBreakdown.length > 0 && (
+              {/* Rough Budget */}
+              {tripData.budgetType === 'rough' && tripData.price > 0 && (() => {
+                const coverageEmojiMap: Record<string, string> = {
+                  Flight: '✈️', flight: '✈️',
+                  Stay: '🏨', stay: '🏨',
+                  Accommodation: '🏨', accommodation: '🏨',
+                  Food: '🍴', food: '🍴',
+                  'Food & Drinks': '🍴',
+                  Transport: '🚗', transport: '🚗',
+                  Activities: '🎫', activities: '🎫',
+                  Shopping: '🛍️', shopping: '🛍️',
+                };
+                return (
+                  <Card className="p-3 sm:p-4 border-border/50">
+                    <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Rough Budget</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-xl sm:text-2xl font-bold text-primary">RM {tripData.price.toLocaleString()}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground mt-0.5">Per person (estimated)</div>
+                      </div>
+
+                      {tripData.coverageCategories && tripData.coverageCategories.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs sm:text-sm font-medium text-foreground">This budget may cover:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {tripData.coverageCategories.map((cat) => {
+                              const label = cat.charAt(0).toUpperCase() + cat.slice(1);
+                              const emoji = coverageEmojiMap[label] || coverageEmojiMap[cat] || '📦';
+                              return (
+                                <PillChip
+                                  key={cat}
+                                  label={label}
+                                  icon={emoji}
+                                  size="sm"
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="p-2 bg-secondary/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          This is an estimated amount to prepare, not a fixed cost or payment to the organizer. Actual spending may be higher or lower depending on bookings, preferences, and shared expenses during the trip.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })()}
+
+              {/* Budget Breakdown (detailed) */}
+              {tripData.budgetType !== 'rough' && tripData.budgetBreakdown.length > 0 && (
                 <Card className="p-3 sm:p-4 border-border/50">
                   <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Budget Breakdown</h3>
                   <div className="space-y-2 sm:space-y-3">
@@ -663,6 +715,10 @@ export default function TripDetails() {
                         'food': '🍴',
                         'Activities': '🎫',
                         'activities': '🎫',
+                        'Flight': '✈️',
+                        'flight': '✈️',
+                        'Stay': '🏨',
+                        'stay': '🏨',
                       };
                       const emoji = categoryEmojiMap[item.category] || categoryEmojiMap[item.icon] || '📦';
                       return (
@@ -698,7 +754,7 @@ export default function TripDetails() {
               )}
 
               {/* No budget set message */}
-              {tripData.budgetBreakdown.length === 0 && isPublishedTrip && (
+              {tripData.budgetType !== 'rough' && tripData.budgetBreakdown.length === 0 && isPublishedTrip && (
                 <Card className="p-3 sm:p-4 border-border/50">
                   <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Budget</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground">
