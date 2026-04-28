@@ -648,8 +648,59 @@ export default function TripDetails() {
                 </Card>
               )}
 
-              {/* Budget Breakdown */}
-              {tripData.budgetBreakdown.length > 0 && (
+              {/* Rough Budget */}
+              {tripData.budgetType === 'rough' && tripData.price > 0 && (() => {
+                const coverageEmojiMap: Record<string, string> = {
+                  Flight: '✈️', flight: '✈️',
+                  Stay: '🏨', stay: '🏨',
+                  Accommodation: '🏨', accommodation: '🏨',
+                  Food: '🍴', food: '🍴',
+                  'Food & Drinks': '🍴',
+                  Transport: '🚗', transport: '🚗',
+                  Activities: '🎫', activities: '🎫',
+                  Shopping: '🛍️', shopping: '🛍️',
+                };
+                return (
+                  <Card className="p-3 sm:p-4 border-border/50">
+                    <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Rough Budget</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-xl sm:text-2xl font-bold text-primary">RM {tripData.price.toLocaleString()}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground mt-0.5">Per person (estimated)</div>
+                      </div>
+
+                      {tripData.coverageCategories && tripData.coverageCategories.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs sm:text-sm font-medium text-foreground">This budget may cover:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {tripData.coverageCategories.map((cat) => {
+                              const label = cat.charAt(0).toUpperCase() + cat.slice(1);
+                              const emoji = coverageEmojiMap[label] || coverageEmojiMap[cat] || '📦';
+                              return (
+                                <PillChip
+                                  key={cat}
+                                  label={label}
+                                  icon={emoji}
+                                  size="sm"
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="p-2 bg-secondary/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          This is an estimated amount to prepare, not a fixed cost or payment to the organizer. Actual spending may be higher or lower depending on bookings, preferences, and shared expenses during the trip.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })()}
+
+              {/* Budget Breakdown (detailed) */}
+              {tripData.budgetType !== 'rough' && tripData.budgetBreakdown.length > 0 && (
                 <Card className="p-3 sm:p-4 border-border/50">
                   <h3 className="font-semibold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Budget Breakdown</h3>
                   <div className="space-y-2 sm:space-y-3">
@@ -664,6 +715,10 @@ export default function TripDetails() {
                         'food': '🍴',
                         'Activities': '🎫',
                         'activities': '🎫',
+                        'Flight': '✈️',
+                        'flight': '✈️',
+                        'Stay': '🏨',
+                        'stay': '🏨',
                       };
                       const emoji = categoryEmojiMap[item.category] || categoryEmojiMap[item.icon] || '📦';
                       return (
@@ -699,7 +754,7 @@ export default function TripDetails() {
               )}
 
               {/* No budget set message */}
-              {tripData.budgetBreakdown.length === 0 && isPublishedTrip && (
+              {tripData.budgetType !== 'rough' && tripData.budgetBreakdown.length === 0 && isPublishedTrip && (
                 <Card className="p-3 sm:p-4 border-border/50">
                   <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Budget</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground">
