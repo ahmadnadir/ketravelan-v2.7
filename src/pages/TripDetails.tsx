@@ -693,6 +693,8 @@ export default function TripDetails() {
                               );
                             })}
                           </div>
+                            );
+                          })()}
                         </div>
                       )}
 
