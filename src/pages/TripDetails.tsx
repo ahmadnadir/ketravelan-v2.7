@@ -672,7 +672,14 @@ export default function TripDetails() {
                       {tripData.coverageCategories && tripData.coverageCategories.length > 0 && (
                         <div className="space-y-2">
                           <p className="text-xs sm:text-sm font-medium text-foreground">This budget may cover:</p>
-                          <div className="flex flex-wrap gap-2">
+                          {(() => {
+                            const count = tripData.coverageCategories.length;
+                            const cols = count <= 2 ? count : Math.ceil(count / 2);
+                            return (
+                          <div
+                            className="grid gap-2"
+                            style={{ gridTemplateColumns: `repeat(${cols}, max-content)` }}
+                          >
                             {tripData.coverageCategories.map((cat) => {
                               const label = cat.charAt(0).toUpperCase() + cat.slice(1);
                               const emoji = coverageEmojiMap[label] || coverageEmojiMap[cat] || '📦';
@@ -686,6 +693,8 @@ export default function TripDetails() {
                               );
                             })}
                           </div>
+                            );
+                          })()}
                         </div>
                       )}
 
