@@ -201,6 +201,8 @@ export default function TripDetails() {
         visibility: 'public' as const,
         travelStyleIds: [],
         galleryImages: [mockTrip.imageUrl],
+        budgetType: 'detailed' as const,
+        coverageCategories: [] as string[],
       };
     }
   }, [publishedTrip, mockTrip]);
