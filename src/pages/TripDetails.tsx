@@ -386,7 +386,7 @@ export default function TripDetails() {
       <FAQSchema
         items={[
           { question: `How do I join the ${tripData.title} trip?`, answer: `You can join by clicking the "I'm Interested" button on the trip page and sending a message to the organizer.` },
-          { question: `What's included in the RM ${tripData.price} budget?`, answer: `The budget covers ${tripData.budgetBreakdown?.map((b: any) => b.category.toLowerCase()).join(', ') || 'trip essentials'} for the group trip to ${tripData.destination}.` },
+          { question: `What's included in the RM ${tripData.price} budget?`, answer: `The budget covers ${(tripData.budgetBreakdown?.length ? tripData.budgetBreakdown.map((b: any) => b.category.toLowerCase()) : (tripData.coverageCategories || []).map((c: string) => c.toLowerCase())).join(', ') || 'trip essentials'} for the group trip to ${tripData.destination}.` },
           { question: `When does the ${tripData.title} trip start?`, answer: tripData.startDate ? `The trip starts on ${new Date(tripData.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.` : 'Dates are flexible and will be decided by the group.' },
           { question: `Who organizes this trip?`, answer: `This trip is organized by ${organizer.name} through the Ketravelan travel community platform.` },
         ]}
