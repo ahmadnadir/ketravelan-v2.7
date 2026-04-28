@@ -1,40 +1,42 @@
-## Tighten Rough Budget coverage pill layout
+## Revert Coverage Pills to Natural Flex-Wrap
 
 ### Problem
-The `flex flex-wrap` container for "This budget may cover:" pills fills the row with as many pills as fit at full width, so 5 items render as 4 on top + 1 lonely pill below, leaving a large empty gap.
+The previous grid-based layout (`grid` with `repeat(N, max-content)`) was overengineered and still leaves uneven gaps. The user wants simple, content-sized pills that wrap naturally.
 
-### Goal
-Balance the rows so pills are split roughly evenly across two rows:
-- 5 pills → 3 on top, 2 on bottom
-- 4 pills → 2 on top, 2 on bottom
-- 3 pills → 2 on top, 1 on bottom
-- ≤2 pills → single row
+### Change — `src/pages/TripDetails.tsx` (lines 675–697)
 
-### Change — `src/pages/TripDetails.tsx` (lines ~672-690)
+Remove the IIFE + grid wrapper and replace with a plain flex-wrap container.
 
-Replace the `flex flex-wrap gap-2` wrapper with a CSS Grid that has a dynamic column count equal to `Math.ceil(count / 2)`, so the items naturally split into two balanced rows. Pills keep their natural width via `justify-self-start` (no stretching).
-
-Logic:
+**Replace:**
 ```tsx
-const count = tripData.coverageCategories.length;
-const cols = count <= 2 ? count : Math.ceil(count / 2);
-// 5 -> 3 cols (3+2), 4 -> 2 cols (2+2), 3 -> 2 cols (2+1)
+{(() => {
+  const count = tripData.coverageCategories.length;
+  const cols = count <= 2 ? count : Math.ceil(count / 2);
+  return (
+    <div
+      className="grid gap-2"
+      style={{ gridTemplateColumns: `repeat(${cols}, max-content)` }}
+    >
+      {tripData.coverageCategories.map((cat) => { ... })}
+    </div>
+  );
+})()}
 ```
 
-Replace the wrapper:
+**With:**
 ```tsx
-<div
-  className="grid gap-2"
-  style={{ gridTemplateColumns: `repeat(${cols}, max-content)` }}
->
-  {tripData.coverageCategories.map((cat) => (
-    <PillChip ... />   // unchanged
-  ))}
+<div className="flex flex-wrap items-start gap-2">
+  {tripData.coverageCategories.map((cat) => {
+    const label = cat.charAt(0).toUpperCase() + cat.slice(1);
+    const emoji = coverageEmojiMap[label] || coverageEmojiMap[cat] || '📦';
+    return (
+      <PillChip key={cat} label={label} icon={emoji} size="sm" />
+    );
+  })}
 </div>
 ```
 
-Using inline `gridTemplateColumns` with `max-content` keeps pills their natural size (no stretched/oversized chips) while guaranteeing the row break happens after `cols` items, producing the requested 3+2 / 2+2 layout.
+Pills retain natural `inline-flex` width from `PillChip`, wrap on overflow, no stretching, no forced columns.
 
 ### Out of scope
-- No changes to PillChip styling, emoji map, disclaimer, or detailed-budget branch.
-- No data-model changes.
+- No changes to `PillChip`, emoji map, card layout, disclaimer, or detailed-budget branch.
