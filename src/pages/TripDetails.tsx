@@ -171,6 +171,8 @@ export default function TripDetails() {
         tags: publishedTrip.travelStyles.map(s => categoryLookup[s]?.label || s),
         requirements: publishedTrip.expectations,
         budgetBreakdown,
+        budgetType: publishedTrip.budgetType,
+        coverageCategories: publishedTrip.budgetType === 'rough' ? publishedTrip.roughBudgetCategories : [],
         price: totalBudget,
         totalSlots: publishedTrip.groupSizeType === 'set' ? publishedTrip.groupSize : 10,
         slotsLeft: publishedTrip.groupSizeType === 'set' ? publishedTrip.groupSize - 1 : 9,
